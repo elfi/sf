@@ -1,2 +1,2 @@
-sf - software foundation
+sf - Software Foundation
 ==
