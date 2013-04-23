@@ -225,4 +225,41 @@ Proof. reflexivity. Qed.
 Example test_ble_nat3: (ble_nat 4 2) = false.
 Proof. reflexivity. Qed.
 
+Definition blt_nat (n m:nat) : bool :=
+    andb (ble_nat n m) (negb (beq_nat n m)).
+
+Example test_blt_nat1: (blt_nat 2 2) = false.
+Proof. simpl. compute. reflexivity. Qed.
+
+Example test_blt_nat2: (blt_nat 2 4) = true.
+Proof. simpl. compute. reflexivity. Qed.
+
+Example test_blt_nat3: (blt_nat 4 2) = false.
+Proof. simpl. compute. reflexivity. Qed.
+
+Theorem plus_O_n : forall n : nat, 0 + n = n.
+Proof. simpl. reflexivity. Qed.
+
+Eval simpl in (forall n:nat, n + 0 = n).
+(* forall n : nat, n + 0 = n
+   : Prop 
+   simpl looks into the definition of +
+   but there is no simplification possible in the
+   first argument n - only recursion. *)
+Eval simpl in (forall n:nat, 0 + n = n).
+(* forall n : nat, n = n
+   : Prap
+   simpl looks into the definition of +
+   and sees that the first argument 0 can
+   be simplifed out - and return the result n *)
+
+Theorem plus_O_n'' : forall n:nat, 0 + n = n.
+Proof. intro n. reflexivity. Qed.
+
+Theorem plus_1_l : forall n:nat, 1 + n = S n.
+Proof. intro n. simpl. reflexivity. Qed.
+
+Theorem mult_O_l : forall n:nat, 0 * n = 0.
+Proof. intro n. simpl. reflexivity. Qed.
+
 
