@@ -262,4 +262,44 @@ Proof. intro n. simpl. reflexivity. Qed.
 Theorem mult_O_l : forall n:nat, 0 * n = 0.
 Proof. intro n. simpl. reflexivity. Qed.
 
+Theorem plus_id_example : forall n m:nat,
+    n = m ->
+    n + n = m + m.
+Proof.
+    intros n m.
+    intros H.
+    rewrite -> H.
+    reflexivity.
+Qed.
+
+Theorem plus_id_exercise: forall n m o : nat,
+    n = m -> m = o -> n + m = m + o.
+Proof.
+    intros n m o.
+    intro H1.
+    intro H2.
+    rewrite -> H1.
+    rewrite <- H2.
+    reflexivity.
+Qed.
+
+Theorem mult_O_plus : forall n m : nat,
+    (0 + n) * m = n * m.
+Proof.
+   intros n m.
+   rewrite -> plus_O_n.
+   reflexivity.
+Qed.
+
+Theorem mult_1_plus : forall n m : nat,
+    (1 + n) * m = m + (n * m).
+Proof.
+    intros n m.
+    rewrite -> plus_1_l. (* direct simpl would do *)
+    simpl.
+    reflexivity.
+Qed.
+
+
+
 
