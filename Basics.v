@@ -194,11 +194,11 @@ Proof. simpl. reflexivity. Qed.
 Notation "x + y" := (plus x y)
     (at level 50, left associativity)
     : nat_scope.
-Notation "x - y" := (minus x y)  
+Notation "x - y" := (minus x y)
     (at level 50, left associativity)
     : nat_scope.
-Notation "x * y" := (mult x y)  
-    (at level 40, left associativity) 
+Notation "x * y" := (mult x y)
+    (at level 40, left associativity)
     : nat_scope.
 
 Check ((0 + 1) + 1).
@@ -242,7 +242,7 @@ Proof. simpl. reflexivity. Qed.
 
 Eval simpl in (forall n:nat, n + 0 = n).
 (* forall n : nat, n + 0 = n
-   : Prop 
+   : Prop
    simpl looks into the definition of +
    but there is no simplification possible in the
    first argument n - only recursion. *)
@@ -301,5 +301,117 @@ Proof.
 Qed.
 
 
+Theorem plus_1_neg_0_firsttry : forall n : nat,
+    beq_nat (n + 1) 0 = false.
+Proof.
+    intro n.
+    simpl. (* does nothing *)
+Abort.
+
+Theorem plus_1_neq_0 : forall n : nat,
+    beq_nat (n + 1) 0 = false.
+Proof.
+    intro n. destruct n as [| n'].
+    reflexivity.
+    reflexivity.
+Qed.
+
+Theorem negb_involutive: forall b : bool,
+    negb (negb b) = b.
+Proof.
+    intro b. destruct b.
+    reflexivity.
+    reflexivity.
+Qed.
+
+Theorem zero_nbeg_plus_1: forall n : nat,
+    beq_nat 0 (n + 1) = false.
+Proof.
+    intro n. destruct n as [| n'].
+    reflexivity.
+    reflexivity.
+Qed.
+
+Theorem identity_fn_applied_twice :
+    forall (f : bool -> bool),
+    (forall (x : bool), f x = x) ->
+    forall (b : bool), f (f b) = b.
+Proof.
+    intro f. intro H. intro b.
+    rewrite -> H. (* H applies to any x:bool, including (f b):bool *)
+    rewrite -> H.
+    reflexivity.
+Qed.
+
+
+Theorem negation_fn_applied_twice :
+    forall (f : bool -> bool),
+    (forall (x : bool), f x = negb x) ->
+    forall (b : bool), f (f b) = b.
+Proof.
+    intros f H b.
+    rewrite -> H. (* H applies to any x:bool including (f b):bool *)
+    rewrite -> H.
+    rewrite -> negb_involutive.
+    reflexivity.
+Qed.
+
+Theorem andb_eq_orb :
+    forall (b c : bool),
+    (andb b c = orb b c) ->
+    b = c.
+Proof.
+    intros b c H. destruct b. destruct c.
+    reflexivity.
+    simpl in H. rewrite -> H. reflexivity.
+    simpl in H. rewrite -> H. reflexivity.
+Qed.
+
+Inductive bin : Type :=
+| bzero : bin
+| P : bin -> bin
+| Q : bin -> bin.
+
+Fixpoint IncBin  (n:bin) : bin :=
+    match n with
+    | bzero => Q bzero
+    | Q bzero => P (Q bzero)
+    | P n' => Q n'
+    | Q n' => P (IncBin n')
+    end.
+
+Fixpoint BinToUnary (n:bin) : nat :=
+    match n with
+    | bzero => O
+    | P n' => let a:nat := BinToUnary n' in 2 * a
+    | Q n' => let a:nat := BinToUnary n' in S (2 * a)
+    end.
+
+Eval simpl in (BinToUnary (IncBin(IncBin(Q bzero)))).
+
+Fixpoint IncBinRepeat (n:nat) (m:bin) :=
+    match n with
+    | O => m
+    | S n' => IncBinRepeat n' (IncBin m)
+    end.
+
+Eval simpl in (BinToUnary (IncBinRepeat 12 bzero)).
+
+Example BinNatEqOn3 :
+    BinToUnary (IncBin  (Q (Q bzero))) = S (BinToUnary (Q (Q bzero))).
+Proof.
+  simpl.
+  reflexivity.
+Qed.
+
+(* Here even struct hint does not help and this terminating function is
+   refused
+
+   Fixpoint plus' (n:nat) (m:nat) {struct n} : nat :=
+    match n with
+    | O => m
+    | S n' => S (plus' m n')
+    end.
+*)
 
 
