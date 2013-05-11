@@ -243,3 +243,76 @@ Proof.
         simpl. reflexivity.
 Qed.
 
+Theorem mult_plus_distr_r : forall n m p : nat, (* induction *)
+    (n + m) * p = (n * p) + (m * p).
+Proof.
+    intros n m p. induction n as [| n'].
+    Case "n = 0".
+        reflexivity.
+    Case "n = S n'".
+        simpl. rewrite -> IHn'. rewrite -> plus_assoc. reflexivity.
+Qed.
+
+Theorem mult_assoc : forall n m p : nat, (* induction *)
+    n * (m * p) = (n * m) * p.
+Proof.
+    intros n m p. induction n as [| n'].
+    Case "n = 0".
+        simpl. reflexivity.
+    Case "n = S n'".
+        simpl. rewrite -> IHn'. rewrite -> mult_plus_distr_r.
+        reflexivity.
+Qed.
+
+Theorem beq_nat_refl : forall n : nat, (* induction *)
+    true = beq_nat n n.
+Proof.
+    intro n. induction n as [| n'].
+    Case "n = 0".
+        reflexivity.
+    Case "n = S n'".
+        simpl. rewrite <- IHn'. reflexivity.
+Qed.
+
+Theorem plus_swap' : forall n m p : nat,
+    n + (m + p) = m + (n + p).
+Proof.
+    intros n m p. rewrite -> plus_assoc. 
+    replace (n + m) with (m + n).
+    rewrite <- plus_assoc. reflexivity.
+    rewrite -> plus_comm. reflexivity.
+Qed.
+
+Inductive bin : Type :=
+| bzero : bin
+| P : bin -> bin
+| Q : bin -> bin.
+
+Fixpoint IncBin  (n:bin) : bin :=
+    match n with
+    | bzero => Q bzero
+    | P n' => Q n'
+    | Q n' => P (IncBin n')
+    end.
+
+Fixpoint BinToUnary (n:bin) : nat :=
+    match n with
+    | bzero => O
+    | P n' => let a:nat := BinToUnary n' in 2 * a
+    | Q n' => let a:nat := BinToUnary n' in S (2 * a)
+    end.
+
+Theorem binary_commute : forall b:bin,
+    BinToUnary (IncBin b) = S (BinToUnary b).
+Proof.
+    intro b. induction b as [| b1 | b2 ].
+    Case "b = bzero".
+         simpl. reflexivity. 
+    Case "b = P b1".
+        simpl. reflexivity.
+    Case "b = Q b2".
+        simpl. rewrite -> plus_0_r. rewrite -> plus_0_r.
+        rewrite IHb2. rewrite <- plus_n_Sm. simpl. reflexivity. 
+Qed.
+
+

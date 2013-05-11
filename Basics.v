@@ -375,7 +375,6 @@ Inductive bin : Type :=
 Fixpoint IncBin  (n:bin) : bin :=
     match n with
     | bzero => Q bzero
-    | Q bzero => P (Q bzero)
     | P n' => Q n'
     | Q n' => P (IncBin n')
     end.
