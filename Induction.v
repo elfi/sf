@@ -47,7 +47,7 @@ Proof.
       reflexivity.
     Case "c = false".
       rewrite <- H.
-      destruct b.      
+      destruct b.
       SCase "b = true".
         reflexivity.
       SCase "b = false".
@@ -170,3 +170,76 @@ Proof.
     Case "m = S m'".
         simpl. rewrite -> mult_Sm_r. rewrite -> IHm'. reflexivity.
 Qed.
+
+Theorem evenb_n__oddb_Sn : forall n:nat,
+    evenb n = negb (evenb (S n)).
+Proof.
+    intro n. induction n as [| n'].
+    Case "n = 0".
+        simpl. reflexivity.
+    Case "n = S n'".
+        simpl (evenb (S (S n'))).
+        rewrite -> IHn'. rewrite -> negb_involutive.
+        reflexivity.
+Qed.
+
+Theorem ble_nat_refl : forall n:nat,  (* induction needed *)
+    true = ble_nat n n.
+Proof.
+    intro n. induction n as [| n'].
+    Case "n = 0".
+        reflexivity.
+    Case "n = S n'".
+        simpl. rewrite <- IHn'. reflexivity.
+Qed.
+
+Theorem zero_nbeq_S : forall n:nat, (* simpl suffices *)
+    beq_nat 0 (S n) = false.
+Proof.
+    reflexivity.
+Qed.
+
+Theorem andb_false_r: forall b:bool, (* destruct will do *)
+    andb b false = false.
+Proof.
+    intro b. destruct b.
+    Case "b = true".
+        reflexivity.
+    Case "b = false".
+        reflexivity.
+Qed.
+
+Theorem plus_ble_compat_l : forall n m p : nat, (* induction *)
+    ble_nat n m = true -> ble_nat (p + n) (p + m) = true.
+Proof.
+    intros n m p H. induction p as [| p'].
+    Case "p = 0".
+        simpl. rewrite -> H. reflexivity.
+    Case "p = S p'".
+        simpl. rewrite -> IHp'. reflexivity.
+Qed.
+
+Theorem S_nbeq_0 : forall n:nat, (* simpl will do *)
+    beq_nat (S n) 0 = false.
+Proof.
+    intro n. simpl. reflexivity.
+Qed.
+
+Theorem mult_1_l : forall n:nat, (* simpl & rewrite will do *)
+    1 * n = n.
+Proof.
+    intro n. simpl. rewrite -> plus_0_r. reflexivity.
+Qed.
+
+Theorem all3_spec : forall b c : bool, (* destruct will do *)
+    orb (andb b c) (orb (negb b) (negb c)) = true.
+Proof.
+    intros b c. destruct b. destruct c.
+    Case "b = true, c = true".
+        simpl. reflexivity.
+    Case "b = true, c = false".
+        simpl. reflexivity.
+    Case "b = false".
+        simpl. reflexivity.
+Qed.
+
