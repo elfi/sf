@@ -315,4 +315,46 @@ Proof.
         rewrite IHb2. rewrite <- plus_n_Sm. simpl. reflexivity. 
 Qed.
 
+Fixpoint UnaryToBin (n:nat) : bin :=
+    match n with
+    | O    => bzero
+    | S n' => IncBin (UnaryToBin n')
+    end.
+
+Theorem BinUnaryOneSideInversion : forall n:nat,
+    BinToUnary (UnaryToBin n) = n.
+Proof.
+    intro n. induction n as [| n'].
+    Case "n = 0".
+        simpl. reflexivity.
+    Case "n = S n'".
+        simpl. rewrite -> binary_commute. rewrite -> IHn'.
+        reflexivity.
+Qed.
+
+Fixpoint normalize_helper (b:bin) (stack:bin->bin) : bin :=
+    match b with
+    | bzero => bzero
+    | Q b' => stack (Q (normalize_helper b' (fun x:bin => x)))
+    | P b' => normalize_helper b' (fun x:bin => P (stack x))
+    end.
+
+Definition normalize (b:bin) : bin :=
+    normalize_helper b (fun x:bin => x).
+
+Eval simpl in (normalize_helper (P (Q (P (P (P bzero)))))
+                                (fun x:bin => x)).
+
+Theorem UnaryBinNormalize : forall b:bin,
+    UnaryToBin (BinToUnary b) = normalize b.
+Proof.
+    intro b. induction b as [| b1 | b2].
+    Case "b = bzero".
+        simpl. reflexivity.
+    Case "b = P b1".
+        unfold normalize. simpl. rewrite -> plus_0_r.
+Admitted. (* the stack seems to be a hard nut *)
+
+
+
 
