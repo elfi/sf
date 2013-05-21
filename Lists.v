@@ -240,4 +240,241 @@ Proof. reflexivity. Qed.
 Example test_remone_one4: count 5 (remove_one 5 [2,1,5,4,5,1,4]) = 1.
 Proof. reflexivity. Qed.
 
+Fixpoint remove_all (v:nat) (s:bag) : bag :=
+    match s with
+    | nil => nil
+    | x :: xs => match beq_nat x v with
+                       | true => remove_all v xs
+                       | false => x :: remove_all v xs
+                       end
+    end.
+
+Example test_remove_all1: count 5 (remove_all 5 [2,1,5,4,1]) = 0.
+Proof. reflexivity. Qed.
+
+Example test_remove_all2: count 5 (remove_all 5 [2,1,4,1]) = 0.
+Proof. reflexivity. Qed.
+
+Example test_remove_all3: count 4 (remove_all 5 [2,1,4,5,4,1]) = 2.
+Proof. reflexivity. Qed.
+
+Example test_remove_all4: count 5 (remove_all 5 [2,1,5,4,5,1,4,5,1,4]) = 0.
+Proof. reflexivity. Qed.
+
+Fixpoint subset (s1:bag) (s2:bag) : bool :=
+    match s1 with
+    | nil => true
+    | x :: xs => match member x s2 with
+                 | true => subset xs (remove_one x s2)
+                 | false => false
+                 end
+    end.
+
+Example test_subset1: subset [1,2] [2,1,4,1] = true.
+Proof. reflexivity. Qed.
+
+Example test_subset2: subset [1,2,2] [2,1,4,1] = false.
+Proof. reflexivity. Qed.
+
+Theorem bag_theorem: forall (v:nat) (s:bag),
+    count v (add v s) = S (count v s).
+Proof.
+    intros v s. destruct v as [| v'].
+    Case "v = 0".
+        simpl. reflexivity.
+    Case "v = S v'".
+        simpl. rewrite <- beq_nat_refl. reflexivity.
+Qed.
+
+Theorem nil_app : forall l:natlist,
+    nil ++ l = l.
+Proof. reflexivity. Qed.
+
+Theorem tl_length_pred : forall l:natlist,
+    pred (length l) = length (tail l).
+Proof.
+    intro l. destruct l as [| x xs].
+    Case "l = nil".
+        reflexivity.
+    Case "l = cons x xs".
+        simpl. reflexivity.
+Qed.
+
+Theorem app_ass: forall l1 l2 l3 : natlist,
+    (l1 ++ l2) ++ l3 = l1 ++ (l2 ++ l3).
+Proof.
+    intros l1 l2 l3. induction l1 as [| x xs].
+    Case "l1 = nil".
+        simpl. reflexivity.
+    Case "l1 = cons x xs".
+        simpl. rewrite -> IHxs. reflexivity.
+Qed.
+
+Theorem app_length: forall l1 l2 : natlist,
+    length (l1 ++ l2) = (length l1) + (length l2).
+Proof.
+    intros l1 l2. induction l1 as [| x xs].
+    Case "l1 = nil".
+        simpl. reflexivity.
+    Case "l1 = cons x xs".
+        simpl. rewrite -> IHxs. reflexivity.
+Qed.
+
+Fixpoint snoc (l:natlist) (v:nat) : natlist :=
+    match l with
+    | nil => [v]
+    | x :: xs => x :: (snoc xs v)
+    end.
+
+Fixpoint rev (l:natlist) : natlist :=
+    match l with
+    | nil => nil
+    | x :: xs => snoc (rev xs) x
+    end.
+
+Example test_rev1: rev [1,2,3] = [3,2,1].
+Proof. reflexivity. Qed.
+
+Example test_rev2: rev nil = nil.
+Proof. reflexivity. Qed.
+
+Theorem length_snoc: forall n:nat, forall l:natlist,
+    length (snoc l n) = S (length l).
+Proof.
+    intros n l. induction l as [| x xs].
+    Case "l = nil".
+        simpl. reflexivity.
+    Case "l = cons x xs".
+        simpl. rewrite -> IHxs. reflexivity.
+Qed.
+
+Theorem rev_length: forall l:natlist,
+    length (rev l) = length l.
+Proof.
+    intro l. induction l as [| x xs].
+    Case "l = nil".
+        simpl. reflexivity.
+    Case "l = cons x xs".
+        simpl. rewrite -> length_snoc. rewrite -> IHxs. reflexivity.
+Qed.
+
+Theorem app_nil_end: forall l:natlist,
+    l ++ nil = l.
+Proof.
+    intro l. induction l as [| x xs].
+    Case "l = nil".
+        reflexivity.
+    Case "l = cons x xs".
+        simpl. rewrite -> IHxs. reflexivity.
+Qed.
+
+Lemma rev_snoc: forall x:nat, forall l:natlist,
+    rev (snoc l x) = x :: rev l.
+Proof.
+    intros n l. induction l as [| x xs].
+    reflexivity.
+    simpl. rewrite -> IHxs. simpl. reflexivity.
+Qed.
+
+Theorem rev_involutive: forall l:natlist,
+    rev (rev l) = l.
+Proof.
+    intro l. induction l as [| x xs].
+    Case "l = nil".
+        reflexivity.
+    Case "l = cons x xs".
+        simpl. rewrite -> rev_snoc. rewrite -> IHxs. reflexivity.
+Qed.
+
+Theorem app_ass4: forall l1 l2 l3 l4 : natlist,
+    l1 ++ (l2 ++ (l3 ++ l4)) = ((l1 ++ l2) ++ l3) ++ l4.
+Proof.
+    intros l1 l2 l3 l4.
+    rewrite -> app_ass. rewrite <- app_ass. reflexivity.
+Qed.
+
+Theorem snoc_append : forall (l:natlist) (n:nat),
+    snoc l n = l ++ [n].
+Proof.
+    intros l n. induction l as [| x xs].
+    Case "l = nil".
+        reflexivity.
+    Case "l = cons x xs".
+        simpl. rewrite -> IHxs. reflexivity.
+Qed.
+
+Lemma snoc_rev: forall (l1 l2 : natlist) (n : nat),
+    snoc (l1 ++ l2) n = l1 ++ (snoc l2 n).
+Proof.
+    intros l1 l2 n. induction l1 as [| x xs].
+    Case "l1 = nil".
+        reflexivity.
+    Case "l1 = cons x xs".
+        simpl.  rewrite -> IHxs. reflexivity.
+Qed.
+
+Theorem distr_rev: forall l1 l2 : natlist,
+    rev (l1 ++ l2) = (rev l2) ++ (rev l1).
+Proof.
+    intros l1 l2. induction l1 as [| x xs].
+    Case "l = nil".
+        simpl. rewrite -> app_nil_end. reflexivity.
+    Case "l = cons x xs".
+        simpl. rewrite -> IHxs. rewrite -> snoc_rev. reflexivity.
+Qed.
+
+Lemma nonzeros_app: forall l1 l2 : natlist,
+    nonzeros (l1 ++ l2) = (nonzeros l1) ++ (nonzeros l2).
+Proof.
+    intros l1 l2. induction l1 as [| x xs].
+    Case "l1 = nil".
+        reflexivity.
+    Case "l1 = cons x xs".
+        destruct x as [| x'].
+        SCase "x = 0.".
+            simpl. rewrite -> IHxs. reflexivity.
+        SCase "x = S x'".
+            simpl. rewrite -> IHxs. reflexivity.
+Qed.
+
+Theorem design: forall (l : natlist) (x y : nat),
+    x :: (snoc l y) = [x] ++ l ++ [y].
+Proof.
+    intros l x y. destruct l as [| h hs].
+    Case "l = nil".
+        simpl. reflexivity.
+    Case "l = cons h hs".
+        simpl. rewrite -> snoc_append. reflexivity.
+Qed.
+
+Theorem count_member_nonzero: forall s : bag,
+    ble_nat 1 (count 1 (1 :: s)) = true.
+Proof.
+    intro s. simpl. reflexivity.
+Qed.
+
+Theorem ble_n_Sn: forall n,
+    ble_nat n (S n) = true.
+Proof.
+    intro n. induction n as [| n'].
+    Case "n = 0".
+        reflexivity.
+    Case "n = S n'".
+        simpl. rewrite -> IHn'. reflexivity.
+Qed.
+
+Theorem remove_decrease_count: forall s : bag,
+    ble_nat (count 0 (remove_one 0 s)) (count 0 s) = true.
+Proof.
+    intro s. induction s as [| x xs].
+    Case "s = nil".
+        simpl. reflexivity.
+    Case "s = cons x xs".
+        destruct x as [| x'].
+        SCase "x = 0".
+            simpl. rewrite -> ble_n_Sn. reflexivity.
+        SCase "x = S x'".
+            simpl. rewrite -> IHxs. reflexivity.
+Qed.
+
 
