@@ -187,3 +187,44 @@ Proof.
         simpl. rewrite -> IHxs. reflexivity.
 Qed.
 
+Inductive prod (X Y : Type) : Type :=
+    pair : X -> Y -> prod X Y.
+
+Check prod. (* prod : Type -> Type -> Type *)
+Check pair. (* pair: forall X Y, X -> Y -> prod X Y *)
+
+Implicit Arguments pair [[X] [Y]].
+
+Notation "( x , y )" := (pair x y).
+
+Notation "X * Y" := (prod X Y) : type_scope.
+
+Definition fst {X Y : Type} (p : X * Y) : X :=
+    match p with (x,y) => x end.
+
+Definition snd {X Y : Type} (p : X * Y) : Y :=
+    match p with (x,y) => y end.
+
+Fixpoint combine {X Y : Type} (lx : list X) (ly : list Y)
+    : list (X*Y) :=
+    match (lx, ly) with
+    | ([], _) => []
+    | (_, []) => []
+    | (x::xs, y::ys) => (x, y) :: combine xs ys
+    end.
+
+Check combine. (* combine: 
+                     list ?215 -> list ?216 -> list (?215 * ?216) *)
+Check @combine.  (* combine: 
+                      forall X Y : Type, X -> Y -> list (X * Y) *)
+
+Fixpoint split {X Y : Type} (l : list (X * Y))
+    : (list X) * (list Y) :=
+    match l with
+    | nil => (nil, nil) 
+    | (x,y) :: tail => ( x :: (fst (split tail)), y :: (snd (split tail)))
+    end.
+
+Example test_split:
+    split [(1, false),(2,false)] = ([1,2],[false,false]).
+Proof. reflexivity. Qed.
