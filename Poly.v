@@ -222,9 +222,60 @@ Fixpoint split {X Y : Type} (l : list (X * Y))
     : (list X) * (list Y) :=
     match l with
     | nil => (nil, nil) 
-    | (x,y) :: tail => ( x :: (fst (split tail)), y :: (snd (split tail)))
+    | (x,y) :: tail => ( x :: (fst (split tail)),
+                         y :: (snd (split tail)))
     end.
 
 Example test_split:
     split [(1, false),(2,false)] = ([1,2],[false,false]).
 Proof. reflexivity. Qed.
+
+Inductive option (X : Type) : Type :=
+| Some : X -> option X
+| None : option X.
+
+Implicit Arguments Some [[X]].
+Implicit Arguments None [[X]].
+
+Fixpoint index {X : Type} (n : nat) (l : list X) : option X :=
+    match l with
+    | nil => None
+    | x :: xs => if beq_nat O n
+                 then Some x
+                 else index (pred n) xs
+    end.
+
+Example test_index1: index 0 [4,5,6,7] = Some 4.
+Proof. reflexivity. Qed.
+
+Example test_index2: index 1 [[1],[2]] = Some [2].
+Proof. reflexivity. Qed.
+
+Example test_index3: index 2 [true] = None.
+Proof. reflexivity. Qed.
+
+Definition hd_opt {X : Type} (l : list X) : option X :=
+    match l with
+    | nil => None
+    | x :: xs => Some x
+    end.
+
+Check @hd_opt.
+
+Example test_hd_opt1: hd_opt [1,2] = Some 1.
+Proof. reflexivity. Qed.
+
+Example test_hd_opt2: hd_opt [[1],[2]] = Some [1].
+Proof. reflexivity. Qed.
+
+Definition doit3times {X : Type} (f : X->X) (n : X) : X :=
+    f (f (f n)).
+
+Check @doit3times.
+
+Example test_doit3times1: doit3times minustwo 9 = 3.
+Proof. reflexivity. Qed.
+
+Example test_doit3times2: doit3times negb true = false.
+Proof. reflexivity. Qed.
+
