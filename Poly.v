@@ -279,3 +279,38 @@ Proof. reflexivity. Qed.
 Example test_doit3times2: doit3times negb true = false.
 Proof. reflexivity. Qed.
 
+Check plus. (* plus : nat -> nat -> nat *)
+
+Definition plus3 := plus 3.
+Check plus3. (* plus3 : nat -> nat *)
+
+Example test_plus3: plus3 4 = 7.
+Proof. reflexivity. Qed.
+
+Example test_plus3': doit3times plus3 0 = 9.
+Proof. reflexivity. Qed.
+
+Example test_plus3'': doit3times (plus 3) 0 = 9.
+Proof. reflexivity. Qed.
+
+Definition prod_curry {X Y Z : Type}
+    (f : X * Y -> Z) (x : X) (y : Y) : Z := f (x, y).
+
+Definition prod_uncurry {X Y Z : Type}
+    (f : X -> Y -> Z) (p : X * Y) : Z := f (fst p) (snd p).
+
+Check @prod_curry.
+Check @prod_uncurry.
+
+Theorem uncurry_curry: forall (X Y Z : Type)
+                              (f : X -> Y -> Z)
+                              (x : X) (y : Y),
+    prod_curry (prod_uncurry f) x y = f x y.
+Proof. intros X Y Z f x y. reflexivity. Qed.
+
+Theorem curry_uncurry: forall (X Y Z : Type)
+                              (f : (X * Y) -> Z)
+                              (p : X * Y),
+    prod_uncurry (prod_curry f) p = f p.
+Proof. intros X Y Z f p. destruct p. reflexivity. Qed.
+
