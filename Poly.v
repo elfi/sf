@@ -314,3 +314,119 @@ Theorem curry_uncurry: forall (X Y Z : Type)
     prod_uncurry (prod_curry f) p = f p.
 Proof. intros X Y Z f p. destruct p. reflexivity. Qed.
 
+Fixpoint filter {X : Type} (test : X -> bool) (l : list X)
+    : list X :=
+    match l with
+    | nil => nil
+    | x :: xs => if test x
+                 then x :: (filter test xs)
+                 else (filter test xs)
+    end.
+
+Example test_filter1: filter evenb [1,2,3,4] = [2,4].
+Proof. reflexivity. Qed.
+
+Definition length_is_1 {X : Type} (l : list X) : bool :=
+    beq_nat (length l) 1.
+
+Check @length_is_1.
+
+Example test_filter2:
+    filter length_is_1
+        [ [1,2], [3], [4], [5,6,6], [], [8] ] =
+        [ [3], [4], [8] ].
+Proof. reflexivity. Qed.
+
+Definition countoddmembers' (l : list nat) : nat :=
+    length (filter oddb l).
+
+Example test_countoddmembers'1: countoddmembers' [1,0,3,1,4,5] = 4.
+Proof. reflexivity. Qed.
+
+Example test_countoddmembers'2: countoddmembers' [0,2,4] = 0.
+Proof. reflexivity. Qed.
+
+Example test_countoddmembers'3: countoddmembers' nil = 0.
+Proof. reflexivity. Qed.
+
+Example test_anon_fun':
+    doit3times (fun n => n * n) 2 = 256.
+Proof. reflexivity. Qed.
+
+
+Example test_filter2':
+    filter (fun l => beq_nat (length l) 1)
+        [ [1,2], [3], [4], [5,6,6], [], [8] ] =
+        [ [3], [4], [8] ].
+Proof. reflexivity. Qed.
+
+Definition filter_even_gt7 (l: list nat) : list nat :=
+    filter (fun x => andb (negb (ble_nat x 7)) (evenb x)) l.
+
+Example test_filter_even_gt7_1:
+    filter_even_gt7 [1,2,6,9,10,3,12,8] = [10,12,8].
+Proof. reflexivity. Qed.
+
+Example test_filter_even_gt7_2:
+    filter_even_gt7 [5,2,6,19,129] = [].
+Proof. reflexivity. Qed.
+
+Definition partition {X : Type} (test : X -> bool) (l : list X)
+    : list X * list X :=
+    (filter test l, filter (fun x => negb (test x)) l).
+
+Example test_partition1: partition oddb [1,2,3,4,5] = ([1,3,5], [2,4]).
+Proof. reflexivity. Qed.
+
+Example test_partition2: partition (fun x => false) [5,9,0] =
+                              ([], [5,9,0]).
+Proof. reflexivity. Qed.
+
+Fixpoint map {X Y : Type} (f : X -> Y) (l : list X) : list Y :=
+    match l with
+    | nil => nil
+    | x :: xs => (f x) :: map f xs
+    end.
+
+Example test_map1: map (plus 3) [2,0,2] = [5,3,5].
+Proof. reflexivity. Qed.
+
+Example test_map2: map oddb [2,1,2,5] = [false, true, false, true].
+Proof. reflexivity. Qed.
+
+Example test_map3: map (fun n => [evenb n,oddb n]) [2,1,2,5]
+    = [[true,false],[false,true],[true,false],[false,true]].
+Proof. reflexivity. Qed.
+
+Lemma map_snoc: forall (X Y : Type) (f : X -> Y) 
+                       (l : list X) (x : X),
+    map f (snoc (l) x) = snoc (map f l) (f x).
+Proof.
+    intros X Y f l x. induction l as [| h t].
+    Case "l = nil".
+        simpl. reflexivity.
+    Case "l = h :: t".
+        simpl. rewrite <- IHt. reflexivity.
+Qed.
+
+Theorem map_rev: forall (X Y : Type) (f : X -> Y) (l : list X),
+    map f (rev l) = rev (map f l).
+Proof.
+    intros X Y f l. induction l as [| x xs].
+    Case "l = nil".
+        simpl. reflexivity.
+    Case "l = x :: xs".
+        simpl. rewrite <- IHxs. rewrite -> map_snoc. reflexivity.
+Qed.
+
+Fixpoint flat_map {X Y : Type} (f:X->list Y) (l:list X)
+    : list Y :=
+    match l with
+    | nil => nil
+    | x :: xs => (f x) ++ (flat_map f xs)
+    end.
+
+Example test_flat_map1:
+    flat_map (fun n => [n,n,n]) [1,5,4] 
+    = [1,1,1,5,5,5,4,4,4].
+Proof. reflexivity. Qed.
