@@ -430,3 +430,106 @@ Example test_flat_map1:
     flat_map (fun n => [n,n,n]) [1,5,4] 
     = [1,1,1,5,5,5,4,4,4].
 Proof. reflexivity. Qed.
+
+Definition option_map {X Y : Type} (f : X -> Y) (xo : option X)
+    : option Y :=
+    match xo with
+    | None => None
+    | Some x => Some (f x)
+    end.
+
+(* explicit args in filter and map *)
+Fixpoint filter' (X : Type) (test : X -> bool) (l : list X)
+    : list X :=
+    match l with
+    | nil => nil
+    | x :: xs => if (test x)
+                 then x :: (filter' X test xs)
+                 else (filter' X test xs)
+    end.
+
+Fixpoint map' (X Y : Type) (f : X ->Y) (l : list X)
+    : list Y :=
+    match l with
+    | nil => nil
+    | x :: xs => (f x) :: (map' X Y f xs)
+    end.
+
+Fixpoint fold {X Y : Type} (f : X ->Y->Y) (l:list X) (b:Y)
+    : Y :=
+    match l with
+    | nil => b
+    | x :: xs => f x (fold f xs b)
+    end.
+
+Check (fold andb).
+
+Example fold_example1: fold mult [1,2,3,4] 1 = 24.
+Proof. reflexivity. Qed.
+
+Example fold_example2:
+    fold andb [true,true,false,true] true = false.
+Proof. reflexivity. Qed.
+
+Example fold_example3:
+    fold app [[1],[],[2,3],[4]] [] = [1,2,3,4].
+Proof. reflexivity. Qed.
+
+Definition constfun {X : Type} (x : X) : nat -> X :=
+    fun (k:nat) => x.
+
+Definition ftrue := constfun true.
+
+Example constfun_example1: ftrue 0 = true.
+Proof. reflexivity. Qed.
+
+Example constfun_example2: (constfun 5) 99 = 5.
+Proof. reflexivity. Qed.
+
+Definition override {X : Type} (f : nat->X) (k:nat) (x:X)
+    : nat -> X :=
+    fun (k':nat) => if beq_nat k k' then x else (f k').
+
+Definition fmostlytrue :=
+    override (override ftrue 1 false) 3 false.
+
+Example override_example1: fmostlytrue 0 = true.
+Proof. reflexivity. Qed.
+
+Example override_example2: fmostlytrue 1 = false.
+Proof. reflexivity. Qed.
+
+Example override_example3: fmostlytrue 2 = true.
+Proof. reflexivity. Qed.
+
+Example override_example4: fmostlytrue 3 = false.
+Proof. reflexivity. Qed.
+
+Theorem override_example: forall (b:bool),
+    (override (constfun b) 3 true) 2 = b.
+Proof.
+    intro b. reflexivity.
+Qed.
+
+Theorem unfold_example: forall m n,
+    3 + n = m ->
+    plus3 n + 1 = m + 1.
+Proof.
+    intros m n H. unfold plus3. rewrite -> H. reflexivity.
+Qed.
+
+Theorem override_eq: forall {X:Type} x k (f:nat->X),
+    (override f k x) k = x.
+Proof.
+    intros X x k f. unfold override.
+    rewrite <- beq_nat_refl. reflexivity.
+Qed.
+
+Theorem override_neq: forall {X:Type} x1 x2 k1 k2 (f:nat->X),
+    f k1 = x1 ->
+    beq_nat k2 k1 = false ->
+    (override f k2 x2) k1 = x1.
+Proof.
+    intros X x1 x2 k1 k2 f H1 H2.
+    unfold override. rewrite -> H2. assumption.
+Qed.
