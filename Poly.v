@@ -533,3 +533,121 @@ Proof.
     intros X x1 x2 k1 k2 f H1 H2.
     unfold override. rewrite -> H2. assumption.
 Qed.
+
+Definition fold_length {X : Type} (l : list X) : nat :=
+    fold (fun x n => S n) l 0.
+
+Example test_fold_length1: fold_length [4,7,0] = 3.
+Proof. reflexivity. Qed.
+
+Theorem fold_length_correct: forall X (l : list X),
+    fold_length l = length l.
+Proof.
+    intros X l. induction l as [| x xs].
+    Case "l = nil".
+        simpl. unfold fold_length. simpl. reflexivity.
+    Case "l = x :: xs".
+        simpl. rewrite <- IHxs.
+        unfold fold_length. simpl. reflexivity.
+Qed.
+
+Definition fold_map {X Y : Type} (f : X -> Y) (l : list X)
+    : list Y :=
+    fold (fun x ys => (f x) :: ys) l nil.
+
+Eval compute in (fold_map S [1,2,3]).
+
+Theorem fold_map_correct: forall (X Y : Type) (f : X->Y) (l : list X),
+    fold_map f l = map f l.
+Proof.
+    intros X Y f l. induction l as [| x xs].
+    Case "l = nil".
+        simpl. unfold fold_map. simpl. reflexivity.
+    Case "l = x :: xs".
+        simpl. rewrite <- IHxs.
+        unfold fold_map. simpl. reflexivity.
+Qed.
+
+Module Church.
+
+(* n:nat defined as a function that takes a function f as
+   a parameter and returns f iterated n times:
+   n f x = f^n x
+*)
+Definition nat := forall (X : Type), (X -> X) -> (X -> X).
+
+Definition one : nat :=
+    fun (X : Type) (f : X -> X) (x : X) => f x.
+
+Definition two : nat :=
+    fun (X : Type) (f : X -> X) (x : X) => f (f x).
+
+Definition zero : nat :=
+    fun (X : Type) (f : X -> X) (x : X) => x.
+
+Definition three : nat := @doit3times.
+
+(*
+    f^(n+1) x =  f (f^n x)  =  f (n f x)  
+*)
+Definition succ (n : nat) : nat :=
+    fun (X : Type) (f : X -> X) (x : X) => f (n X f x).
+
+Example succ_1: succ zero = one.
+Proof. reflexivity. Qed.
+
+Example succ_2: succ one = two.
+Proof. reflexivity. Qed.
+
+Example succ_3: succ two = three.
+Proof. reflexivity. Qed.
+
+(*
+    f^(n+m) x  =  f^n (f^m x)  =  n f (m f x)
+*)
+Definition plus (n m : nat) : nat :=
+    fun (X : Type) (f : X -> X) (x : X) => n X f (m X f x).
+
+Example plus_1: plus zero one = one.
+Proof. reflexivity. Qed.
+
+Example plus_2: plus two three = plus three two.
+Proof. reflexivity. Qed.
+
+Example plus_3:
+    plus (plus two two) three = plus one (plus three three).
+Proof. reflexivity. Qed.
+
+(*
+    f^(n*m) x  =  (f^m)^n x  =  n f^m x  =  n (m f) x
+*)
+Definition mult (n m : nat) : nat :=
+    fun (X : Type) (f : X -> X) (x : X) => n X (m X f) x.
+
+Example mult_1: mult one one = one.
+Proof. reflexivity. Qed.
+
+Example mult_2: mult zero (plus three three) = zero.
+Proof. reflexivity. Qed.
+
+Example mult_3: mult two three = plus three three.
+Proof. reflexivity. Qed.
+
+(*
+    f^(n^m) x  =  (n^m f) x  =  (m n f) x
+*)
+Definition exp (n m : nat) : nat :=
+    fun (X : Type) (f : X -> X) (x : X) => (m (X->X) (n X) f) x.
+
+Example exp_1: exp two two = plus two two.
+Proof. reflexivity. Qed.
+
+Eval compute in (exp three two).
+
+Example exp_2: exp three two = plus (mult two (mult two two)) one.
+Proof. reflexivity. Qed.
+
+Example exp_3: exp three zero = one.
+Proof. reflexivity. Qed.
+
+
