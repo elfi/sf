@@ -650,4 +650,4 @@ Proof. reflexivity. Qed.
 Example exp_3: exp three zero = one.
 Proof. reflexivity. Qed.
 
-
+End Church.
