@@ -87,3 +87,66 @@ Proof.
     inversion eq1. inversion eq2.
     symmetry. apply H0.
 Qed.
+
+Example silly6: forall (n : nat),
+    S n = O ->
+    2 + 2 = 5.
+Proof.
+    intros n eq.
+    inversion eq.
+Qed.
+
+Theorem silly7: forall (n m : nat),
+    false = true ->
+    [n] = [m].
+Proof.
+    intros n m eq. inversion eq.
+Qed.
+
+Example sillyex2: forall (X : Type) (x y z : X) (l j : list X),
+    x :: y :: l = [] ->
+    y :: l = z :: j ->
+    x = z.
+Proof.
+    intros X x y z l j eq1 eq2.
+    inversion eq1.
+Qed.
+
+Lemma eq_remove_S: forall n m,
+    n = m -> S n = S m.
+Proof.
+    intros n m eq. rewrite -> eq. reflexivity.
+Qed.
+
+Theorem length_snoc': forall (X : Type) (v : X)
+                             (l : list X) (n : nat),
+    length l = n ->
+    length (snoc l v) = S n.
+Proof.
+    intros X v l. induction l as [| x xs].
+    Case "l = nil".
+        intros n eq. simpl. rewrite <- eq. reflexivity.
+    Case "l = x :: xs".
+        intros n eq. simpl. destruct n as [| n'].
+        SCase "n = 0". inversion eq.
+        SCase "n = S n'". apply eq_remove_S. apply IHxs.
+                          inversion eq. reflexivity.
+Qed.
+
+Theorem beq_nat_0_l: forall n,
+    true = beq_nat 0 n -> 0 = n.
+Proof.
+    intros n eq. inversion eq. destruct n.
+    reflexivity. inversion H0.
+Qed.
+
+Theorem beq_nat_0_r: forall n,
+    true = beq_nat n 0 -> 0 = n.
+Proof.
+    intros n eq. apply beq_nat_0_l.
+    SearchAbout beq_nat.
+    destruct n. reflexivity.
+    inversion eq.
+Qed.
+
+
