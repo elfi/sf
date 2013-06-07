@@ -149,4 +149,41 @@ Proof.
     inversion eq.
 Qed.
 
+Theorem S_inj: forall (n m : nat) (b : bool),
+    beq_nat (S n) (S m) = b ->
+    beq_nat n m = b.
+Proof.
+    intros n m b H. simpl in H. apply H.
+Qed.
+
+Theorem silly3': forall (n : nat),
+    (beq_nat n 5 = true -> beq_nat (S (S n)) 7 = true) ->
+    true = beq_nat n 5 ->
+    true = beq_nat (S (S n)) 7.
+Proof.
+    intros n eq H.
+    symmetry in H. apply eq in H. symmetry in H. apply H.
+Qed.
+
+Theorem plus_n_n_injective: forall n m,
+    n + n = m + m ->
+    n = m.
+Proof.
+    intro n. induction n as [| n'].
+    Case "n = O".
+        simpl. intros m eq.
+        destruct m.  reflexivity.  inversion eq.
+    Case "n = S n'".
+        simpl. intros m eq.
+        destruct m.
+        SCase "m = O".
+            simpl in eq. inversion eq.
+        SCase "m = S m'".
+            rewrite <- plus_n_Sm in eq. symmetry in eq.
+            rewrite <- plus_n_Sm in eq.
+            simpl in eq.
+            apply eq_add_S in eq. apply eq_add_S in eq.
+            symmetry in eq. apply IHn' in eq.
+            apply eq_remove_S. apply eq.
+Qed.
 
