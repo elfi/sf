@@ -187,3 +187,103 @@ Proof.
             apply eq_remove_S. apply eq.
 Qed.
 
+Theorem double_injective': forall n m,
+    double n = double m ->
+    n = m.
+Proof.
+    intro n. induction n as [| n'].
+    Case "n = O". simpl. intros m eq. destruct m.
+        reflexivity. inversion eq.
+    Case "n = S n'". simpl. intros m eq. destruct m.
+        inversion eq. apply eq_remove_S. apply IHn'.
+        simpl in eq. apply eq_add_S in eq.
+        apply eq_add_S in eq. apply eq.
+Qed.
+
+Theorem beq_nat_eq: forall n m,
+    true = beq_nat n m -> n = m.
+Proof.
+    intro n. induction n as [| n'].
+    Case "n = O". intros m eq. destruct m.
+        reflexivity. inversion eq. 
+    Case "n = S n'". intros m eq. destruct m.
+        inversion eq. apply eq_remove_S. apply IHn'.
+        simpl in eq. apply eq.
+Qed.
+
+Theorem double_injective_take2: forall n m,
+    double n = double m ->
+    n = m.
+Proof.
+    intros n m.
+    generalize dependent n.
+    induction m as [| m'].
+    Case "m = O". intros n eq. destruct n.
+        reflexivity. inversion eq.
+    Case "m = S m'". intros n eq. destruct n.
+        inversion eq. apply eq_remove_S. apply IHm'.
+        simpl in eq. apply eq_add_S in eq.
+        apply eq_add_S in eq. apply eq.
+Qed.
+
+Theorem index_after_last: forall (n : nat) (X : Type) (l : list X),
+    length l = n ->
+    index (S n) l = None.
+Proof.
+    intros n X l. generalize dependent n. induction l as [| x xs].
+    Case "l = nil". intros n eq.
+        simpl. reflexivity.
+    Case "l = x :: xs". intros n eq. simpl. destruct n.    
+        simpl in eq. inversion eq.
+        apply IHxs. simpl in eq. apply eq_add_S in eq. apply eq.
+Qed.
+
+Theorem length_snoc''': forall (n : nat) (X : Type)
+                               (v : X) (l : list X),
+    length l = n ->
+    length (snoc l v) = S n.
+Proof.
+    intros n X v l. generalize dependent n. induction l as [| x xs].
+    Case "l = nil". intros n eq.
+        simpl in eq. simpl. rewrite <- eq. reflexivity.
+    Case "l = x xs". intros n eq. destruct n.
+        inversion eq. simpl. apply eq_remove_S. apply IHxs.
+        simpl in eq. apply eq_add_S in eq. apply eq.
+Qed.
+
+Theorem app_length_cons: forall (X : Type) (l1 l2 : list X)
+                                (x : X) (n : nat),
+    length (l1 ++ (x :: l2)) = n ->
+    S (length (l1 ++ l2)) = n.
+Proof.
+    intros X l1 l2 x n. generalize dependent n. induction l1 as [| x' xs].
+    Case "l1 = nil". simpl. intros n eq. apply eq.
+    Case "l1 = x' :: xs". simpl. intros n eq. destruct n.
+        inversion eq. apply eq_remove_S. apply IHxs. 
+        inversion eq. reflexivity.
+Qed.
+
+Theorem app_length_cons': forall (X : Type) (l1 l2 : list X)
+                                (x : X) (n : nat),
+    length (l1 ++ l2) = n ->
+    length (l1 ++ (x :: l2)) = S n.
+Proof.
+    intros X l1 l2 x n. generalize dependent n. induction l1 as [| x' xs].
+    Case "l1 = nil". simpl. intros n eq. rewrite -> eq. reflexivity.
+    Case "l1 = x' :: xs". simpl. intros n eq.
+        apply eq_remove_S. destruct n.
+        inversion eq. apply IHxs. apply eq_add_S in eq. apply eq.
+Qed.
+
+
+Theorem app_length_twice: forall (X : Type) (n : nat) (l : list X),
+    length l = n ->
+    length (l ++ l) = n + n.
+Proof.
+    intros X n l. generalize dependent n. induction l as [| x xs].
+    Case "l = nil". intros n eq. inversion eq. simpl. reflexivity.
+    Case "l = x :: xs". simpl. intros n eq. destruct n.
+        inversion eq. apply eq_add_S in eq. simpl. apply eq_remove_S.
+        rewrite <- plus_n_Sm. apply app_length_cons'.
+        apply IHxs. apply eq.
+Qed.
