@@ -332,6 +332,7 @@ Proof.
         destruct l2 as [| y' l2'].
         simpl. inversion eq.
         simpl. inversion eq.
+        (* (split l') is either (nil,nil) or (xs,ys) *)
         destruct (split l') as (xs,ys). (* key step *)
         apply eq_cons.
         apply IHl'. simpl. reflexivity.
@@ -353,6 +354,8 @@ Proof.
         intros l2 eq. destruct l2 as [| y ys].
         simpl. inversion eq. simpl.
         inversion eq. apply IHxs in H0.  (* key step *)
+        (* (split (combine xs ys)) is 
+                       either (nil,nil) or (xs',ys') *)
         destruct (split (combine xs ys)) as (xs',ys').
         simpl. inversion H0. reflexivity.
 Qed.
