@@ -287,3 +287,72 @@ Proof.
         rewrite <- plus_n_Sm. apply app_length_cons'.
         apply IHxs. apply eq.
 Qed.
+
+Definition sillyfun (n : nat) : bool :=
+    if beq_nat n 3 then false
+    else if beq_nat n 5 then false
+    else false.
+
+Theorem sillyfun_false: forall (n : nat),
+    sillyfun n = false.
+Proof.
+    intro n. unfold sillyfun.
+    destruct (beq_nat n 3).
+    Case "beq_nat n 3 = true". reflexivity.
+    Case "beq_nat n 3 = false". destruct (beq_nat n 5).
+        SCase "beq_nat n 5 = true". reflexivity.
+        SCase "beq_nat n 5 = false". reflexivity.
+Qed.
+
+Theorem override_shadow: forall {X:Type} x1 x2 k1 k2 (f:nat->X),
+    (override (override f k1 x2) k1 x1) k2 = (override f k1 x1) k2.
+Proof.
+    intros X x1 x2 k1 k2 f. unfold override. destruct (beq_nat k1 k2).
+    reflexivity. reflexivity.
+Qed.
+
+Lemma eq_cons: forall (X:Type) (x:X) (l1 l2 : list X),
+    l1 = l2 ->
+    x :: l1 = x :: l2.
+Proof.
+    intros X x l1 l2 eq. rewrite -> eq. reflexivity.
+Qed.
+
+
+Theorem combine_split: forall X Y (l: list (X*Y)) l1 l2,
+    split l = (l1,l2) ->
+    combine l1 l2 = l.
+Proof.
+    intros X Y l. induction l as [| (x,y) l'].
+    Case "l = nil". intros l1 l2 eq. inversion eq. reflexivity.
+    Case "l = x :: xs".
+        intros l1 l2 eq.
+        destruct l1 as [| x' l1'].
+        simpl. inversion eq.
+        destruct l2 as [| y' l2'].
+        simpl. inversion eq.
+        simpl. inversion eq.
+        destruct (split l') as (xs,ys). (* key step *)
+        apply eq_cons.
+        apply IHl'. simpl. reflexivity.
+Qed.
+
+Definition split_combine_statement: Prop :=
+    forall (X : Type) (l1 l2 : list X),
+    length l1 = length l2 ->
+    split (combine l1 l2) = (l1,l2).
+
+Theorem split_combine: split_combine_statement.
+Proof.
+    unfold split_combine_statement.
+    intros X l1. induction l1 as [| x xs].
+    Case "l1 = nil".
+        intros l2 eq. simpl. simpl in eq. destruct l2.
+        reflexivity. inversion eq.
+    Case "l1 = x :: xs".
+        intros l2 eq. destruct l2 as [| y ys].
+        simpl. inversion eq. simpl.
+        inversion eq. apply IHxs in H0.  (* key step *)
+        destruct (split (combine xs ys)) as (xs',ys').
+        simpl. inversion H0. reflexivity.
+Qed.
