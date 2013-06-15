@@ -359,3 +359,228 @@ Proof.
         destruct (split (combine xs ys)) as (xs',ys').
         simpl. inversion H0. reflexivity.
 Qed.
+
+Definition sillyfun1 (n : nat) : bool :=
+    if beq_nat n 3 then true
+    else if beq_nat n 3 then true
+    else false.
+
+Theorem sillyfun1_odd: forall (n : nat),
+    sillyfun1 n = true ->
+    oddb n = true.
+Proof.
+    intros n eq. unfold sillyfun1 in eq.
+    remember (beq_nat n 3) as e3.
+    destruct (e3).
+    Case "e3 = true".
+        apply beq_nat_eq in Heqe3.
+        rewrite -> Heqe3. reflexivity.
+    Case "e3 = false".
+        inversion eq. 
+Qed.
+
+Theorem bool_fn_applied_thrice:
+    forall (f : bool -> bool) (b : bool),
+    f (f (f b)) = f b.
+Proof.
+    intros f b. 
+    remember (f b) as fb. destruct fb.
+    remember (f true) as ftrue. destruct ftrue.
+    symmetry. apply Heqftrue.
+    rewrite -> Heqfb.
+    remember (f false) as ffalse. destruct ffalse.
+    apply Heqfb. destruct b.
+    apply Heqftrue.
+    apply Heqffalse.
+    remember (f false) as ffalse. destruct ffalse. destruct b.
+    symmetry. apply Heqfb.
+    remember (f true) as ftrue. destruct ftrue.
+    rewrite -> Heqfb. apply Heqffalse.
+    reflexivity.
+    symmetry. apply Heqffalse.
+Qed.
+
+Theorem  override_same: forall {X:Type} x1 k1 k2 (f : nat->X),
+    f k1 = x1 ->
+    (override f k1 x1) k2 = f k2.
+Proof.
+    intros X x1 k1 k2 f eq. unfold override.
+    remember (beq_nat k1 k2) as k1k2eq.
+    destruct k1k2eq.
+    Case "k1 = k2".
+        rewrite <- eq. apply beq_nat_eq in Heqk1k2eq.
+        rewrite -> Heqk1k2eq. reflexivity.
+    Case "k1 <> k2".
+        reflexivity.
+Qed.
+
+Example trans_eq_example: forall (a b c d e f : nat),
+    [a,b] = [c,d] ->
+    [c,d] = [e,f] ->
+    [a,b] = [e,f].
+Proof.
+    intros a b c d e f eq1 eq2.
+    rewrite -> eq1. rewrite -> eq2. reflexivity.
+Qed.
+
+Theorem trans_eq: forall {X:Type} (n m o : X),
+    n = m -> m = o -> n = o.
+Proof.
+    intros X n m o eq1 eq2.
+    rewrite -> eq1. apply eq2.
+Qed.
+
+Example trans_eq_example': forall (a b c d e f : nat),
+    [a,b] = [c,d] ->
+    [c,d] = [e,f] ->
+    [a,b] = [e,f].
+Proof.
+    intros a b c d e f eq1 eq2.
+    apply trans_eq with (m:=[c,d]).
+    apply eq1. apply eq2.
+Qed.
+
+Theorem override_permute:
+    forall {X:Type} x1 x2 k1 k2 k3 (f : nat->X),
+    false = beq_nat k2 k1 ->
+    (override (override f k2 x2) k1 x1) k3 =
+    (override (override f k1 x1) k2 x2) k3.
+Proof.
+    intros X x1 x2 k1 k2 k3 f eq1. unfold override. 
+    remember (beq_nat k1 k3) as k1k3eq.
+    remember (beq_nat k2 k3) as k2k3eq.
+    destruct k1k3eq.
+    Case "k1 = k3".
+        destruct k2k3eq.
+        SCase "k2 = k3".
+            apply beq_nat_eq in Heqk1k3eq. 
+            apply beq_nat_eq in Heqk2k3eq.
+            rewrite -> Heqk1k3eq in eq1.
+            rewrite -> Heqk2k3eq in eq1.
+            rewrite <- beq_nat_refl in eq1.
+            inversion eq1.
+        SCase "k2 <> k3".
+            reflexivity.
+    Case "k1 <> k2".
+        destruct k2k3eq.
+        SCase "k2 = k3".
+            reflexivity.
+        SCase "k2 <> k2".
+            reflexivity.
+Qed.
+
+Example trans_eq_exercise: forall (n m o p : nat),
+    m = (minustwo o) ->
+    (n + p) = m ->
+    (n + p) = (minustwo o).
+Proof.
+    intros n m o p eq1 eq2.
+    apply trans_eq with m.
+    apply eq2. apply eq1.
+Qed.
+
+Lemma beq_nat_eq': forall (n m : nat),
+    n = m ->
+    true = beq_nat n m.
+Proof.
+    intros n m eq1.
+    rewrite -> eq1. apply beq_nat_refl.
+Qed.
+
+Theorem beq_nat_trans: forall n m p,
+    true = beq_nat n m ->
+    true = beq_nat m p ->
+    true = beq_nat n p.
+Proof.
+    intros n m p eq1 eq2.
+    apply beq_nat_eq in eq1. apply beq_nat_eq in eq2.
+    apply beq_nat_eq'.    
+    apply trans_eq with m.
+    apply eq1. apply eq2.
+Qed.
+
+Theorem beq_nat_sym: forall (n m : nat),
+    beq_nat n m = beq_nat m n.
+Proof.
+    intros n m. remember (beq_nat n m) as nmeq. destruct nmeq.
+    Case "true".
+        apply beq_nat_eq in Heqnmeq. rewrite -> Heqnmeq.
+        apply beq_nat_refl.
+    Case "false".
+        remember (beq_nat m n) as mneq. destruct mneq.
+        apply beq_nat_eq in Heqmneq.
+        rewrite -> Heqmneq in Heqnmeq.
+        rewrite <- beq_nat_refl in Heqnmeq.
+        inversion Heqnmeq.
+        reflexivity. 
+Qed.
+
+Theorem filter_exercise: forall (X : Type) (test : X -> bool)
+                                (x : X) (l lf : list X),
+    filter test l = x :: lf ->
+    test x = true.
+Proof.
+    intros X test x l lf H. generalize dependent lf.
+    induction l as [| x' xs ].
+    Case "l = nil".
+        simpl. intros lf eq. inversion eq.
+    Case "l = x' :: xs".
+        simpl. intros lf eq. remember (test x') as tx'.
+        destruct tx'.
+        SCase "test x' = true".        
+            inversion eq. rewrite <- H0. symmetry. assumption.
+        SCase "test x' = false". 
+            apply IHxs in eq. assumption.
+Qed.
+
+Fixpoint forallb {X:Type} (test : X -> bool) (l : list X)
+    : bool :=
+    match l with
+    | nil => true
+    | x :: xs => if test x
+                then forallb test xs
+                else false
+    end.
+
+Fixpoint existsb {X:Type} (test : X -> bool) (l : list X)
+    : bool :=
+    match l with
+    | nil => false
+    | x :: xs => if test x
+                then true
+                else existsb test xs
+    end.
+
+Definition existsb' {X:Type} (test : X -> bool) (l : list X)
+    : bool :=
+    negb (forallb (fun x => negb (test x)) l).
+
+Example test_forallb:
+    forallb oddb [1,3,5] = true.
+Proof. reflexivity. Qed.
+
+Example test_existsb:
+    existsb oddb [0,0,1] = true.
+Proof. reflexivity. Qed.
+
+Example test_existsb':
+    existsb' oddb [0,0,1] = true.
+Proof. reflexivity. Qed.
+
+Theorem existsb_eq: forall {X:Type} (test : X->bool) (l : list X),
+    existsb test l = existsb' test l.
+Proof.
+    intros X test l. induction l as [| x xs].
+    Case "l = nil".
+        simpl. unfold existsb'. simpl. reflexivity.
+    Case "l = x :: xs".
+        simpl. remember (test x) as testx. destruct testx.
+        SCase "test x = true".
+            unfold existsb'. simpl. rewrite <- Heqtestx.
+            simpl. reflexivity.
+        SCase "test x = false".
+            rewrite -> IHxs.
+            unfold existsb'. simpl. rewrite <- Heqtestx. simpl.
+            reflexivity.
+Qed.
+
