@@ -105,4 +105,57 @@ Definition b_times2': forall n, beautiful n -> beautiful (2*n) :=
     fun n => fun H : beautiful n =>
         plusnn_eq_2n n (b_sum n n H H).
 
+Theorem b_timesm: forall n m, beautiful n -> beautiful (m*n).
+Proof.
+    intros n m H. induction m as [| m'].
+    Case "m = O".
+        simpl. apply b_0.
+    Case "m = S m'".
+        simpl. apply (b_sum n (m' * n) H IHm').
+Qed.
+
+Inductive gorgeous: nat -> Prop :=
+| g_0 : gorgeous 0
+| g_plus3 : forall n, gorgeous n -> gorgeous (3+n)
+| g_plus5 : forall n, gorgeous n -> gorgeous (5+n).
+
+Theorem gorgeous__beautiful: forall n,
+    gorgeous n -> beautiful n.
+Proof.
+    intros n H.
+    induction H as [| n' | n'].
+    Case "g_0".
+        apply b_0.
+    Case "g_plus3".
+        apply (b_sum 3 n' b_3 IHgorgeous).
+    Case "g_plus5".
+        apply (b_sum 5 n' b_5 IHgorgeous).
+Qed.
+
+Theorem gorgeous_plus13: forall n,
+    gorgeous n -> gorgeous (13+n).
+Proof.
+    intros n H.
+    apply (g_plus3 (10+n) (g_plus5 (5+n) (g_plus5 n H))).
+Qed.
+
+Definition gorgeous_plus13_po :=
+    fun n => fun H => (g_plus3 (10+n) (g_plus5 (5+n) (g_plus5 n H))).
+
+Print gorgeous_plus13.
+Print gorgeous_plus13_po.
+
+Theorem gorgeous_sum: forall n m,
+    gorgeous n -> gorgeous m -> gorgeous (n + m).
+Proof.
+    intros n m Hn Hm.
+    induction Hn as [| n' | n' ].
+    Case "g_0".
+        simpl. apply Hm.
+    Case "g_plus3".
+        apply (g_plus3 (n' + m) IHHn).
+    Case "g_plus5".
+        apply (g_plus5 (n' + m) IHHn).
+Qed.
+
 
