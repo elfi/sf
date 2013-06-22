@@ -235,4 +235,71 @@ Proof.
         unfold even. simpl. apply IHE'.
 Qed.
 
+Theorem ev_sum: forall n m,
+    ev n -> ev m -> ev (n + m).
+Proof.
+    intros n m En Em. induction En as [| n' En'].
+    Case "ev_0".
+        simpl. apply Em.
+    Case "ev_SS n' En'".
+        simpl. apply (ev_SS (n' + m) IHEn').
+Qed.
+
+Theorem SSev_ev_secondtry: forall n,
+    ev (S (S n)) -> ev n.
+Proof.
+    intros n E. remember (S (S n)) as n2.
+    destruct E. inversion Heqn2. inversion Heqn2. rewrite <- H0. apply E.
+Qed.
+
+Theorem SSev__even: forall n,
+    ev (S (S n)) -> ev n.
+Proof.
+    intros n E. inversion E as [| n' E']. apply E'.
+Qed.
+
+Theorem SSSSev__even: forall n,
+    ev (S (S (S (S n)))) -> ev n.
+Proof.
+    intros n E.
+    inversion E as [| n' E']. inversion E' as [| n'' E''].
+    apply E''.
+Qed.
+
+Theorem even5_nonsense:
+    ev 5 -> 2 + 2 = 9.
+Proof.
+    intro H.
+    inversion H as [| n E ]. inversion E as [| n' E']. inversion E'.
+Qed.
+
+Theorem ev_minus2': forall n,
+    ev n -> ev (pred (pred n)).
+Proof.
+    intros n E. inversion E as [| n' E'].
+    Case "E = ev 0". simpl. apply ev_0.
+    Case "E = ev_SS n' E'". simpl. apply E'.
+Qed.
+
+Theorem  ev_ev__ev: forall n m,
+    ev (n+m) -> ev n -> ev m.
+Proof.
+    intros n m E1 E2. induction E2 as [| n' E2'].
+    Case "E2 = ev_0".
+         simpl in E1. apply E1.
+    Case "E2 = ev_SS n' E2'".
+         simpl in E1. apply IHE2'. apply SSev__even in E1. apply E1.
+Qed.
+
+Theorem ev_plus_plus : forall n m p,
+    ev (n + m) -> ev (n + p) -> ev (m + p).
+Proof.
+    intros n m p E1.     
+    apply ev_ev__ev. replace (n + p + (m + p)) with ((double p) + (n + m)).
+    apply ev_sum. apply double_even. apply E1.
+    Case "proof of replace".
+        rewrite -> double_plus. rewrite -> plus_swap.
+        rewrite -> (plus_comm m p). rewrite <- plus_assoc.
+        remember (p + m) as pm. rewrite -> plus_assoc. reflexivity. 
+Qed.
 
