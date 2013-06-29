@@ -303,3 +303,165 @@ Proof.
         remember (p + m) as pm. rewrite -> plus_assoc. reflexivity. 
 Qed.
 
+SearchAbout beautiful.
+Definition b_16: beautiful 16 :=
+    b_sum 5 11 b_5 (b_sum 5 6 b_5 (b_sum 3 3 b_3 b_3)).
+
+Inductive pal {X:Type} : list X -> Prop :=
+| pal_nil   : pal nil
+| pal_singl : forall x:X, pal [x]
+| pal_sum   : forall (x:X) (l:list X), 
+                pal l ->  pal ( x :: l ++ [x] ).
+
+Lemma snoc_append: forall {X : Type} (x:X) (l : list X),
+    snoc l x = l ++ [x].
+Proof.
+    intros X x l. induction l.
+    simpl. reflexivity.
+    simpl.  rewrite -> IHl. reflexivity.
+Qed.
+
+Lemma app_assoc: forall {X : Type} (l1 l2 l3 : list X),
+    (l1 ++ l2) ++ l3 = l1 ++ (l2 ++ l3).
+Proof.
+    intros X l1 l2 l3. induction l1.
+    simpl. reflexivity.
+    simpl. rewrite -> IHl1. reflexivity.
+Qed.
+
+Theorem pal_thm1: forall {X : Type} (l : list X),
+    pal (l ++ rev l).
+Proof.
+    intros X l. induction l.
+    Case "nil".
+       simpl. apply (pal_nil).
+    Case "cons".
+       simpl. rewrite -> snoc_append.
+       rewrite <- app_assoc.
+       remember (l ++ rev l) as l'.
+       apply (pal_sum x l').       
+       apply IHl.
+Qed.
+
+Lemma app_nil_end: forall {X : Type} (l : list X),
+    l ++ nil = l.
+Proof.
+    intros X l. induction l.
+    reflexivity.
+    simpl. rewrite -> IHl. reflexivity.
+Qed.
+
+Lemma rev_snoc: forall {X : Type} (x:X) (l : list X),
+    rev (snoc l x) = x :: rev l.
+Proof.
+    intros X x l. induction l.
+    reflexivity.
+    simpl. rewrite -> IHl. simpl. reflexivity. 
+Qed.
+
+Lemma rev_involutive: forall {X : Type} (l : list X),
+    rev (rev l) = l.
+Proof.
+    intros X l. induction l.
+    simpl. reflexivity.
+    simpl. rewrite -> rev_snoc. rewrite -> IHl. reflexivity.
+Qed.
+
+Lemma snoc_rev: forall {X : Type} (x:X) (l1 l2 : list X),
+    snoc (l1 ++ l2) x = l1 ++ (snoc l2 x).
+Proof.
+    intros X x l1 l2. induction l1.
+    simpl. reflexivity.
+    simpl. rewrite -> IHl1. reflexivity.
+Qed.
+
+Lemma rev_distributive: forall {X : Type} (l1 l2 : list X),
+    rev (l1 ++ l2) = rev l2 ++ rev l1.
+Proof.
+    intros X l1 l2. induction l1 as [| x l1'].
+    Case "l1 = nil".
+        simpl. rewrite -> app_nil_end. reflexivity.
+    Case "l1 = x :: l1'".
+        simpl. rewrite -> IHl1'. rewrite -> snoc_rev.
+        reflexivity.
+Qed.
+
+Theorem pal_thm2: forall {X : Type} (l: list X),
+    pal l -> l = rev l.
+Proof.
+    intros X l H. induction H.
+    Case "pal_nil".
+        simpl. reflexivity.
+    Case "pal_singl".
+        simpl. reflexivity.
+    Case "pal_sum".
+        remember (l ++ [x]) as l'.
+        simpl. rewrite -> snoc_append.
+        rewrite -> Heql'. rewrite -> rev_distributive.
+        simpl. rewrite <- IHpal.
+        reflexivity.
+Qed. 
+
+    
+Theorem pal_thm3: forall {X : Type} (l : list X),
+    l = rev l -> pal l.
+Proof.
+    intros X l H. induction l as [| x l'].
+    Case "nil".
+       apply pal_nil.
+    Case "cons".
+       simpl in H. rewrite -> H. rewrite -> snoc_append.
+       remember (rev l') as l''. destruct l''.
+       SCase "nil".
+           simpl. apply (pal_singl x).
+       SCase "cons".
+           inversion H. rewrite <- H1. simpl.
+           apply (pal_sum x l'').
+Admitted.
+
+Inductive subseq: list nat -> list nat -> Prop :=
+| subseq_nil : forall l:list nat, subseq nil l
+| subseq_add : forall (s l : list nat) (n:nat),
+                 subseq s l -> subseq (n::s) (n::l)
+| subseq_pad : forall (s l : list nat) (n:nat),
+                 subseq s l -> subseq s (n::l).
+
+Theorem subseq_refl: forall l:list nat,
+    subseq l l.
+Proof.
+    intro l. induction l.
+    Case "nil". apply (subseq_nil).
+    Case "cons". apply (subseq_add). apply IHl.
+Qed.
+
+Lemma subseq_trans_app_helper: forall (l1 l2 : list nat) (x:nat),
+    l1 ++ x :: l2 = l1 ++ [x] ++ l2.
+Proof.
+    intros l1 l2 x. simpl. reflexivity.
+Qed.
+
+Lemma subseq_app_end: forall (l1 l2 : list nat) (x:nat),
+    subseq l1 l2 -> subseq l1 (l2 ++ [x]).
+Proof.
+    intros l1 l2 x Eq. induction Eq.
+    apply subseq_nil.
+    simpl. apply subseq_add. apply IHEq.
+    simpl. apply subseq_pad. apply IHEq.
+Qed.
+
+Theorem subseq_trans_app: forall l1 l2 l3 : list nat,
+    subseq l1 l2 -> subseq l1 (l2 ++ l3).
+Proof.
+    intros l1 l2 l3 Eq. generalize dependent l2.
+    induction l3 as [| x l3'].
+    Case "nil".
+        intros l2 Eq. rewrite -> app_nil_end.  apply Eq.
+    Case "cons".
+        intros l2 Eq. rewrite -> subseq_trans_app_helper.
+        rewrite <- app_assoc. remember (l2 ++ [x]) as l2'.
+        apply IHl3'. rewrite -> Heql2'.  inversion Eq.
+        apply subseq_nil.
+        simpl. apply subseq_add. apply subseq_app_end. apply H.
+        simpl. apply subseq_pad. apply subseq_app_end. apply H.
+Qed.
+
