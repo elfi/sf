@@ -54,3 +54,43 @@ Proof.
     apply Eq2. reflexivity.
 Qed.
 
+Theorem combine_odd_even_elim_odd:
+    forall (Podd Peven : nat->Prop) (n:nat),
+      combine_odd_even Podd Peven n ->
+      oddb n = true ->
+      Podd n.
+Proof.
+    intros Podd Peven n Eq1 Eq2. unfold combine_odd_even in Eq1.
+    destruct (oddb n).
+    Case "true". apply Eq1.
+    Case "false". inversion Eq2.
+Qed.
+
+Theorem combine_odd_even_elim_even:
+    forall (Podd Peven : nat->Prop) (n:nat),
+      combine_odd_even Podd Peven n ->
+      oddb n = false ->
+      Peven n.
+Proof.
+    intros Podd Peven n Eq1 Eq2. unfold combine_odd_even in Eq1.
+    destruct (oddb n).
+    Case "true". inversion Eq2.
+    Case "false". apply Eq1.
+Qed.
+
+Fixpoint
+ true_upto_n__true_everywhere (n : nat) (P : nat -> Prop)
+ : Prop :=
+    match n with
+    | 0 => forall m:nat, P m
+    | S n' => P n -> true_upto_n__true_everywhere n' P 
+    end.
+
+Check true_upto_n__true_everywhere.
+Eval simpl in (true_upto_n__true_everywhere 3 (fun n => even n)).
+
+Example true_upto_n_example:
+    (true_upto_n__true_everywhere 3 (fun n => even n))
+    = (even 3 -> even 2 -> even 1 -> forall m:nat, even m).
+Proof. reflexivity. Qed.
+
