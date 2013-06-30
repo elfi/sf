@@ -116,4 +116,45 @@ Proof.
     intro HR. apply H0. apply H2. apply HR.
 Qed.
 
+Definition beautiful_iff_gorgeous:
+    forall n, beautiful n <-> gorgeous n :=
+    fun n => conj (beautiful n -> gorgeous n)
+                  (gorgeous n -> beautiful n)
+                  (beautiful__gorgeous n)
+                  (gorgeous__beautiful n).
 
+Inductive or (P Q : Prop) : Prop :=
+| or_introl : P -> or P Q
+| or_intror : Q -> or P Q.
+
+Notation "P \/ Q" := (or P Q) : type_scope.
+
+Check or_introl.
+
+Check or_intror.
+
+Theorem or_commut: forall P Q : Prop,
+    P \/ Q -> Q \/ P.
+Proof.
+    intros P Q EPoQ. inversion EPoQ as [EP | EQ].
+    Case "left". apply or_intror. apply EP.
+    Case "rigth". apply or_introl. apply EQ.
+Qed.
+
+Theorem or_commut': forall P Q : Prop,
+    P \/ Q -> Q \/ P.
+Proof.
+    intros P Q EPoQ. inversion EPoQ as [ EP | EQ ].
+    Case "left". right. apply EP.
+    Case "right". left. apply EQ.
+Qed.
+
+Definition or_commut'':
+    forall P Q : Prop, P \/ Q -> Q \/ P :=
+    fun (P Q : Prop) (EPoQ : P \/ Q) =>
+        match EPoQ with
+        | or_introl p => or_intror Q P p
+        | or_intror q => or_introl Q P q
+        end.
+
+Check or_commut''.
