@@ -158,3 +158,35 @@ Definition or_commut'':
         end.
 
 Check or_commut''.
+
+Theorem or_distributes_over_and_1: forall P Q R : Prop,
+    P \/ (Q /\ R) -> (P \/ Q) /\ (P \/ R).
+Proof.
+    intros P Q R E. inversion E as [ EP | [ EQ ER] ].
+    Case "left". split.
+        SCase "left". left. apply EP.
+        SCase "right". left. apply EP.
+    Case "rigth". split.
+        SCase "left". right. apply EQ.
+        SCase "right". right. apply ER.
+Qed.
+
+Theorem or_distributes_over_and_2: forall P Q R : Prop,
+    (P \/ Q) /\ (P \/ R) -> P \/ (Q /\ R).
+Proof.
+    intros P Q R E. inversion E as [ [ EP | EQ ] [ EP' | ER ] ]. 
+    Case "P P". left. apply EP.
+    Case "P R". left. apply EP.
+    Case "Q P". left. apply EP'.
+    Case "Q R". right. split. apply EQ. apply ER.
+Qed.
+
+Theorem or_distributes_over_and: forall P Q R : Prop,
+    P \/ (Q /\ R) <-> (P \/ Q) /\ (P \/ R).
+Proof.
+    intros P Q R. split. 
+    intro E. apply or_distributes_over_and_1. apply E.
+    intro E. apply or_distributes_over_and_2. apply E.
+Qed.
+
+
