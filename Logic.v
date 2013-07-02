@@ -189,4 +189,101 @@ Proof.
     intro E. apply or_distributes_over_and_2. apply E.
 Qed.
 
+Theorem andb_true__and: forall b c,
+    andb b c = true -> b = true /\ c = true.
+Proof.
+    intros b c H. unfold andb in H. destruct b.
+    Case "true". split. reflexivity. apply H.
+    Case "false". split. inversion H. inversion H.
+Qed.
+
+Theorem and__andb_true: forall b c,
+    b = true /\ c = true -> andb b c = true.
+Proof.
+    intros b c H. inversion H. rewrite -> H0. rewrite -> H1.
+    reflexivity.
+Qed.
+
+Theorem andb_false: forall b c,
+    andb b c = false -> b = false \/ c = false.
+Proof.
+    intros b c H. unfold andb in H. destruct b.
+    Case "true". right. apply H.
+    Case "false". left. apply H.
+Qed.
+
+Theorem orb_true: forall b c,
+    orb b c = true -> b = true \/ c = true.
+Proof.
+    intros b c H. unfold orb in H. destruct b.
+    Case "true". left. apply H.
+    Case "false". right. apply H.
+Qed.
+
+Theorem orb_false: forall b c,
+    orb b c = false -> b = false /\ c = false.
+Proof.
+    intros b c H. unfold orb in H. destruct b.
+    Case "true". split. apply H. destruct c. apply H. reflexivity.
+    Case "false". split. reflexivity. apply H.
+Qed.
+
+Inductive False: Prop := .
+
+Theorem False_implies_nonsence:
+    False -> 2 + 2 = 5.
+Proof.
+    intro falseH. inversion falseH.
+Qed.
+
+Theorem nonsense_implies_False:
+    2 + 2 = 5 -> False.
+Proof.
+    intro falseH. inversion falseH.
+Qed.
+
+Theorem ex_falso_quodlibet: forall (P:Prop),
+    False -> P.
+Proof.
+    intros P falseH. inversion falseH.
+Qed.
+
+Inductive True: Prop :=
+    tt : True.
+
+Definition not (P:Prop) := P -> False.
+
+Notation "~ x" := (not x) : type_scope.
+
+Check not.
+
+Theorem not_False:
+    ~ False.
+Proof.
+    unfold not. intro falseH. inversion falseH.
+Qed.
+
+Print not_False.
+
+Theorem contradiction_implies_anything: forall P Q : Prop,
+    (P /\ ~P) -> Q.
+Proof.
+    intros P Q H. inversion H. unfold not in H1.
+    apply H1 in H0. inversion H0.
+Qed.
+
+Theorem double_neg: forall P : Prop,
+    P -> ~~P.
+Proof.
+    intros P HP. unfold not. intro HPimplFalse.
+    apply HPimplFalse. apply HP.
+
+Qed.
+
+Print double_neg.
+
+(* double neg informal:
+  P -> ~~P  rewrite as P -> (P -> FALSE) -> FALSE, then
+  after using modus ponens on P and (P -> FALSE), we
+  trivially conclude that FALSE -> FALSE is true. *)
 
