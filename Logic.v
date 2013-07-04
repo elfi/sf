@@ -287,3 +287,82 @@ Print double_neg.
   after using modus ponens on P and (P -> FALSE), we
   trivially conclude that FALSE -> FALSE is true. *)
 
+Theorem contrapositive: forall P Q : Prop,
+    (P -> Q) -> (~Q -> ~P).
+Proof.
+    intros P Q HPimplQ. unfold not. intros HQimplF EP.
+    apply HQimplF. apply HPimplQ. apply EP.
+Qed.
+
+Theorem not_both_true_and_false: forall P : Prop,
+    ~ (P /\ ~P).
+Proof.
+    intro P. unfold not. intro H. inversion H.
+    apply H1 in H0. apply H0.
+Qed.
+
+(* not both true and false informal:
+   ~ (P /\ ~P)  rewrite as (P and (P -> FAlSE)) -> FALSE, then
+   it is just to split the and and use modus ponens on P and
+   (P -> FALSE). Thus FALSE becomes a hypethesis and it is
+   trivial to prove a FALSE goal. *)
+
+Theorem five_not_even:
+    ~ ev 5.
+Proof.
+    unfold not. intro Hev5. inversion Hev5. inversion H0.
+    inversion H2.
+Qed.
+
+Theorem ev_not_ev_S: forall n,
+    ev n -> ~ ev (S n).
+Proof.
+    intros n Hev_n. unfold not. intro Hev_Sn. induction Hev_n.
+    inversion Hev_Sn. apply IHHev_n. inversion Hev_Sn.
+    apply H0.
+Qed.
+
+Definition peirce := forall P Q : Prop,
+    ((P->Q)->P)->P.
+
+Definition classic := forall P : Prop,
+    ~~P -> P.
+
+Definition excluded_middle := forall P : Prop,
+    P \/ ~P.
+
+Definition de_morgan_not_and_not := forall P Q : Prop,
+    ~(~P/\~Q) -> P\/Q.
+
+Definition implies_to_or := forall P Q : Prop,
+    (P->Q) -> (~P\/Q).
+
+Theorem excluded_middle_to_classic': forall P : Prop,
+   (P \/ ~P) -> (~~P -> P).
+Proof.
+    intros P H. unfold not. intro H1. inversion H.
+    Case "P". apply H0.
+    Case "~P". unfold not in H0. apply H1 in H0. inversion H0.
+Qed.
+
+Theorem excluded_middle_to_classic:
+    excluded_middle -> classic.
+Proof.
+    unfold excluded_middle. unfold classic.
+    intro exclMiddle. intro P. unfold not. intro classic.
+    specialize exclMiddle with P. inversion exclMiddle.
+    Case "P". apply H.
+    Case "~P". unfold not in H. apply classic in H. inversion H.
+Qed.
+
+Theorem peirce_to_classic: 
+    peirce -> classic.
+Proof.
+    unfold peirce. unfold classic. intro peirce. intro P. 
+    unfold not. intro classic.
+    assert (P_false: (P -> False) -> P).
+       intro H. apply classic in H. inversion H.
+    apply peirce in P_false. apply P_false.
+Qed.
+
+
