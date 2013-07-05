@@ -365,4 +365,89 @@ Proof.
     apply peirce in P_false. apply P_false.
 Qed.
 
+Notation "x <> y" := (~(x = y)) : type_scope.
+
+Theorem not_false_then_true: forall b : bool,
+    b <> false -> b = true.
+Proof.
+    intros b H. unfold not in H. destruct b.
+    Case "true". reflexivity.
+    Case "false". apply ex_falso_quodlibet. apply H. reflexivity.
+Qed.
+
+Theorem not_eq_beq_false: forall n n' : nat,
+    n <> n' ->
+    beq_nat n n' = false.
+Proof.
+    intros n. induction n. (* keep IHn general *)
+    Case "n = O". intros n' H. destruct n'.
+         SCase "n' = O". simpl. apply ex_falso_quodlibet.
+                         apply H. reflexivity.
+         SCase "n' = S ..". simpl. reflexivity.
+    Case "n = S ..". intros n' H. destruct n'.
+         SCase "n' = O". simpl. reflexivity.
+         SCase "n' = S ..". simpl. apply IHn.
+            unfold not. intro H2. unfold not in H.
+            apply eq_remove_S in H2. apply H. apply H2. 
+Qed.
+
+Theorem beq_false_not_eq: forall n m,
+    false = beq_nat n m -> n <> m.
+Proof.
+    intros n m. intro H. unfold not. intro H2.
+    rewrite -> H2 in H. rewrite <- beq_nat_refl in H. inversion H.
+Qed.
+
+Inductive ex (X:Type) (P : X->Prop) : Prop :=
+    ex_intro : forall (witness:X), P witness -> ex X P.
+
+Definition some_nat_is_even : Prop :=
+    ex nat ev.
+
+Definition snie: some_nat_is_even :=
+    ex_intro _ ev 4 (ev_SS 2 (ev_SS 0 ev_0)).
+
+Print snie.
+
+Notation "'exists' x , p" := (ex _ (fun x => p))
+    (at level 200, x ident, right associativity) : type_scope.
+Notation "'exists' x : X , p" := (ex _ (fun x:X => p))
+    (at level 200, x ident, right associativity) : type_scope.
+
+Example exists_example_1: exists n, n + (n * n) = 6.
+Proof.
+    Check ex.
+    apply ex_intro with (witness:=2).
+    simpl. reflexivity.
+Qed.
+
+Example exists_example_1': exists n, n + (n * n) = 6.
+Proof.
+    exists 2. (* exists binding_list, for single constructors *)
+    reflexivity.
+Qed.
+
+Theorem exists_example_2: forall n,
+    (exists m, n = 4 + m) ->
+    (exists o, n = 2 + o).
+Proof.
+    intros n H. inversion H as [m Hm].
+    exists (2 + m). apply Hm.
+Qed.
+
+(* english_exists:
+   exist n:nat, such that its successor is beautiful *)
+
+Definition p : ex nat (fun n => beautiful (S n)) :=
+    ex_intro nat (fun n => beautiful (S n)) 2 b_3.
+
+Print p.
+
+Theorem dist_not_exists: forall (X:Type) (P : X -> Prop),
+    (forall x, P x) -> ~ (exists x, ~ P x).
+Proof.
+    intros X P Hforall. unfold not. intro Hex.
+    inversion Hex as [x Hx]. apply Hx. apply Hforall.
+Qed.
+
 
