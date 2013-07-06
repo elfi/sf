@@ -450,4 +450,65 @@ Proof.
     inversion Hex as [x Hx]. apply Hx. apply Hforall.
 Qed.
 
+Theorem not_exists_dist:
+    excluded_middle ->
+    forall (X:Type) (P : X->Prop),
+      ~ (exists x, ~ P x) -> (forall x, P x).
+Proof.
+    unfold excluded_middle. intro H.
+    intros X P. unfold not. intro H1. intro x.
+    specialize H with (P x).
+    inversion H as [ Px | NotPx ].
+    Case "Px".
+        apply Px.
+    Case "NotPx".
+        apply ex_falso_quodlibet. unfold not in NotPx.
+        apply H1. exists x. apply NotPx.
+Qed. 
+
+Theorem dist_exists_or: forall (X:Type) (P Q : X -> Prop),
+    (exists x, P x \/ Q x) <-> (exists x, P x) \/ (exists x, Q x).
+Proof.
+    intros X P Q. split.
+    Case "->".
+        intro H. inversion H as [ x Px_or_Qx ].
+        inversion Px_or_Qx as [ Px | Qx ].
+        SCase "Px". left. exists x. apply Px.
+        SCase "Qx". right. exists x. apply Qx.
+    Case "<-".
+        intro H. inversion H as [ ex_x_Px | ex_x_Qx ].
+        SCase "ex_x_Px". inversion ex_x_Px as [ x Px ].
+            exists x. left. apply Px.
+        SCase "ex_x_Qx". inversion ex_x_Qx as [ x Qx ].
+            exists x. right. apply Qx.
+Qed.
+
+Module MyEquality.
+
+Inductive eq (X:Type) : X -> X -> Prop :=
+    refl_equal: forall x, eq X x x.
+
+Notation "x = y" := (eq _ x y)
+                    (at level 70, no associativity) : type_scope.
+
+Lemma leibniz_equality: forall (X:Type) (x y : X),
+    x = y -> forall P : X -> Prop, P x -> P y.
+Proof.
+    intros X x y. intro xy_equal. intro P. intro H.
+    Check refl_equal.
+    inversion xy_equal as [ a ].
+    rewrite <- H1. apply H.
+Qed.
+
+Definition four: 2 + 2 = 1 + 3 :=
+    refl_equal nat 4. (* it builds a type 4 = 4 and
+                         2 + 2 = 1 + 3 is convertible to
+                         4 = 4 *)
+
+Definition singleton : forall (X:Set) (x:X), []++[x] = x::[] :=
+    fun (X:Set) (x:X) => refl_equal (list X) [x].
+
+End MyEquality.
+
+
 
