@@ -510,5 +510,85 @@ Definition singleton : forall (X:Set) (x:X), []++[x] = x::[] :=
 
 End MyEquality.
 
+Lemma dist_and_or_eq_implies_and: forall P Q R,
+    P /\ (Q \/ R) /\ Q = R -> P /\ Q.
+Proof.
+    intros P Q R. intro H. split.
+    Case "P".
+        inversion H as [ P_witness theRest ]. apply P_witness.
+    Case "Q".
+        inversion H as [ P_witness theRest ].
+        inversion theRest as [ Q_or_R_witness Q_eq_R_witness ].
+        inversion Q_or_R_witness as [ Q_witness | R_witness ].
+        SCase "Q".
+            apply Q_witness.
+        SCase "R".
+            rewrite -> Q_eq_R_witness. apply R_witness.
+Qed.
+
+Definition funny_prop1 :=
+    forall n, forall (E : beautiful n), beautiful (n+3).
+
+Check funny_prop1.
+Print funny_prop1.
+
+Definition funny_prop1' :=
+    forall n, forall (_ : beautiful n), beautiful (n+3).
+
+Print funny_prop1'.
+
+Definition funny_prop1'' :=
+    forall n, beautiful n -> beautiful (n+3).
+
+Module LeModule.
+
+Inductive le : nat -> nat -> Prop :=
+| le_n : forall n, le n n
+| le_S : forall n m, (le n m) -> (le n (S m)).
+
+Notation "m <= n" := (le m n).
+
+Theorem test_le1:
+    3 <= 3.
+Proof.
+    apply le_n.
+Qed.
+
+Theorem test_le2:
+    3 <= 6.
+Proof.
+    apply le_S. apply le_S. apply le_S. apply le_n.
+Qed.
+
+Theorem test_le3:
+    ~ (2 <= 1).
+Proof.
+    unfold not. intro H. inversion H. inversion H2.
+Qed.
+
+End LeModule.
+
+Definition lt (n m : nat) := le (S n) m.
+
+Notation "m < n" := (lt m n).
+
+Inductive square_of : nat -> nat -> Prop :=
+    sq : forall n:nat, square_of n (n*n).
+
+Inductive next_nat (n:nat) : nat -> Prop :=
+    nn : next_nat n (S n).
+
+Inductive next_even (n:nat) : nat -> Prop :=
+| ne_1 : ev (S n) -> next_even n (S n)
+| ne_2 : ev (S (S n)) -> next_even n (S (S n)).
+
+Inductive total_relation (n m : nat) : Prop :=
+    total_rel : total_relation n m.
+
+Inductive empty_relation (n m : nat) : Prop := .
+
+Check square_of.
+Check total_relation.
+Check next_nat.
 
 
