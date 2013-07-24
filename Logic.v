@@ -401,6 +401,8 @@ Qed.
 Inductive ex (X:Type) (P : X->Prop) : Prop :=
     ex_intro : forall (witness:X), P witness -> ex X P.
 
+Check ex_intro.
+
 Definition some_nat_is_even : Prop :=
     ex nat ev.
 
@@ -487,6 +489,8 @@ Module MyEquality.
 
 Inductive eq (X:Type) : X -> X -> Prop :=
     refl_equal: forall x, eq X x x.
+
+Check refl_equal.
 
 Notation "x = y" := (eq _ x y)
                     (at level 70, no associativity) : type_scope.
@@ -590,5 +594,81 @@ Inductive empty_relation (n m : nat) : Prop := .
 Check square_of.
 Check total_relation.
 Check next_nat.
+
+Inductive R : nat -> nat -> nat -> Prop :=
+| c1 : R 0 0 0
+| c2 : forall m n o, R m n o -> R (S m) n (S o)
+| c3 : forall m n o, R m n o -> R m (S n) (S o)
+| c4 : forall m n o, R (S m) (S n) (S (S o)) -> R m n o
+| c5 : forall m n o, R m n o -> R n m o.
+
+Theorem R112 : R 1 1 2.
+Proof.
+    apply c3. apply c2. apply c1.
+Qed.
+
+Theorem R_fact : forall m n o : nat,
+    R m n o <-> m + n = o.
+Proof.
+    intros m n o. split.
+    Case "->".
+        intro H. induction H.
+        SCase "c1".
+            reflexivity.
+        SCase "c2".
+            simpl. rewrite -> IHR. reflexivity.
+        SCase "c3".
+            rewrite <- plus_n_Sm. rewrite -> IHR. reflexivity.
+        SCase "c4". 
+            inversion IHR. rewrite <- plus_n_Sm in H1. 
+            apply eq_add_S in H1. apply H1.
+        SCase "c5".
+            rewrite plus_comm. apply IHR.
+    Case "<-".
+        intro H. induction H. induction m as [| m']. 
+        SCase "O".
+            simpl. induction n as [| n'].
+            apply c1. apply c3. apply IHn'.
+        SCase "n = S n'".
+            simpl. apply c2. apply IHm'.
+Qed.
+
+Theorem notR226 : ~ ( R 2 2 6).
+Proof.
+    unfold not. intro H. apply R_fact in H. inversion H.
+Qed.
+
+Inductive all (X : Type) (P : X -> Prop) : list X -> Prop :=
+| all_nil :   all X P []
+| all_elem :  forall (x : X) (l : list X), 
+                P x -> all X P l -> all X P (x :: l).  
+
+
+Fixpoint forallb {X : Type} (test : X -> bool) (l: list X) : bool :=
+    match l with
+    | [] => true
+    | x :: l' => andb (test x) (forallb test l')
+    end.
+
+Theorem forallb_spec : forall (X:Type) (test : X->bool) (l : list X),
+    forallb test l = true <-> all X (fun x:X => test x = true) l.
+Proof.
+    intros X test l. split.
+    Case "->".
+        intro H. induction l as [ | x l'].
+        SCase "O". apply all_nil.
+        SCase "l = x :: l'". apply all_elem.
+            simpl in H. remember (test x) as tx. destruct tx.
+            reflexivity. inversion H.
+            apply IHl'. inversion H. remember (test x) as tx.
+            destruct tx. simpl. reflexivity. simpl. inversion H1.
+    Case "<-".
+        intro H. induction H as [ | x l' ].
+        SCase "nil".
+            simpl. reflexivity.   
+        SCase "l = x :: l'".
+            simpl. remember (test x) as tx. destruct tx.
+            simpl. apply IHall. simpl. inversion H.
+Qed.
 
 
