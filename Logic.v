@@ -671,4 +671,46 @@ Proof.
             simpl. apply IHall. simpl. inversion H.
 Qed.
 
+Inductive in_order_merge (X : Type) :
+    list X -> list X -> list X -> Prop :=
+    | in_order_merge_nil : 
+            in_order_merge X nil nil nil
+    | in_order_merge_l1 :
+            forall (x : X) (l1 l2 l3 : list X),
+            in_order_merge X l1 l2 l3 ->
+            in_order_merge X (x :: l1) l2 (x :: l3)
+    | in_order_merge_l2 :
+            forall (x : X) (l1 l2 l3 : list X),
+            in_order_merge X l1 l2 l3 ->
+            in_order_merge X l1 (x :: l2) (x :: l3).
+
+Lemma eq_remove_cons : forall {X : Type} (x : X) (l1 l2 : list X),
+    l1 = l2 -> (x :: l1) = (x :: l2).
+Proof.
+    intros X x l1 l2 H. destruct l1 as [| x' l1'].
+    Case "l1 = nil". rewrite <- H. reflexivity.
+    Case "l1 = x' :: l1'". rewrite -> H. reflexivity.
+Qed.
+
+Theorem filter_challenge : 
+    forall (X : Type) (l1 l2 l3 : list X) (test : X -> bool),
+    in_order_merge X l1 l2 l3 ->
+    all X (fun x => test x = true) l1 ->
+    all X (fun x => test x = false) l2 ->
+    filter test l3 = l1.
+Proof.
+    intros X l1 l2 l3 test Hl3inOrder Hl1allTrue Hl2allFalse.
+    induction Hl3inOrder.
+    Case "in_order_merge_nil contructor".
+        simpl. reflexivity.
+    Case "in_order_merge_l1 costructor".
+        simpl. inversion Hl1allTrue. rewrite -> H1.
+        apply eq_remove_cons. apply IHHl3inOrder.
+        apply H2. apply Hl2allFalse.
+    Case "in_order_merge_l2 contructor".
+        simpl. inversion Hl2allFalse. rewrite -> H1. 
+        apply IHHl3inOrder.
+        apply Hl1allTrue. apply H2.
+Qed.
+
 
