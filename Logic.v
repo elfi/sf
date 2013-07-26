@@ -850,3 +850,37 @@ Proof.
             apply H5.
 Qed.
 
+Theorem O_le_n: forall n,
+    0 <= n.
+Proof.
+    intro n. induction n as [| n'].
+    Case "n = O". apply le_n.
+    Case "n = S n'". apply le_S. apply IHn'.
+Qed.
+
+Theorem n_le_m__Sn_le_Sm : forall n m,
+    n <= m -> S n <= S m.
+Proof.
+    intros n m H. induction H.
+    Case "base". apply le_n.
+    Case "inductive step". apply le_S. apply IHle.
+Qed.
+
+Theorem Sn_le_Sm__n_le_m: forall n m,
+    S n <= S m -> n <= m.
+Proof.
+    intros n m. generalize dependent n. induction m as [| m'].
+    Case "m = O".
+        intros n H. inversion H. reflexivity. inversion H1.
+    Case "m = S m'".
+        intro n. destruct n as [| n'].
+        SCase "n = O".
+            intro H. apply O_le_n.
+        SCase "n = S n'".
+            intro H. inversion H. 
+            SSCase "le_n constructor".
+                apply le_n.
+            SSCase "le_S constructor".
+                apply IHm' in H1. apply le_S. apply H1.
+Qed.
+
