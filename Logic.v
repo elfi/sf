@@ -713,4 +713,140 @@ Proof.
         apply Hl1allTrue. apply H2.
 Qed.
 
+Inductive appears_in {X : Type} (a:X) : list X -> Prop :=
+| ai_here : forall l, appears_in a (a :: l)
+| ai_later : forall b l, appears_in a l -> appears_in a (b :: l).
+
+Lemma appears_in_app: forall {X:Type} (xs ys : list X) (x:X),
+    appears_in x (xs ++ ys) -> 
+    appears_in x xs \/ appears_in x ys.
+Proof.
+    intros X xs. induction xs as [| x' xs' ].
+    Case "xs = nil".
+        simpl. intros ys x H. right. apply H.
+    Case "xs = x' :: xs'".
+        simpl. intro ys. destruct ys as [| y' ys' ].
+        SCase "ys = nil". 
+            rewrite -> app_nil_end.
+            intros x H. left. apply H.
+        SCase "ys = y' :: ys'".
+            intros x H. inversion H.
+            SSCase "ai_here contructor".
+                left. apply ai_here.
+            SSCase "ai_later constructor".
+                apply IHxs' in H1. inversion H1.
+                SSSCase "left of H1".
+                    left. apply ai_later. apply H3.
+                SSSCase "rigt of H1".
+                    right. apply H3.
+Qed.
+
+Lemma app_appears_in: forall {X:Type} (xs ys : list X) (x:X),
+    appears_in x xs \/ appears_in x ys -> appears_in x (xs ++ ys).
+Proof.
+    intros X xs. induction xs as [| x' xs' ].
+    Case "xs = nil".
+        intros ys x H. simpl. inversion H.
+        SCase "left of H". inversion H0.
+        SCase "right of H". apply H0.
+    Case"xs = x' :: xs'".
+        intros ys x H. inversion H.
+        SCase "left of H".
+            inversion H0.
+            SSCase "ai_here constructor".
+                apply ai_here.
+            SSCase "ai_later constructor".
+                simpl. apply ai_later. apply IHxs'.
+                left. apply H2.
+        SCase "right of H".
+            simpl. apply ai_later. apply IHxs'. right. apply H0.
+Qed.
+
+Definition disjoint (X:Type) (l1 l2 : list X) : Prop :=
+    (forall x : X, appears_in x l1 -> ~ (appears_in x l2)) /\ 
+    (forall x : X, appears_in x l2 -> ~ (appears_in x l1)).
+
+Inductive no_repeats (X : Type) : list X -> Prop :=
+| no_reps_nil  : no_repeats X []
+| no_reps_cons : forall (x : X) (l : list X),
+        no_repeats X l ->
+        ~ (appears_in x l) ->
+        no_repeats X (x :: l).
+
+Example test_no_repeats1: no_repeats nat [1,2,3,4].
+Proof.
+    (* deal with the goal itself *)
+    apply no_reps_cons. apply no_reps_cons.
+    apply no_reps_cons. apply no_reps_cons.
+    apply no_reps_nil.
+    (* deal with generated assumptions *)
+    unfold not. intro H. inversion H.
+    unfold not. intro H. inversion H. inversion H1.
+    unfold not. intro H. inversion H. inversion H1. inversion H4.
+    unfold not. intro H. inversion H. inversion H1. inversion H4. 
+                         inversion H7.
+Qed.
+
+Example test_no_repeats2: ~ (no_repeats bool [true, true]).
+Proof.
+    unfold not. intro H.
+    inversion H. unfold not in H3. apply H3.
+    apply ai_here.
+Qed.
+
+Lemma not_appear_in: forall {X : Type} (x:X) (l1 l2 : list X),
+    ~ (appears_in x (l1 ++ l2)) ->
+    ~ (appears_in x l1) /\ ~ (appears_in x l2).
+Proof.
+    intros X x l1 l2. unfold not.
+    intro H. split.
+    Case "left".
+        intro Happl1. apply H. apply app_appears_in. left.
+        apply Happl1.
+    Case "right".
+        intro Happl2. apply H. apply app_appears_in. right.
+        apply Happl2.
+Qed.
+
+Theorem no_repeats__disjoint: forall (X : Type) (l1 l2 : list X),
+    no_repeats X (l1 ++ l2) -> disjoint X l1 l2.
+Proof.
+    intros X l1. induction l1 as [| x l1'].
+    Case "l1 = nil".
+        simpl. intros l2 H. unfold disjoint. split.
+        SCase "left".
+            intros x Happear. inversion Happear.
+        SCase "right".
+            intros x Happear. unfold not. intro Happear2.
+            inversion Happear2.
+    Case "l1 = x :: l1'".
+        simpl. intros l2 H. unfold disjoint. split.
+        SCase "left".
+            intros x0 Happear. unfold not. intro Happear2.
+            inversion H. 
+            (* only no_reps_cons constructor possible *)
+            apply IHl1' in H2. unfold disjoint in H2.
+            inversion H2.
+            (* only one case for splitting of and *)
+            unfold not in H4. unfold not in H5.
+            unfold not in H3. subst.
+            apply H5 in Happear2. apply Happear2.
+            inversion Happear. subst. 
+            apply not_appear_in in H3. inversion H3.
+            unfold not in H1. apply H1 in Happear2.
+            inversion Happear2.
+            apply H1.
+        SCase "right".
+            intros x0 Happear. unfold not. intro Happear2.
+            inversion H. subst. unfold not in H3.
+            apply IHl1' in H2. unfold disjoint in H2.
+            inversion H2.
+            unfold not in H0. unfold not in H1.
+            apply H1 in Happear. apply Happear.
+            inversion Happear2. subst.
+            apply not_appear_in in H3. inversion H3.
+            unfold not in H5. apply H5 in Happear.
+            inversion Happear.
+            apply H5.
+Qed.
 
