@@ -884,3 +884,72 @@ Proof.
                 apply IHm' in H1. apply le_S. apply H1.
 Qed.
 
+Theorem le_plus_l: forall a b,
+    a <= a + b.
+Proof.
+    intros a b. induction b as [| b'].
+    Case "b = O". rewrite -> plus_0_r. apply le_n.
+    Case "b = S b". rewrite <- plus_n_Sm. apply le_S. apply IHb'.
+Qed.
+
+Theorem plus_lt: forall n1 n2 m,
+    n1 + n2 < m ->
+    n1 < m /\ n2 < m.
+Proof.
+    unfold lt. intros n1 n2 m H. induction H.
+    Case "le_n constructor". split.
+        SCase "left".
+            apply n_le_m__Sn_le_Sm. apply le_plus_l.
+        SCase "right".
+            apply n_le_m__Sn_le_Sm. rewrite -> plus_comm.
+            apply le_plus_l.
+    Case "le_S constructor". inversion IHle. split.
+        SCase "left".
+             apply le_S. apply H0.
+        SCase "right".
+             apply le_S. apply H1.
+Qed.
+
+Theorem lt_S : forall n m,
+    n < m ->
+    n < S m.
+Proof.
+    unfold lt. intros n m H. apply le_S. apply H.
+Qed.
+
+Theorem ble_nat_true: forall n m,
+    ble_nat n m = true -> n <= m.
+Proof.
+    intro n. induction n as [| n'].
+    Case "n = O". intros m H. apply O_le_n.
+    Case "n = S n'". intro m. destruct m.
+        intro H. inversion H.
+        intro H. apply n_le_m__Sn_le_Sm. apply IHn'. 
+        simpl in H. apply H.
+Qed.
+
+Theorem ble_nat_n_Sn_false: forall n m,
+    ble_nat n (S m) = false ->
+    ble_nat n m = false.
+Proof.
+    intro n. induction n as [| n'].
+    Case "n = O". intro m. intro H. inversion H.
+    Case "n = S n'". intro m. destruct m.
+        intro H. simpl. reflexivity.
+        intro H. simpl. apply IHn'. simpl in H. apply H.
+Qed.
+
+Theorem ble_nat_false: forall n m,
+    ble_nat n m = false -> ~ (n <= m).
+Proof.
+    intro n. induction n as [| n'].
+    Case "n = O". intros m H. simpl in H. inversion H.
+    Case "n = S n'". intro m. destruct m.
+        intro H. unfold not. intro H1. inversion H1.
+        intro H. unfold not. intro H1.
+        simpl in H. apply IHn' in H. unfold not in H.
+        apply H. apply Sn_le_Sm__n_le_m in H1. apply H1.
+Qed.
+
+
+
