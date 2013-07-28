@@ -951,5 +951,38 @@ Proof.
         apply H. apply Sn_le_Sm__n_le_m in H1. apply H1.
 Qed.
 
+Check beq_false_not_eq.
+Inductive nostutter: list nat -> Prop :=
+| nostutter_nil : nostutter []
+| nostutter_singleton : forall x, nostutter [x]
+| nostutter_two_different : forall x y l,
+        x <> y ->
+        nostutter (y :: l) ->
+        nostutter (x :: y :: l).
 
+Example test_nostutter_1: nostutter [3, 1, 4, 1, 5, 6].
+Proof. 
+    (* try out first step *)
+    apply nostutter_two_different.
+    apply beq_false_not_eq.
+    simpl. reflexivity.
+    (* automate the rest alike *)
+    repeat constructor; apply beq_false_not_eq; auto.
+Qed.
 
+Example test_nostutter_2: nostutter [].
+Proof. repeat constructor; apply beq_false_not_eq; auto. Qed.
+
+Example test_nostutter_3: nostutter [5].
+Proof. repeat constructor; apply beq_false_not_eq; auto. Qed.
+
+Example test_nostutter_4: not (nostutter [3, 1, 1, 4]).
+Proof.
+    intro.
+    (* make a list of all hypothesis, 3 <> 1, 1 <> 1, ... *)
+    repeat match goal with
+        h: nostutter _ |- _ => inversion h; clear h; subst
+    end.
+    (* this one is contradictory *)
+    contradiction H1; auto.
+Qed.
