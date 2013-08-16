@@ -87,3 +87,44 @@ Inductive ExSet : Type :=
 | con2 : nat -> ExSet -> ExSet.
 
 Check ExSet_ind.
+
+Inductive tree (X:Type) : Type :=
+| leaf : X -> tree  X
+| node : tree X -> tree X -> tree X.
+
+(* tree_ind:
+   forall (X:Type) (P : tree -> Prop),
+     (forall (x:X), P (leaf X x)) ->
+     (forall (l1:list X), P l1 -> (forall (l2:list X), P l2 ->
+        P (node X l1 l2))) ->
+     forall l:tree, P l *)
+
+Check tree_ind.
+
+Inductive mytype (X:Type) : Type :=
+| constr1 : X -> mytype X
+| constr2 : nat -> mytype X
+| constr3 : mytype X -> nat -> mytype X.
+
+Check mytype_ind.
+
+Inductive foo (X Y : Type) : Type :=
+| bar : X -> foo X Y
+| baz : Y -> foo X Y
+| quux : (nat -> foo X Y) -> foo X Y.
+
+Check foo_ind.
+
+Inductive foo' (X:Type) : Type :=
+| C1 : list X -> foo' X -> foo' X
+| C2 : foo' X.
+
+(* foo'_ind:
+   forall (X : Type) (P : foo' X -> Prop),
+     (forall (l : list X) (f : foo' X),
+         P f ->
+         P (C1 X l f)) ->
+     P (C2 X) ->
+   forall f : foo' X, P f *)
+
+Check foo'_ind.
