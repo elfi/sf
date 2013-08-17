@@ -128,3 +128,33 @@ Inductive foo' (X:Type) : Type :=
    forall f : foo' X, P f *)
 
 Check foo'_ind.
+
+Definition P_m0r (n:nat) : Prop :=
+    n * 0 = 0.
+
+Definition P_m0r' : nat -> Prop :=
+    fun n:nat => n * 0 = 0.
+
+Theorem mult_0_r'': forall n:nat,
+    P_m0r n.
+Proof.
+    apply nat_ind.
+    Case "n = 0". reflexivity.
+    Case "n = S n'".
+        unfold P_m0r. simpl. intros n' IHn'. 
+        apply IHn'.
+Qed.
+
+
+Inductive eq' (X:Type) (x:X) : X -> Prop :=
+    refl_equal : eq' X x x.
+
+Check eq'_ind.
+
+Inductive le (n:nat) : nat -> Prop :=
+| le_n : le n n
+| le_S : forall m, (le n m) -> (le n (S m)).
+
+Notation "m <= n" := (le m n).
+
+Check le_ind.
