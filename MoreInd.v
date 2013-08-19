@@ -158,3 +158,17 @@ Inductive le (n:nat) : nat -> Prop :=
 Notation "m <= n" := (le m n).
 
 Check le_ind.
+
+Check gorgeous_ind.
+
+Theorem gorgeous__beautiful': forall n, gorgeous n -> beautiful n.
+Proof.
+    intros.
+    apply gorgeous_ind.
+    Case "g_0". apply b_0.
+    Case "g_plus3". intros. apply b_sum. apply b_3. apply H1.
+    Case "g_plus5". intros. apply b_sum. apply b_5. apply H1.
+    apply H.
+Qed.
+
+
