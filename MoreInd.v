@@ -171,4 +171,106 @@ Proof.
     apply H.
 Qed.
 
+Module P.
+
+Inductive p : (tree nat) -> nat -> Prop :=
+| c1 : forall n, p (leaf _ n) 1
+| c2 : forall t1 t2 n1 n2,
+        p t1 n1 -> p t2 n2 -> p (node _ t1 t2) (n1 + n2)
+| c3 : forall t n, p t n -> p t (S n).
+
+(* p t n is provable if n >= number of leaves of the tree t *)
+
+End P.
+
+Theorem plus_assoc' : forall n m p : nat,
+    n + (m + p) = (n + m) + p.
+Proof.
+    intros n m p.
+    induction n as [| n'].
+    Case "n = O". reflexivity.
+    Case "n = S n'". simpl. rewrite -> IHn'. reflexivity.
+Qed.
+
+Theorem plus_comm' : forall n m : nat,
+    n + m = m + n.
+Proof.
+    induction n as [| n'].
+    Case "n = O". intro m. rewrite -> plus_0_r. reflexivity.
+    Case "n = S n'". intro m. simpl. rewrite -> IHn'.
+        rewrite <- plus_n_Sm. reflexivity.
+Qed.
+
+Theorem plus_comm'' : forall n m : nat,
+    n + m = m + n.
+Proof.
+    induction m as [| m'].
+    Case "m = O". simpl. rewrite -> plus_0_r. reflexivity.
+    Case "m = S m'". simpl. rewrite <- IHm'.
+        rewrite <- plus_n_Sm. reflexivity.
+Qed.
+
+Definition P_plus_comm (n m : nat) : Prop :=
+    n + m = m + n.
+
+Theorem plus_comm_def : forall n m : nat,
+    P_plus_comm n m.
+Proof.
+    intros n m. unfold P_plus_comm. induction n as [| n']. 
+    Case "n = O". rewrite -> plus_0_r.
+        reflexivity.
+    Case "n = S n'". simpl. rewrite <- plus_n_Sm. 
+        rewrite -> IHn'. reflexivity.
+Qed.
+
+Definition P_plus_assoc (n m p : nat) : Prop :=
+    n + (m + p) = (n + m) + p.
+
+Theorem plus_assoc_def: forall n m p : nat,
+    P_plus_assoc n m p.
+Proof.
+    intros n m p. unfold P_plus_assoc. induction n as [| n'].
+    Case "n = O". simpl. reflexivity.
+    Case "n = S n'". simpl. rewrite -> IHn'. reflexivity.
+Qed.
+
+Inductive xfoo (X Y : Set) : Set :=
+| xfoo1 : X -> xfoo X Y
+| xfoo2 : Y -> xfoo X Y
+| xfoo3 : xfoo X Y -> xfoo X Y.
+
+(* foo_ind:
+       forall (X Y : Set) (P : foo X Y -> Prop),
+           (forall x : X, P (foo1 X Y x)) ->
+           (forall y : Y, P (foo2 X Y y)) ->
+           (forall f : foo X Y, P f -> P (foo3 X Y f)) ->
+           forall f' : foo X Y, P f' *)
+
+Check xfoo_ind.
+
+Inductive xbar : Set :=
+| xbar1 : nat -> xbar
+| xbar2 : xbar -> xbar
+| xbar3 : bool -> xbar -> xbar.
+
+Check xbar_ind.
+
+Inductive no_longer_than (X : Set) : (list X) -> nat -> Prop :=
+| nlt_nil : forall n, no_longer_than X [] n
+| nlt_cons : forall x l n, no_longer_than X l n ->
+                           no_longer_than X (x::l) (S n)
+| nlt_succ : forall l n, no_longer_than X l n ->
+                         no_longer_than X l (S n).
+
+(* no_longer_than_ind :
+     forall (X : Set) (P: list X -> nat -> Prop),
+         (forall n : nat, P [] n) ->
+         (forall (x:X) (l:list X) (n:nat),
+             no_longer_than X l n, P l n -> P (x::l) (S n)) ->
+         (forall (l:list X) (n:nat),
+             no_longer_than X l n, P l n -> P l (S n)) ->
+         forall (l:list X) (n : nat), 
+             no_longer_than X l n -> P l n. *)
+
+Check no_longer_than_ind.
 
