@@ -315,4 +315,28 @@ or_ind:
         or P Q -> PP
 *)
 
+Print nat.
+Print nat_ind.
+Print nat_rect.
+(*
+Inductive nat : Set :=
+| O : nat
+| S : nat -> nat.
+
+nat_ind:
+    forall (P : nat -> Prop),
+    (P O) ->
+    (forall n : nat, P n -> P (S n)) ->
+    forall n : nat, P n
+
+nat_ind =
+    fun (P : nat -> Type)
+        (f : P 0)
+        (f0 : forall n : nat, P n -> P (S n)) =>
+            fix F (n : nat) : P n :=
+            match n as n0 return (P n0) with
+            | 0 => f
+            | S n0 => f0 n0 (F n0)
+            end.
+*)
 
