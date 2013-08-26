@@ -80,5 +80,70 @@ Proof.
         simpl. rewrite -> IHa1. rewrite -> IHa2. reflexivity.
 Qed.
 
+Theorem ev100: ev 100.
+Proof.
+    repeat (apply ev_SS).
+    apply ev_0.
+Qed.
 
+Theorem ev100': ev 100.
+Proof.
+    repeat (apply ev_0).
+    repeat (apply ev_SS). apply ev_0.
+Qed.
 
+Theorem silly1: forall ae, aeval ae = aeval ae.
+Proof. try reflexivity. Qed.
+
+Theorem silly2: forall (P : Prop), P -> P.
+Proof.
+    intros P HP.
+    try reflexivity.
+    apply HP.
+Qed.
+
+Lemma foo : forall n, ble_nat 0 n = true.
+Proof.
+    intro n. destruct n.
+    Case "n = O". simpl. reflexivity.
+    Case "n = S ..". simpl. reflexivity.
+Qed.
+
+Lemma foo' : forall n, ble_nat 0 n = true.
+Proof.
+    intro n.
+    destruct n; simpl; reflexivity.
+Qed.
+
+Theorem optimize_0plus_sound': forall a,
+    aeval (optimize_0plus a) = aeval a.
+Proof.
+    intro a.
+    induction a;
+        try (simpl; rewrite -> IHa1; rewrite -> IHa2; reflexivity ).
+    (* remaining cases *)
+    Case "ANum". reflexivity.
+    Case "APlus".
+        destruct a1;
+            try (simpl; simpl in IHa1; rewrite -> IHa1;
+                 rewrite -> IHa2; reflexivity).
+        SCase "a1 = ANum n".
+            destruct n; simpl; rewrite -> IHa2; reflexivity.
+Qed.
+
+Theorem optimize_0plus_sound'': forall a,
+    aeval (optimize_0plus a) = aeval a.
+Proof.
+    intro a.
+    induction a;
+        (* most cases follow directly by the IH *)
+        try (simpl; rewrite -> IHa1; rewrite -> IHa2; reflexivity);
+        (* or are immediate by definition *)
+        try reflexivity.
+    (* the interesting case is when a = APlus a1 a2 *)
+    Case "APlus".
+        destruct a1; try (simpl; simpl in IHa1; rewrite -> IHa1;
+                          rewrite -> IHa2; reflexivity).
+        SCase "a1 = ANum n".
+            destruct n; simpl; rewrite -> IHa2; reflexivity.
+Qed.
