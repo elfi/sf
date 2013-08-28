@@ -147,3 +147,67 @@ Proof.
         SCase "a1 = ANum n".
             destruct n; simpl; rewrite -> IHa2; reflexivity.
 Qed.
+
+Tactic Notation "simpl_and_try" tactic(c) :=
+    simpl;
+    try c.
+
+Tactic Notation "aexp_cases" tactic(first) ident(c) :=
+    first;
+    [ Case_aux c "ANum" | Case_aux c "APlus"
+    | Case_aux c "AMin" | Case_aux c "AMult" ].
+
+Theorem optimize_0plus_sound''': forall a,
+    aeval (optimize_0plus a) = aeval a.
+Proof.
+    intro a.
+    aexp_cases (induction a) Case;
+        try (simpl; rewrite IHa1; rewrite IHa2; reflexivity);
+        try reflexivity.
+    Case "APlus".
+        aexp_cases (destruct a1) SCase;
+            try (simpl; simpl in IHa1;
+                 rewrite IHa1; rewrite IHa2; reflexivity).
+        SCase "ANum". destruct n;
+            simpl; rewrite IHa2; reflexivity.
+Qed.
+
+Fixpoint optimize_0plus_b (b : bexp) : bexp :=
+    match b with
+    | BEq a1 a2 => BEq (optimize_0plus a1) (optimize_0plus a2)
+    | BLe a1 a2 => BLe (optimize_0plus a1) (optimize_0plus a2)
+    | _ => b
+    end.
+
+Theorem optimize_0plus_b_sound : forall b,
+    beval (optimize_0plus_b b) = beval b.
+Proof.
+    intro b.
+    induction b; 
+    (* cases not involving aexp *)
+    try (simpl; reflexivity);
+    (* cases with aexp *)
+    try (simpl;
+         rewrite -> optimize_0plus_sound;
+         rewrite -> optimize_0plus_sound; reflexivity).
+Qed.
+
+Fixpoint optimizer (b : bexp) : bexp :=
+    match b with
+    | BAnd BTrue b2 => b2
+    | BAnd BFalse b2 => BFalse
+    | _ => b
+    end.
+
+Theorem optimizer_sound: forall b,
+    beval (optimizer b) = beval b.
+Proof.
+    intro b.
+    induction b; 
+    (* cases without BAnd *)
+    try (simpl; reflexivity);
+    (* BAnd opt. at the first argument *)
+    try (destruct b1; simpl; reflexivity).
+Qed.
+
+
