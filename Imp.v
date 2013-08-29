@@ -210,4 +210,50 @@ Proof.
     try (destruct b1; simpl; reflexivity).
 Qed.
 
+Example silly_presburger_example: forall m n o p,
+    m + n <= n + o /\ o + 3 = p + 3 ->
+    m <= p.
+Proof.
+    intros. omega.
+Qed.
 
+Module aevalR_first_try.
+
+Inductive aevalR: aexp -> nat -> Prop :=
+| E_ANum : forall (n:nat), aevalR (ANum n) n
+| E_APlus : forall (e1 e2 : aexp) (n1 n2 : nat),
+        aevalR e1 n1 ->
+        aevalR e2 n2 ->
+        aevalR (APlus e1 e2) (n1 + n2)
+| E_AMinus : forall (e1 e2 : aexp) (n1 n2 : nat),
+        aevalR e1 n1 ->
+        aevalR e2 n2 ->
+        aevalR (AMinus e1 e2) (n1 - n2)
+| E_AMult : forall (e1 e2 : aexp) (n1 n2 : nat),
+        aevalR e1 n1 ->
+        aevalR e2 n2 ->
+        aevalR (AMult e1 e2) (n1 * n2).
+
+Notation "e '||' n" := (aeval e n) : type_scope.
+
+End aevalR_first_try.
+
+Reserved Notation "e '||' n" (at level 50, left associativity).
+
+Inductive aevalR : aexp -> nat -> Prop :=
+| E_ANum : forall (n:nat), (ANum n) || n
+| E_APlus : forall (e1 e2 : aexp) (n1 n2 : nat),
+        (e1 || n1) -> (e2 || n2) -> (APlus e1 e2) || (n1 + n2)
+| E_AMinus : forall (e1 e2 : aexp) (n1 n2 : nat),
+        (e1 || n1) -> (e2 || n2) -> (AMinus e1 e2) || (n1 - n2)
+| E_AMult : forall (e1 e2 : aexp) (n1 n2 : nat),
+        (e1 || n1) -> (e2 || n2) -> (AMult e1 e2) || (n1 * n2)
+                
+where "e '||' n" := (aevalR e n) : type_scope.
+
+Tactic Notation "aevalR_cases" tactic(first) ident(c) :=
+    first;
+    [ Case_aux c "E_ANum"
+    | Case_aux c "E_APlus"
+    | Case_aux c "E_AMinus"
+    | Case_aux c "E_AMult" ].
