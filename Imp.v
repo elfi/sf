@@ -257,3 +257,56 @@ Tactic Notation "aevalR_cases" tactic(first) ident(c) :=
     | Case_aux c "E_APlus"
     | Case_aux c "E_AMinus"
     | Case_aux c "E_AMult" ].
+
+Theorem aeval_iff_aevalR : forall a n,
+    (a || n) <-> aeval a = n.
+Proof.
+    split.
+    Case "->".
+        intro H.
+        (* start with induction, prefix all goals with SCase and
+           simpl all goals *)
+        aevalR_cases (induction H) SCase; simpl.
+        SCase "E_ANum". (* in case this does not match already
+                        inserted SCase we get at error - it
+                        helps us to keep track within automation *)
+            reflexivity.
+        SCase "E_APlus".
+            rewrite IHaevalR1. rewrite IHaevalR2. reflexivity.
+        SCase "E_AMinus".
+            rewrite IHaevalR1. rewrite IHaevalR2. reflexivity.
+        SCase "E_AMult".
+            rewrite IHaevalR1. rewrite IHaevalR2. reflexivity.
+    Case "<-".
+        generalize dependent n.
+        aexp_cases (induction a) SCase; simpl; intros; subst.
+        SCase "ANum".
+            apply E_ANum.
+        SCase "APlus".
+            apply E_APlus.
+              apply IHa1. reflexivity.
+              apply IHa2. reflexivity.
+        SCase "AMin".
+            apply E_AMinus.
+              apply IHa1. reflexivity.
+              apply IHa2. reflexivity.
+        SCase "AMult".
+            apply E_AMult.
+              apply IHa1. reflexivity.
+              apply IHa2. reflexivity.
+Qed.
+
+Theorem aeval_iff_aevalR': forall a n,
+    (a || n) <-> aeval a = n.
+Proof.
+    split.
+    Case "->".
+        intro H; induction H; subst; reflexivity.
+    Case "<-".
+        generalize dependent n.
+        induction a; simpl; intros; subst; constructor;
+            try apply IHa1; try apply IHa2; reflexivity.
+Qed.
+
+
+
