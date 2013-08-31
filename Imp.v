@@ -308,5 +308,40 @@ Proof.
             try apply IHa1; try apply IHa2; reflexivity.
 Qed.
 
+Inductive bevalR: bexp -> bool -> Prop :=
+| E_BTrue : bevalR BTrue true
+| E_BFalse : bevalR BFalse false
+| E_BEq : forall (e1 e2 : aexp) (n1 n2 : nat),
+        e1 || n1 ->
+        e2 || n2 ->
+        bevalR (BEq e1 e2) (beq_nat n1 n2)
+| E_BLe : forall (e1 e2 : aexp) (n1 n2 : nat),
+        e1 || n1 ->
+        e2 || n2 ->
+        bevalR (BLe e1 e2) (ble_nat n1 n2)
+| E_BNot : forall (e : bexp) (b : bool),
+        bevalR e b ->
+        bevalR (BNot e) (negb b)
+| E_BAnd : forall (e1 e2 : bexp) (b1 b2 : bool),
+        bevalR e1 b1 ->
+        bevalR e2 b2 ->
+        bevalR (BAnd e1 e2) (andb b1 b2).
 
+Theorem beval_iff_bevalR : forall e b,
+    bevalR e b <-> beval e = b.
+Proof.
+    split.
+    Case "->".
+        intro H; induction H; simpl;
+        try (apply aeval_iff_aevalR in H);
+        try (apply aeval_iff_aevalR in H0);
+        subst; reflexivity.
+    Case "<-".
+        generalize dependent b.
+        induction e; simpl; intros; subst; constructor;
+        try (apply aeval_iff_aevalR; reflexivity);
+        try (apply IHe;  reflexivity);
+        try (apply IHe1; reflexivity);
+        try (apply IHe2; reflexivity).
+Qed.
 
