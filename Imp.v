@@ -496,3 +496,63 @@ Proof.
     Case "x1 <> x3". reflexivity.
 Qed.
 
+Inductive aexp : Type :=
+| ANum : nat -> aexp
+| AId : id -> aexp
+| APlus : aexp -> aexp -> aexp
+| AMinus : aexp -> aexp -> aexp
+| AMult : aexp -> aexp -> aexp.
+
+Tactic Notation "aexp_cases" tactic(first) ident(c) :=
+    first;
+    [ Case_aux c "ANum" | Case_aux c "AId" | Case_aux c "APlus"
+    | Case_aux c "AMinus" | Case_aux c "AMult" ].
+
+Definition X : id := Id 0.
+Definition Y : id := Id 1.
+Definition Z : id := Id 2.
+
+Inductive bexp : Type :=
+| BTrue : bexp
+| BFalse : bexp
+| BEq : aexp -> aexp -> bexp
+| BLe : aexp -> aexp -> bexp
+| BNot : bexp -> bexp
+| BAnd : bexp -> bexp -> bexp.
+
+Tactic Notation "bexp_cases" tactic(first) ident(c) :=
+    first;
+    [ Case_aux c "BTrue" | Case_aux c "BFalse"
+    | Case_aux c "BEq" | Case_aux c "BLe"
+    | Case_aux c "BNot" | Case_aux c "BAnd" ].
+
+Fixpoint aeval (st : state) (a : aexp) : nat :=
+    match a with
+    | ANum n        => n
+    | AId x         => st x
+    | APlus a1 a2   => (aeval st a1) + (aeval st a2)
+    | AMinus a1 a2  => (aeval st a1) - (aeval st a2)
+    | AMult a1 a2   => (aeval st a1) * (aeval st a2)
+    end.
+
+Fixpoint beval (st : state) (b : bexp) : bool :=
+    match b with
+    | BTrue       => true
+    | BFalse      => false
+    | BEq a1 a2   => beq_nat (aeval st a1) (aeval st a2)
+    | BLe a1 a2   => ble_nat (aeval st a1) (aeval st a2)
+    | BNot b1     => negb (beval st b1)
+    | BAnd b1 b2  => andb (beval st b1) (beval st b2)
+    end.
+
+Example aexp1 :
+    aeval (update empty_state X 5)
+          (APlus (ANum 3) (AMult (AId X) (ANum 2)))
+    = 13.
+Proof. reflexivity. Qed.
+
+Example bexp1 :
+    beval (update empty_state X 5)
+          (BAnd BTrue (BNot (BLe (AId X) (ANum 4))))
+    = true.
+Proof. reflexivity. Qed.
