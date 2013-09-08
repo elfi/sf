@@ -391,3 +391,108 @@ Inductive aevalR : aexp -> nat -> Prop :=
 where "a '||' n" := (aevalR a n) : type_scope.
 End aevalR_extended.
 
+Module Id.
+
+Inductive id : Type :=
+    Id : nat -> id.
+
+Theorem eq_id_dec : forall id1 id2 : id,
+    {id1 = id2} + {id1 <> id2}.
+Proof.
+     intros id1 id2.
+     destruct id1 as [n1]. destruct id2 as [n2].
+     destruct (eq_nat_dec n1 n2) as [Heq | Hneq].
+     Case "n1 = n2".
+         left. rewrite Heq. reflexivity.
+     Case "n1 <> n2".
+         right. intro contra. inversion contra. apply Hneq.
+         apply H0.
+Defined.
+
+Lemma eq_id : forall (T:Type) (x:id) (p q:T),
+    (if eq_id_dec x x then p else q) = p.
+Proof.
+    intros. destruct (eq_id_dec x x).
+    Case "x = x".
+        reflexivity.
+    Case "x <>x (impossible)".
+        apply ex_falso_quodlibet; apply n; reflexivity.
+Qed.
+
+Lemma neq_id : forall (T:Type) (x y : id) (p q:T),
+    x <> y ->
+    (if eq_id_dec x y then p else q) = q.
+Proof.
+    intros. destruct (eq_id_dec x y).
+    Case "x = y (contradicting hypothesis)".
+        apply ex_falso_quodlibet; apply H; apply e.
+    Case "x <> y".
+        reflexivity.
+Qed.
+
+Definition state := id -> nat.
+
+(* empty_state and update are the only two state 'builders' *)
+
+Definition empty_state : state :=
+    fun _:id => 0.
+
+Definition update (st : state) (x : id) (n : nat) : state :=
+    fun x' => if eq_id_dec x x' then n else st x'.
+
+Theorem update_eq : forall n x st,
+    (update st x n) x = n.
+Proof.
+    intros. unfold update. destruct (eq_id_dec x x).
+    Case "x = x".
+        reflexivity.
+    Case "x <> x (impossible)".
+        apply ex_falso_quodlibet; apply n0; reflexivity.
+Qed.
+
+Theorem update_neq : forall x2 x1 n st,
+    x2 <> x1 ->
+    (update st x2 n) x1 = (st x1).
+Proof.
+    intros. unfold update. destruct (eq_id_dec x2 x1).
+    Case "x2 = x1 (contradicts hypothesis)".
+        apply ex_falso_quodlibet; apply H; apply e.
+    Case "x2 <> x1".
+        reflexivity.
+Qed.
+
+Theorem update_example : forall (n:nat),
+    (update empty_state (Id 2) n) (Id 3) = 0.
+Proof.
+    intros. unfold update. unfold empty_state.
+    apply neq_id.
+    intro contra. inversion contra.
+Qed.
+
+Theorem update_shadow : forall n1 n2 x1 x2 (st : state),
+    (update (update st x2 n1) x2 n2) x1 = (update st x2 n2) x1.
+Proof.
+    intros. unfold update. destruct (eq_id_dec x2 x1).
+    Case "x2 = x1". reflexivity.
+    Case "x2 <> x1". reflexivity.
+Qed.
+
+Theorem update_same : forall n1 x1 x2 (st : state),
+    st x1 = n1 ->
+    (update st x1 n1) x2 = st x2.
+Proof.
+    intros. unfold update. destruct (eq_id_dec x1 x2).
+    Case "x1 = x2". subst; reflexivity.
+    Case "x1 <> x2". reflexivity.
+Qed.
+
+Theorem update_permute : forall n1 n2 x1 x2 x3 st,
+    x2 <> x1 ->
+        (update (update st x2 n1) x1 n2) x3
+      = (update (update st x1 n2) x2 n1) x3.
+Proof.
+    intros. unfold update. destruct (eq_id_dec x1 x3).
+    Case "x1 = x3". subst. rewrite neq_id. reflexivity. apply H.
+    Case "x1 <> x3". reflexivity.
+Qed.
+
