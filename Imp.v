@@ -556,3 +556,63 @@ Example bexp1 :
           (BAnd BTrue (BNot (BLe (AId X) (ANum 4))))
     = true.
 Proof. reflexivity. Qed.
+
+Inductive com : Type :=
+| CSkip : com
+| CAss : id -> aexp -> com
+| CSeq : com -> com -> com
+| CIf : bexp -> com -> com -> com
+| CWhile : bexp -> com -> com.
+
+Tactic Notation "com_cases" tactic(first) ident(c) :=
+    first;
+    [ Case_aux c "SKIP" | Case_aux c "::=" | Case_aux c ";;" 
+    | Case_aux c "IFB" | Case_aux c "WHILE" ].
+
+Notation "'SKIP'" := CSkip.
+Notation "x '::=' a" := (CAss x a) (at level 60).
+Notation "c1 ;; c2" :=
+    (CSeq c1 c2) (at level 80, right associativity).
+Notation "'WHILE' b 'DO' c 'END'" :=
+    (CWhile b c) (at level 80, right associativity).
+Notation "'IFB' b 'THEN' c1 'ELSE' c2 'FI'" :=
+    (CIf b c1 c2) (at level 80, right associativity).
+
+Definition fact_in_coq : com :=
+    Z ::= AId X;;
+    Y ::= ANum 1;;
+    WHILE BNot (BEq (AId Z) (ANum 0)) DO
+        Y ::= AMult (AId Y) (AId Z);;
+        Z ::= AMinus (AId Z) (ANum 1)
+    END.
+
+Definition plus2 : com :=
+    X ::= (APlus (AId X) (ANum 2)).
+
+Definition XtimesYinZ : com :=
+    Z ::= (AMult (AId X) (AId Y)).
+
+Definition substract_slowly_body : com :=
+    Z ::= AMinus (AId Z) (ANum 1);;
+    X ::= AMinus (AId X) (ANum 1).
+
+(* Loops *)
+
+Definition substract_slowly : com :=
+    WHILE BNot (BEq (AId X) (ANum 0)) DO
+        substract_slowly_body
+    END.
+
+Definition substract_3_from_5_slowly : com :=
+    X ::= ANum 3;;
+    Z ::= ANum 5;;
+    substract_slowly.
+
+(* Infinite loop *)
+
+Definition loop : com :=
+    WHILE BTrue DO
+        SKIP
+    END.
+
+
