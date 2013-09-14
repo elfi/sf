@@ -615,4 +615,282 @@ Definition loop : com :=
         SKIP
     END.
 
+Fixpoint ceval_fun_no_while (st : state) (c : com) : state :=
+    match c with
+    | SKIP => st
+    | x ::= a1 => update st x (aeval st a1)
+    | c1 ;; c2 => let st' := ceval_fun_no_while st c1 in
+                  ceval_fun_no_while st' c2
+    | IFB b THEN c1 ELSE c2 FI =>
+            if (beval st b) then ceval_fun_no_while st c1
+            else ceval_fun_no_while st c2
+    | WHILE b DO c END => st (* bogus *)
+    end.
+
+Reserved Notation "c1 '/' st '||' st'" 
+    (at level 40, st at level 39).
+
+Inductive ceval : com -> state -> state -> Prop :=
+| E_Skip : forall st, SKIP / st || st
+| E_Ass  : forall st a1 n x,
+        aeval st a1 = n ->
+        (x ::= a1) / st || (update st x n)
+| E_Seq  : forall c1 c2 st st' st'',
+        c1 / st || st' ->
+        c2 / st' || st'' ->
+        (c1 ;; c2) / st || st''
+| E_IfTrue : forall st st' b c1 c2,
+        beval st b = true ->
+        c1 / st || st' ->
+        (IFB b THEN c1 ELSE c2 FI) / st || st'
+| E_IfFalse : forall st st' b c1 c2,
+        beval st b = false ->
+        c2 / st || st' ->
+        (IFB b THEN c1 ELSE c2 FI) / st || st'
+| E_WhileEnd : forall b st c,
+        beval st b = false ->
+        (WHILE b DO c END) / st || st
+| E_WhileLoop : forall b st st' st'' c,
+        beval st b = true ->
+        c / st || st' ->
+        (WHILE b DO c END) / st' || st'' ->
+        (WHILE b DO c END) / st || st''
+
+where "c1 '/' st '||' st'" := (ceval c1 st st').
+
+Tactic Notation "ceval_cases" tactic (first) ident(c) :=
+    first;
+    [ Case_aux c "E_Skip" | Case_aux c "E_Ass"
+    | Case_aux c "E_Seq" | Case_aux c "E_IfTrue"
+    | Case_aux c "E_IfFalse" | Case_aux c "E_WhileEnd"
+    | Case_aux c "E_WhileLoop" ].
+
+Example ceval_examle1:
+    (X ::= ANum 2;;
+     IFB BLe (AId X) (ANum 1) THEN Y ::= ANum 3
+     ELSE Z ::= ANum 4
+     FI) / empty_state || (update (update empty_state X 2) Z 4).
+Proof.
+    (* we must supply the intermediate step *)
+    apply E_Seq with (update empty_state X 2).
+    Case "assignment command".
+        apply E_Ass. simpl. reflexivity.
+    Case "if command".
+        apply E_IfFalse.
+        reflexivity.
+        apply E_Ass. simpl. reflexivity.
+Qed.
+
+Example ceval_example2:
+    (X ::= ANum 0;; Y ::= ANum 1;; Z ::= ANum 2) / empty_state ||
+    (update (update (update empty_state X 0) Y 1) Z 2).
+Proof.
+    remember (update empty_state X 0) as st.
+    apply E_Seq with st.
+    Case "first assignment".
+        subst. apply E_Ass. simpl. reflexivity.
+    Case "second assignment".
+        remember (update st Y 1) as st'.
+        apply E_Seq with st'.
+        subst. apply E_Ass. simpl. reflexivity.
+        SCase "third assignment".
+            subst. apply E_Ass. simpl. reflexivity.
+Qed.
+
+Definition pup_to_n : com :=
+    Y ::= ANum 0;;
+    WHILE (BLe (ANum 1) (AId X)) DO
+        Y ::= APlus (AId Y) (AId X);;
+        X ::= AMinus (AId X) (ANum 1)
+    END.
+
+Theorem pup_to_2_ceval :
+  pup_to_n / (update empty_state X 2) ||
+    update (update (update (update (update (update empty_state
+      X 2) Y 0) Y 2) X 1) Y 3) X 0.
+Proof.
+    unfold pup_to_n.
+    apply E_Seq with (update (update empty_state X 2) Y 0).
+    apply E_Ass. reflexivity.
+    apply E_WhileLoop with 
+      (update (update (update 
+          (update empty_state X 2) Y 0) Y 2) X 1).
+    simpl. reflexivity.
+    apply E_Seq with 
+      (update (update (update empty_state X 2) Y 0) Y 2).
+    apply E_Ass. reflexivity.
+    apply E_Ass. reflexivity.
+    apply E_WhileLoop with 
+      (update (update (update (update (update
+          (update empty_state X 2) Y 0) Y 2) X 1) Y 3) X 0).
+    simpl. reflexivity.
+    apply E_Seq with
+      (update (update (update 
+          (update (update empty_state X 2) Y 0) Y 2) X 1) Y 3).
+    apply E_Ass. reflexivity.
+    apply E_Ass. reflexivity.
+    apply E_WhileEnd. reflexivity.
+Qed.
+
+Theorem ceval_deterministic: forall c st st1 st2,
+     c / st || st1  ->
+     c / st || st2 ->
+     st1 = st2.
+Proof.
+  intros c st st1 st2 E1 E2.
+  generalize dependent st2.
+  ceval_cases (induction E1) Case;
+           intros st2 E2; inversion E2; subst.
+  Case "E_Skip". reflexivity.
+  Case "E_Ass". reflexivity.
+  Case "E_Seq".
+    assert (st' = st'0) as EQ1.
+      SCase "Proof of assertion". apply IHE1_1; assumption.
+    subst st'0.
+    apply IHE1_2. assumption.
+  Case "E_IfTrue".
+    SCase "b1 evaluates to true".
+      apply IHE1. assumption.
+    SCase "b1 evaluates to false (contradiction)".
+      rewrite H in H5. inversion H5.
+  Case "E_IfFalse".
+    SCase "b1 evaluates to true (contradiction)".
+      rewrite H in H5. inversion H5.
+    SCase "b1 evaluates to false".
+      apply IHE1. assumption.
+  Case "E_WhileEnd".
+    SCase "b1 evaluates to false".
+      reflexivity.
+    SCase "b1 evaluates to true (contradiction)".
+      rewrite H in H2. inversion H2.
+  Case "E_WhileLoop".
+    SCase "b1 evaluates to false (contradiction)".
+      rewrite H in H4. inversion H4.
+    SCase "b1 evaluates to true".
+      assert (st' = st'0) as EQ1.
+        SSCase "Proof of assertion". apply IHE1_1; assumption.
+      subst st'0.
+      apply IHE1_2. assumption.  Qed.
+
+Theorem plus2_spec : forall st n st',
+  st X = n ->
+  plus2 / st || st' ->
+  st' X = n + 2.
+Proof.
+  intros st n st' HX Heval.
+  inversion Heval. subst. clear Heval. simpl.
+  apply update_eq.  Qed.
+
+Theorem XtimesYinZ_spec : forall st n1 n2 st',
+  st X = n1 ->
+  st Y = n2 ->
+  XtimesYinZ / st || st' ->
+  st' Z = n1 * n2.
+Proof.
+    intros st n1 n2 st' HX HY Heval.
+    inversion Heval. subst. simpl. apply update_eq.
+Qed.
+
+Theorem loop_never_stops : forall st st',
+  ~(loop / st || st').
+Proof.
+  intros st st' contra. unfold loop in contra.
+  remember (WHILE BTrue DO SKIP END) as loopdef eqn:Heqloopdef.
+  induction contra; inversion Heqloopdef.
+  rewrite H1 in H. inversion H.
+  subst. apply IHcontra2. assumption.
+Qed.
+
+Fixpoint no_whiles (c : com) : bool :=
+  match c with
+  | SKIP       => true
+  | _ ::= _    => true
+  | c1 ;; c2  => andb (no_whiles c1) (no_whiles c2)
+  | IFB _ THEN ct ELSE cf FI => andb (no_whiles ct) (no_whiles cf)
+  | WHILE _ DO _ END  => false
+  end.
+
+Inductive no_whilesR: com -> Prop :=
+| nowh_skip : no_whilesR SKIP
+| nowh_ass  : forall X aexp, no_whilesR (X ::= aexp)  
+| nowh_seq  : forall c1 c2, 
+    no_whilesR c1 -> no_whilesR c2 -> no_whilesR (c1 ;; c2)
+| nowh_if   : forall b c1 c2, 
+    no_whilesR c1 -> no_whilesR c2 ->
+        no_whilesR (IFB b THEN c1 ELSE c2 FI).
+
+Theorem no_whiles_eqv:
+   forall c, no_whiles c = true <-> no_whilesR c.
+Proof.
+    split.
+    Case "->".
+        intro H. induction c.
+        SCase "Skip". apply nowh_skip.
+        SCase "Ass". apply nowh_ass.
+        SCase "Seq c1 c2". apply nowh_seq.
+            SSCase "c1". apply IHc1. inversion H.
+                         unfold andb. unfold andb in H1.
+                         destruct (no_whiles c1).
+                         symmetry. assumption. reflexivity.
+            SSCase "c2". apply IHc2. inversion H.
+                         unfold andb. unfold andb in H1.
+                         destruct (no_whiles c1).
+                         reflexivity. inversion H1.
+        SCase "If b c1 c2". apply nowh_if.
+            SSCase "c1". apply IHc1. inversion H.
+                         unfold andb. unfold andb in H1.
+                         destruct (no_whiles c1).
+                         symmetry. assumption. reflexivity.
+            SSCase "c2". apply IHc2. inversion H.
+                         unfold andb. unfold andb in H1.
+                         destruct (no_whiles c1).
+                         reflexivity. inversion H1.
+        SCase "While b c". inversion H.
+    Case "<-".
+        intro H. induction c.
+        SCase "Skip". reflexivity.
+        SCase "Ass". reflexivity.
+        SCase "Seq c1 c2". simpl. inversion H.
+            unfold andb. destruct (no_whiles c1).
+            apply IHc2. assumption.
+            apply IHc1. assumption.
+        SCase "If b c1 c2". simpl. inversion H.
+            unfold andb. destruct (no_whiles c1).
+            apply IHc2. assumption.
+            apply IHc1. assumption.
+        SCase "While b c". inversion H.
+Qed.
+
+Theorem no_whiles_terminating : forall c st,
+    no_whilesR c -> exists st', c / st || st'.
+Proof.
+    induction c.
+    Case "Skip". intros. exists st. apply E_Skip.
+    Case "Ass". intros. exists (update st i (aeval st a)). 
+        apply E_Ass. reflexivity.
+    Case "Seq". intros. inversion H. subst.
+        assert (exists st1, c1 / st || st1) as c1_evaluates_to_st1. 
+        SCase "Proof of assert". apply IHc1. apply H2.
+        inversion c1_evaluates_to_st1.
+        assert (exists st', c2 / x || st') 
+            as c2_evaluates_to_st'. 
+        SCase "Proof of assert". apply IHc2. apply H3.
+        inversion c2_evaluates_to_st'.
+        exists x0. apply E_Seq with x.
+        assumption. assumption.
+    Case "If". intros. inversion H. subst.
+        assert (exists st1, c1 / st || st1) as c1_evals.
+        SCase "Proof of assert". apply IHc1. assumption.
+        assert (exists st2, c2 / st || st2) as c2_evals.
+        SCase "Proof of assert". apply IHc2. assumption.
+        inversion c1_evals. inversion c2_evals.
+        remember (beval st b) as bevalb.
+        destruct bevalb.
+        SCase "True". exists x. apply E_IfTrue.
+            symmetry. assumption. assumption.
+        SCase "False". exists x0. apply E_IfFalse.
+            symmetry. assumption. assumption.
+    Case "While". intros. inversion H.
+Qed.
+
 
