@@ -893,4 +893,157 @@ Proof.
     Case "While". intros. inversion H.
 Qed.
 
+Inductive sinstr : Type :=
+| SPush : nat -> sinstr
+| SLoad : id -> sinstr
+| SPlus : sinstr
+| SMinus : sinstr
+| SMult : sinstr.
+
+Fixpoint s_execute (st : state) (stack : list nat)
+    (prog : list sinstr) : list nat :=
+    match prog with
+    | nil => stack
+    | instr :: prog' => match instr with
+        | SPush n => s_execute st (n :: stack) prog'
+        | SLoad xId => s_execute st ((st xId) :: stack) prog'
+        | SPlus => match stack with
+            | n2 :: n1 :: stack' =>
+                s_execute st ((n1+n2) :: stack') prog'
+            | _ => stack
+            end
+        | SMinus => match stack with
+            | n2 :: n1 :: stack' =>
+                s_execute st ((n1-n2) :: stack') prog'
+            | _ => stack
+            end
+        | SMult => match stack with
+            | n2 :: n1 :: stack' =>
+                s_execute st ((n1*n2) :: stack') prog'
+            | _ => stack
+            end
+        end
+    end.
+
+Example s_execute1 :
+    s_execute empty_state nil
+        [SPush 5; SPush 3; SPush 1; SMinus]
+    = [2; 5].
+Proof. simpl. reflexivity. Qed.
+
+Example s_execute2 :
+    s_execute (update empty_state X 3) [3; 4]
+        [SPush 4; SLoad X; SMult; SPlus]
+    = [15; 4].
+Proof. simpl. reflexivity. Qed.
+
+Fixpoint s_compile (e : aexp) : list sinstr :=
+    match e with
+    | ANum n => [SPush n]
+    | AId xId => [SLoad xId]
+    | APlus e1 e2 =>  s_compile e1 ++ s_compile e2 ++ [SPlus]
+    | AMinus e1 e2 => s_compile e1 ++ s_compile e2 ++ [SMinus]
+    | AMult e1 e2 => s_compile e1 ++ s_compile e2 ++ [SMult]
+    end.
+
+Example s_compile1 :
+    s_compile (AMinus (AId X) (AMult (ANum 2) (AId Y)))
+  = [SLoad X; SPush 2; SLoad Y; SMult; SMinus].
+Proof. simpl. reflexivity. Qed.
+
+Theorem s_execute_split :
+    forall (e : aexp) (st : state) (stack : list nat)
+           (prog : list sinstr),
+    s_execute st stack (s_compile e ++ prog)
+  = s_execute st ((aeval st e) :: stack) prog.
+Proof.
+    induction e.
+    Case "Anum". intros. simpl. reflexivity.
+    Case "AId". intros. simpl. reflexivity.
+    Case "APlus". intros. simpl. (* I need to group things to prog *)
+      assert (  (s_compile e1 ++ s_compile e2 ++ [SPlus]) ++ prog 
+              = (s_compile e1 ++ (s_compile e2 ++ [SPlus] ++ prog)))
+               as Regrouping.
+      SCase "Proof of assert".
+          rewrite -> app_ass. rewrite -> app_ass. reflexivity.
+      rewrite -> Regrouping.
+      assert (  s_execute st stack
+                  (s_compile e1 ++ s_compile e2 ++ [SPlus] ++ prog)
+              = s_execute st (aeval st e1 :: stack) (s_compile e2
+                                                      ++ [SPlus]
+                                                      ++ prog))
+             as Exec_step.
+      SCase "Proof of assert".
+          apply IHe1.
+      rewrite -> Exec_step. simpl.
+      assert (   s_execute st (aeval st e1 :: stack)
+                   (s_compile e2 ++ SPlus :: prog)
+               = s_execute st (aeval st e2 :: aeval st e1 :: stack)
+                   ( SPlus :: prog))
+             as Exec_step2.
+      SCase "Proof of assert".
+          apply IHe2.
+      rewrite -> Exec_step2. simpl. reflexivity.
+    Case "AMinus". intros. simpl.
+      assert (  (s_compile e1 ++ s_compile e2 ++ [SMinus]) ++ prog 
+              = (s_compile e1 ++ (s_compile e2 ++ [SMinus] ++ prog)))
+               as Regrouping.
+      SCase "Proof of assert".
+          rewrite -> app_ass. rewrite -> app_ass. reflexivity.
+      rewrite -> Regrouping.
+      assert (  s_execute st stack
+                  (s_compile e1 ++ s_compile e2 ++ [SMinus] ++ prog)
+              = s_execute st (aeval st e1 :: stack) (s_compile e2
+                                                      ++ [SMinus]
+                                                      ++ prog))
+             as Exec_step.
+      SCase "Proof of assert".
+          apply IHe1.
+      rewrite -> Exec_step. simpl.
+      assert (   s_execute st (aeval st e1 :: stack)
+                   (s_compile e2 ++ SMinus :: prog)
+               = s_execute st (aeval st e2 :: aeval st e1 :: stack)
+                   ( SMinus :: prog))
+             as Exec_step2.
+      SCase "Proof of assert".
+          apply IHe2.
+      rewrite -> Exec_step2. simpl. reflexivity.
+    Case "AMult". intros. simpl.
+      assert (  (s_compile e1 ++ s_compile e2 ++ [SMult]) ++ prog 
+              = (s_compile e1 ++ (s_compile e2 ++ [SMult] ++ prog)))
+               as Regrouping.
+      SCase "Proof of assert".
+          rewrite -> app_ass. rewrite -> app_ass. reflexivity.
+      rewrite -> Regrouping.
+      assert (  s_execute st stack
+                  (s_compile e1 ++ s_compile e2 ++ [SMult] ++ prog)
+              = s_execute st (aeval st e1 :: stack) (s_compile e2
+                                                      ++ [SMult]
+                                                      ++ prog))
+             as Exec_step.
+      SCase "Proof of assert".
+          apply IHe1.
+      rewrite -> Exec_step. simpl.
+      assert (   s_execute st (aeval st e1 :: stack)
+                   (s_compile e2 ++ SMult :: prog)
+               = s_execute st (aeval st e2 :: aeval st e1 :: stack)
+                   ( SMult :: prog))
+             as Exec_step2.
+      SCase "Proof of assert".
+          apply IHe2.
+      rewrite -> Exec_step2. simpl. reflexivity.
+Qed.
+
+Theorem s_compile_correct : forall (st : state) (e : aexp),
+    s_execute st [] (s_compile e) = [ aeval st e ].
+Proof.
+    induction e;
+    try reflexivity;  (* ANum, Aid *)
+    try (simpl;       (* APlus, AMinus, AMult *)
+         rewrite -> s_execute_split;
+         rewrite -> s_execute_split;
+         simpl; reflexivity).
+Qed.
+
+
 
