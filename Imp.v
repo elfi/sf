@@ -1045,5 +1045,136 @@ Proof.
          simpl; reflexivity).
 Qed.
 
+Module BreakImp.
+
+Inductive com : Type :=
+| CSkip : com
+| CBreak : com
+| CAss : id -> aexp -> com
+| CSeq : com -> com -> com
+| CIf : bexp -> com -> com -> com
+| CWhile : bexp -> com -> com.
+
+Tactic Notation "com_cases" tactic(first) ident(c) :=
+    first;
+    [ Case_aux c "SKIP" | Case_aux c "BREAK"
+    | Case_aux c "::=" | Case_aux c ";" 
+    | Case_aux c "IFB" | Case_aux c "WHILE" ].
+
+Notation "'SKIP'" := CSkip.
+Notation "'BREAK'" := CBreak.
+Notation "x '::=' a" := (CAss x a) (at level 60).
+Notation "c1 ; c2" :=
+    (CSeq c1 c2) (at level 80, right associativity).
+Notation "'WHILE' b 'DO' c 'END'" :=
+    (CWhile b c) (at level 80, right associativity).
+Notation "'IFB' b 'THEN' c1 'ELSE' c2 'FI'" :=
+    (CIf b c1 c2) (at level 80, right associativity).
 
 
+Inductive status : Type :=
+| SContinue : status
+| SBreak : status.
+
+Reserved Notation "c1 '/' st '||' s '/' st'"
+            (at level 40, st, s at level 39).
+
+Inductive ceval : com -> state -> status -> state -> Prop :=
+| E_Skip : forall st, CSkip / st || SContinue / st
+| E_Break : forall st, CBreak / st || SBreak / st
+| E_Ass : forall st a n x,
+    aeval st a = n ->
+    (x ::= a) / st || SContinue / (update st x n)
+| E_SeqContinue : forall c1 c2 st st' st'' status,
+    c1 / st || SContinue / st' ->
+    c2 / st' || status / st'' ->
+    (c1 ; c2) / st || status / st''
+| E_SeqBreak : forall c1 c2 st st',
+    c1 / st || SBreak / st' ->
+    (c1 ; c2) / st || SBreak / st'
+| E_IfTrue : forall b c1 c2 st st' state,
+    beval st b = true ->
+    c1 / st || state / st' ->
+    (IFB b THEN c1 ELSE c2 FI) / st || state / st'
+| E_IfFalse : forall b c1 c2 st st' state,
+    beval st b = false ->
+    c2 / st || state / st' ->
+    (IFB b THEN c1 ELSE c2 FI) / st || state / st'
+| E_WhileEnd : forall b c st,
+    beval st b = false ->
+    (WHILE b DO c END) / st || SContinue / st
+| E_WhileLoopContinue : forall b c st st' st'',
+    beval st b = true ->
+    c / st || SContinue / st' ->
+    (WHILE b DO c END) / st' || SContinue / st'' ->
+    (WHILE b DO c END) / st || SContinue / st''
+| E_WhileLoopBreak : forall b c st st',
+    beval st b = true ->
+    c / st || SBreak / st' ->
+    (WHILE b DO c END) / st || SContinue / st'
+
+  where "c1 '/' st '||' s '/' st'" := (ceval c1 st s st').
+
+Tactic Notation "ceval_cases" tactic(first) ident(c) :=
+  first;
+  [ Case_aux c "E_Skip" | Case_aux c "E_Break"
+  | Case_aux c "E_Ass" | Case_aux c "E_SeqContinue"
+  | Case_aux c "E_SeqBreak" | Case_aux c "E_IfTrue"
+  | Case_aux c "E_IfFalse" | Case_aux c "E_WhileEnd"
+  | Case_aux c "E_WhileLoopContinue" 
+  | Case_aux c "E_WhileLoopBreak" ].
+
+Theorem break_ignore : forall c st st' s,
+     (BREAK; c) / st || s / st' ->
+     st = st'.
+Proof.
+    intros. inversion H. subst.
+    inversion H2. (* contradiction *)
+    subst. inversion H5. reflexivity.
+Qed.
+
+Theorem while_continue : forall b c st st' s,
+  (WHILE b DO c END) / st || s / st' ->
+  s = SContinue.
+Proof.
+    intros. inversion H; reflexivity.
+Qed.
+
+Theorem while_stops_on_break : forall b c st st',
+  beval st b = true ->
+  c / st || SBreak / st' ->
+  (WHILE b DO c END) / st || SContinue / st'.
+Proof.
+    intros. apply E_WhileLoopBreak; assumption.
+Qed. 
+
+Theorem while_break_true : forall b c st st',
+  (WHILE b DO c END) / st || SContinue / st' ->
+  beval st' b = true ->
+  exists st'', c / st'' || SBreak / st'.
+Proof.
+    intros. remember (WHILE b DO c END) as WhileLoop.
+    (* most cases *)
+    ceval_cases(induction H) Case;
+       try (inversion HeqWhileLoop);
+       try subst.
+    Case "E_WhileEnd". rewrite H in H0. inversion H0.
+    Case "E_WhileLoopContinue". apply IHceval2; assumption.
+    Case "E_WhileLoopBreak". exists st. assumption. 
+Qed.
+
+Theorem ceval_deterministic: forall (c:com) st st1 st2 s1 s2,
+    c / st || s1 / st1 ->
+    c / st || s2 / st2 ->
+    st1 = st2 /\ s1 = s2.
+Proof.
+    split. generalize dependent st2. generalize dependent s2.
+    (* state *)
+    ceval_cases (induction H) Case;
+      intros s2 st2 E2;
+      try (inversion E2);
+      try subst;
+      try reflexivity.
+Admitted.
+
+(* TODO: short_circuit *)
