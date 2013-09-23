@@ -242,4 +242,29 @@ Proof.
         apply E_Ass. simpl. reflexivity.
 Qed.
 
+Theorem assign_aequiv: forall X e,
+    aequiv (AId X) e ->
+    cequiv SKIP (X ::= e).
+Proof.
+    intros X e Hae. split; intro H.
+    Case "->".
+        inversion H; subst.
+        assert (st' = (update st' X (st' X))).
+        SCase "Proof of assert".
+            apply functional_extensionality; intro x.
+            rewrite -> update_same; reflexivity.
+        rewrite -> H0 at 2.
+        apply E_Ass.
+        unfold aequiv in Hae. simpl in Hae.
+        rewrite -> Hae. reflexivity.
+    Case "<-".
+        inversion H; subst.  
+        assert (st = (update st X (aeval st e))).
+        SCase "Proof of assert".
+            apply functional_extensionality; intro x.
+            unfold aequiv in Hae; simpl in Hae.
+            rewrite <- Hae. rewrite -> update_same; reflexivity.
+        rewrite <- H0. apply E_Skip.
+Qed.
+
 
