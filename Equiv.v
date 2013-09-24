@@ -318,5 +318,16 @@ Proof.
     apply iff_trans with (c2 / st || st'). apply H1. apply H2.
 Qed.
 
+Theorem CAss_congruence : forall i a1 a1',
+    aequiv a1 a1' ->
+    cequiv (CAss i a1) (CAss i a1').
+Proof.
+    intros i a1 a1' Heqv st st'.
+    split; intro Hceval.
+    Case "->". inversion Hceval; subst.
+        apply E_Ass. symmetry. apply Heqv.
+    Case "<-". inversion Hceval; subst.
+        apply E_Ass. apply Heqv.
+Qed.
 
 
