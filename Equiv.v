@@ -330,4 +330,115 @@ Proof.
         apply E_Ass. apply Heqv.
 Qed.
 
+Theorem CWhile_congruence: forall b1 b1' c1 c1',
+    bequiv b1 b1' -> cequiv c1 c1' ->
+    cequiv (WHILE b1 DO c1 END) (WHILE b1' DO c1' END).
+Proof.
+    unfold bequiv, cequiv.
+    intros b1 b1' c1 c1' Hb1e Hc1e st st'.
+    split; intros Hce.
+    Case "->".
+        remember (WHILE b1 DO c1 END) as cwhile eqn:Heqcwhile.
+        induction Hce; inversion Heqcwhile; subst.
+        SCase "E_WhileEnd".
+            apply E_WhileEnd. rewrite <- Hb1e. assumption.
+        SCase "E_WhileLoop".
+            apply E_WhileLoop with st'.
+            SSCase "Loop runs b condition".
+                rewrite <- Hb1e. assumption.
+            SSCase "Body execution".
+                apply (Hc1e st st'). assumption.
+            SSCase "Subsequent loop execution".
+                apply IHHce2. assumption.
+    Case "<-".
+        remember (WHILE b1' DO c1' END) as c'while eqn:Heqc'while.
+        induction Hce; inversion Heqc'while; subst.
+        SCase "E_WhileEnd".
+            apply E_WhileEnd. rewrite -> Hb1e. assumption.
+        SCase "E_WhileLoop".
+            apply E_WhileLoop with st'. 
+            SSCase "Loop runs b condition".
+                rewrite -> Hb1e. assumption.
+            SSCase "Body execution".
+                apply (Hc1e st st'). assumption.
+            SSCase "Subsequent loop execution".
+                apply IHHce2. assumption.
+Qed.
+
+Theorem CSeq_congruence : forall c1 c1' c2 c2',
+    cequiv c1 c1' -> cequiv c2 c2' ->
+    cequiv (c1;;c2) (c1';;c2').
+Proof.
+    unfold cequiv. intros c1 c1' c2 c2' Hc1e Hc2e st st'.
+    split; intro H; subst.
+    Case "->".
+        inversion H; subst.
+        apply E_Seq with st'0.
+        SSCase "c1'". rewrite <- Hc1e. assumption.
+        SSCase "c2'". rewrite <- Hc2e. assumption.
+    Case "<-".
+        inversion H; subst.
+        apply E_Seq with st'0.
+        SSCase "c1". rewrite -> Hc1e. assumption.
+        SSCase "c2". rewrite -> Hc2e. assumption.
+Qed.
+
+Theorem CIf_congruence: forall b b' c1 c1' c2 c2',
+    bequiv b b' -> cequiv c1 c1' -> cequiv c2 c2' ->
+    cequiv (IFB b  THEN c1  ELSE c2  FI)
+           (IFB b' THEN c1' ELSE c2' FI).
+Proof.
+    unfold bequiv, cequiv. 
+    intros b b' c1 c1' c2 c2' Hbe Hc1e Hc2e st st'.
+    split; intro H; subst.
+    Case "->".
+        inversion H; subst.
+        SCase "b = true".
+            apply E_IfTrue. 
+            SSCase "condition". rewrite <- Hbe. assumption.
+            SSCase "command". rewrite <- Hc1e. assumption.
+        SCase "b = false".
+            apply E_IfFalse.
+            SSCase "condition". rewrite <- Hbe. assumption.
+            SSCase "command". rewrite <- Hc2e. assumption.
+    Case "<-".
+        inversion H; subst.
+        SCase "b' = true".
+            apply E_IfTrue.
+            SSCase "condition". rewrite -> Hbe. assumption.
+            SSCase "command". rewrite -> Hc1e. assumption.
+        SCase "b' = false".
+            apply E_IfFalse.
+            SSCase "condition". rewrite -> Hbe. assumption.
+            SSCase "command". rewrite -> Hc2e. assumption.
+Qed.
+
+Example congruence_example:
+    cequiv
+      (* program 1 *)
+      (X ::= ANum 0;;
+       IFB (BEq (AId X) (ANum 0))
+       THEN 
+         Y ::= ANum 0
+       ELSE 
+         Y ::= ANum 42
+       FI)
+       (* program 2 *)
+       (X ::= ANum 0;;
+        IFB (BEq (AId X) (ANum 0))
+        THEN
+          Y ::= AMinus (AId X) (AId X)
+        ELSE
+          Y ::= ANum 42
+        FI).
+Proof.
+    apply CSeq_congruence.
+        apply refl_cequiv.
+        apply CIf_congruence.
+          apply refl_bequiv.
+          apply CAss_congruence. unfold aequiv. simpl.
+              symmetry. apply minus_diag.
+          apply refl_cequiv.
+Qed.
+
 
