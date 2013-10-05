@@ -528,4 +528,64 @@ Example fold_bexp_ex2:
     = BAnd (BEq (AId X) (AId Y)) BTrue.
 Proof. reflexivity. Qed.
 
+Fixpoint fold_constants_com (c : com) : com :=
+    match c with
+    | SKIP => SKIP
+    | i ::= a => CAss i (fold_constants_aexp a)
+    | c1 ;; c2 =>
+          (fold_constants_com c1) ;; (fold_constants_com c2)
+    | IFB b THEN c1 ELSE c2 FI =>
+          match fold_constants_bexp b with
+          | BTrue => fold_constants_com c1
+          | BFalse => fold_constants_com c2
+          | b' => IFB b' THEN fold_constants_com c1
+                         ELSE fold_constants_com c2 FI
+          end
+    | WHILE b DO c END =>
+          match fold_constants_bexp b with
+            (* loop with constant true *)
+          | BTrue => WHILE BTrue DO SKIP END
+            (* just skip with constant false *)
+          | BFalse => SKIP
+          | b' => WHILE b' DO (fold_constants_com c) END
+          end
+    end.
+
+Example fold_com_ex1:
+    fold_constants_com
+      (* original program *)
+      (X ::= APlus (ANum 4) (ANum 5);;
+       Y ::= AMinus (AId X) (ANum 3);;
+       IFB BEq (AMinus (AId X) (AId Y))
+               (APlus (ANum 2) (ANum 4))
+       THEN
+           SKIP
+       ELSE
+           Y ::= ANum 0
+       FI;;
+       IFB BLe (ANum 0) (AMinus (ANum 4)
+                                (APlus (ANum 2) (ANum 1)))
+       THEN
+           Y ::= ANum 0
+       ELSE 
+           SKIP
+       FI;;
+       WHILE BEq (AId Y) (ANum 0) DO
+           X ::= APlus (AId X) (ANum 1)
+       END)
+    = (* after constant folding *)
+      (X ::= ANum 9;;
+       Y ::= AMinus (AId X) (ANum 3);;
+       IFB BEq (AMinus (AId X) (AId Y)) (ANum 6) THEN
+           SKIP
+       ELSE
+           (Y ::= ANum 0)
+       FI;;
+       Y ::= ANum 0;;
+       WHILE BEq (AId Y) (ANum 0) DO
+           X ::= APlus (AId X) (ANum 1)
+       END).
+Proof. reflexivity. Qed.
+
+
 
