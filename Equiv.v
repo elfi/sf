@@ -587,5 +587,103 @@ Example fold_com_ex1:
        END).
 Proof. reflexivity. Qed.
 
+Theorem fold_constants_aexp_sound :
+    atrans_sound fold_constants_aexp.
+Proof.
+    unfold atrans_sound. intro a. unfold aequiv. intro st.
+    aexp_cases (induction a) Case; simpl;
+        (* ANum and AId are done with just reflexivity *)
+        try reflexivity;
+        (* APlus, AMinus, AMult follow from IH *)
+        try ( destruct (fold_constants_aexp a1);
+              destruct (fold_constants_aexp a2);
+              rewrite -> IHa1; rewrite -> IHa2;
+              simpl; reflexivity ).
+Qed.
+
+Theorem fold_constants_bexp_sound:
+    btrans_sound fold_constants_bexp.
+Proof.
+    unfold btrans_sound. intro b. unfold bequiv. intro st.
+    bexp_cases (induction b) Case;
+        (* BTrue and BFalse are immediate *)
+        try (simpl; reflexivity).
+    Case "BEq".
+        rename a into a1. rename a0 into a2. simpl. 
+        remember (fold_constants_aexp a1) as a1' eqn:Heqa1'.
+        remember (fold_constants_aexp a2) as a2' eqn:Heqa2'.
+        replace (aeval st a1) with (aeval st a1') by
+            (subst a1'; rewrite <- fold_constants_aexp_sound;
+             reflexivity).
+        replace (aeval st a2) with (aeval st a2') by
+            (subst a2'; rewrite <- fold_constants_aexp_sound;
+             reflexivity).
+        destruct a1'; destruct a2'; try reflexivity.
+           (* remaining case: both a1 and a2 are constants *)
+           simpl. destruct (beq_nat n n0); reflexivity.
+    Case "BLe".
+        rename a into a1. rename a0 into a2. simpl.
+        remember (fold_constants_aexp a1) as a1' eqn:Heqa1'.
+        remember (fold_constants_aexp a2) as a2' eqn:Heqa2'.
+        replace (aeval st a1) with (aeval st a1') by
+            (subst a1'; rewrite <- fold_constants_aexp_sound;
+             reflexivity).
+        replace (aeval st a2) with (aeval st a2') by
+            (subst a2'; rewrite <- fold_constants_aexp_sound;
+             reflexivity).
+        destruct a1'; destruct a2'; try reflexivity.
+            (* remaining case: both a1' a2' constants *)
+            simpl. destruct (ble_nat n n0); reflexivity.
+    Case "BNot".
+        simpl. remember (fold_constants_bexp b) as b' eqn:Heqb'.
+        rewrite -> IHb. destruct b'; try reflexivity.
+    Case "BAnd".
+        simpl.
+        remember (fold_constants_bexp b1) as b1' eqn:Heqb1'.
+        remember (fold_constants_bexp b2) as b2' eqn:Heqb2'.
+        rewrite -> IHb1. rewrite -> IHb2.
+        destruct b1'; destruct b2'; reflexivity.
+Qed. 
+
+Theorem fold_constant_com_sound:
+    ctrans_sound fold_constants_com.
+Proof.
+    unfold ctrans_sound. intro c.
+    com_cases (induction c) Case; simpl.
+    Case "SKIP". apply refl_cequiv.
+    Case "::=".
+        apply CAss_congruence. apply fold_constants_aexp_sound.
+    Case ";;".
+        apply CSeq_congruence; assumption. 
+    Case "IFB".
+        assert (bequiv b (fold_constants_bexp b)).
+            apply fold_constants_bexp_sound.
+        destruct (fold_constants_bexp b) eqn:Heqb;
+            (* solves most of the goals *)
+            try (apply CIf_congruence; assumption).
+        SCase "b always true".
+            Check trans_cequiv.
+            apply trans_cequiv with c1; try assumption. 
+            Check IFB_true.
+            apply IFB_true; assumption.
+        SCase "b alwasy false".
+            apply trans_cequiv with c2; try assumption.
+            apply IFB_false; assumption. 
+    Case "WHILE".
+        remember (fold_constants_bexp b) as b' eqn:Heqb'.
+        destruct b';
+            try (apply CWhile_congruence;
+                 try assumption;
+                 rewrite -> Heqb';
+                 apply fold_constants_bexp_sound).
+         SCase "b always true".
+             apply WHILE_true. rewrite -> Heqb'.
+             apply fold_constants_bexp_sound.
+         SCase "b always false". 
+             apply WHILE_false. rewrite -> Heqb'.
+             apply fold_constants_bexp_sound.
+Qed. 
+
+
 
 
