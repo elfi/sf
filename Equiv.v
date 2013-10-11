@@ -684,6 +684,90 @@ Proof.
              apply fold_constants_bexp_sound.
 Qed. 
 
+Fixpoint optimize_0plus_aexp (a : aexp) : aexp :=
+    match a with
+    | ANum n => ANum n
+    | AId id => AId id
+    | APlus (ANum 0) a2 => a2
+    | APlus a1 a2 =>
+            APlus (optimize_0plus_aexp a1) (optimize_0plus_aexp a2)
+    | AMinus a1 a2 =>
+            AMinus (optimize_0plus_aexp a1) (optimize_0plus_aexp a2)
+    | AMult a1 a2 =>
+            AMult (optimize_0plus_aexp a1) (optimize_0plus_aexp a2)
+    end.
 
+Fixpoint optimize_0plus_bexp (b : bexp) : bexp :=
+    match b with
+    | BTrue => BTrue
+    | BFalse => BFalse
+    | BEq a1 a2 =>
+            BEq (optimize_0plus_aexp a1) (optimize_0plus_aexp a2)
+    | BLe a1 a2 =>
+            BLe (optimize_0plus_aexp a1) (optimize_0plus_aexp a2)
+    | BNot b1 => BNot (optimize_0plus_bexp b1)
+    | BAnd b1 b2 =>
+            BAnd (optimize_0plus_bexp b1) (optimize_0plus_bexp b2) 
+    end.
 
+Fixpoint optimize_0plus_com (c : com) : com :=
+    match c with
+    | CSkip => CSkip
+    | CAss id a => CAss id (optimize_0plus_aexp a)
+    | CSeq c1 c2 =>
+            CSeq (optimize_0plus_com c1) (optimize_0plus_com c2)
+    | CIf b c1 c2 =>
+            CIf (optimize_0plus_bexp b)
+                (optimize_0plus_com c1)
+                (optimize_0plus_com c2)
+    | CWhile b c1 =>
+            CWhile (optimize_0plus_bexp b) (optimize_0plus_com c1)
+    end.
+
+Theorem optimize_0plus_aexp_sound:
+    atrans_sound optimize_0plus_aexp.
+Proof.
+    unfold atrans_sound. intro a. unfold aequiv. intro st.
+    aexp_cases (induction a) Case; simpl;
+        (* ANum, AId *)
+        try reflexivity;
+        (* AMinus, AMult *)
+        try (rewrite -> IHa1; rewrite -> IHa2; reflexivity). 
+    Case "APlus".
+        remember (optimize_0plus_aexp a1) as a1'.
+        remember (optimize_0plus_aexp a2) as a2'.
+        destruct a1; 
+           (* most of the cases *)
+           try (rewrite -> IHa1; rewrite -> IHa2; reflexivity).
+        SCase "ANum". destruct n. 
+           (* base *) simpl. reflexivity.
+           (* succ *) rewrite -> IHa1. rewrite -> IHa2. reflexivity. 
+Qed.
+
+Theorem optimize_0plus_bexp_sound:
+    btrans_sound optimize_0plus_bexp.
+Proof.
+    unfold btrans_sound. intro b. unfold bequiv. intro st.
+    bexp_cases (induction b) Case; simpl;
+        (* BTrue, BFalse *)
+        try reflexivity;
+        (* BEq, BLe *)
+        (* chaining works because no subgoal are generated *)
+        try ( rename a into a1; rename a0 into a2;
+              remember (optimize_0plus_aexp a1) as a1';
+              remember (optimize_0plus_aexp a2) as a2';
+              replace (aeval st a1) with (aeval st a1') by
+                  (subst a1'; rewrite <- optimize_0plus_aexp_sound;
+                   reflexivity);
+              replace (aeval st a2) with (aeval st a2') by
+                  (subst a2'; rewrite <- optimize_0plus_aexp_sound;
+                   reflexivity);
+              reflexivity ).
+    Case "BNot". rewrite -> IHb; reflexivity.
+    Case "BAnd". rewrite -> IHb1; rewrite -> IHb2; reflexivity.
+Qed.
+
+Theorem optimize_0plus_com_sound:
+    ctrans_sound optimize_0plus_com.
+Proof.
 
