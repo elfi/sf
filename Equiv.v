@@ -59,7 +59,7 @@ Theorem IFB_true_simple: forall c1 c2,
 Proof.
     unfold cequiv. intros c1 c2 st st'. split.
     Case "->".
-        intro H. inversion H. 
+        intro H. inversion H.
         subst. assumption.
         subst. inversion H5.
     Case "<-".
@@ -74,7 +74,7 @@ Theorem IFB_true: forall b c1 c2,
 Proof.
     intros b c1 c2 HbEqBtrue. unfold cequiv. split.
     Case "->".
-        intro H. inversion H. 
+        intro H. inversion H.
             subst. assumption.
             subst. unfold bequiv in HbEqBtrue.
             rewrite -> HbEqBtrue in H5. inversion H5.
@@ -82,7 +82,7 @@ Proof.
         intro H. apply E_IfTrue.
             unfold bequiv in HbEqBtrue.
             rewrite -> HbEqBtrue. simpl. reflexivity.
-            assumption.            
+            assumption.
 Qed.
 
 Theorem IFB_false: forall b c1 c2,
@@ -116,7 +116,7 @@ Proof.
         inversion H; subst.
           apply E_IfFalse; try assumption.
              simpl in H5.
-             rewrite -> negb_true_iff in H5. assumption. 
+             rewrite -> negb_true_iff in H5. assumption.
           apply E_IfTrue; try assumption.
              simpl in H5.
              rewrite -> negb_false_iff in H5. assumption.
@@ -152,7 +152,7 @@ Proof.
     Case "E_WhileEnd".
         unfold bequiv in Hb. rewrite Hb in H. inversion H.
     Case "E_WhileLoop".
-        apply IHceval2. reflexivity. 
+        apply IHceval2. reflexivity.
 Qed.
 
 Theorem WHILE_true: forall b c,
@@ -258,7 +258,7 @@ Proof.
         unfold aequiv in Hae. simpl in Hae.
         rewrite -> Hae. reflexivity.
     Case "<-".
-        inversion H; subst.  
+        inversion H; subst.
         assert (st = (update st X (aeval st e))).
         SCase "Proof of assert".
             apply functional_extensionality; intro x.
@@ -284,7 +284,7 @@ Qed.
 Lemma refl_bequiv: forall (b : bexp), bequiv b b.
 Proof. intro b. unfold bequiv. reflexivity. Qed.
 
-Lemma sym_bequiv: forall (b1 b2 : bexp), 
+Lemma sym_bequiv: forall (b1 b2 : bexp),
     bequiv b1 b2 -> bequiv b2 b1.
 Proof. intros b1 b2 H st. symmetry. apply H. Qed.
 
@@ -298,7 +298,7 @@ Qed.
 Lemma refl_cequiv: forall (c : com), cequiv c c.
 Proof. unfold cequiv. intros c st st'. apply iff_refl. Qed.
 
-Lemma sym_cequiv: forall (c1 c2 : com), 
+Lemma sym_cequiv: forall (c1 c2 : com),
     cequiv c1 c2 -> cequiv c2 c1.
 Proof. intros c1 c2 H st st'. apply iff_sym. apply H. Qed.
 
@@ -356,7 +356,7 @@ Proof.
         SCase "E_WhileEnd".
             apply E_WhileEnd. rewrite -> Hb1e. assumption.
         SCase "E_WhileLoop".
-            apply E_WhileLoop with st'. 
+            apply E_WhileLoop with st'.
             SSCase "Loop runs b condition".
                 rewrite -> Hb1e. assumption.
             SSCase "Body execution".
@@ -388,13 +388,13 @@ Theorem CIf_congruence: forall b b' c1 c1' c2 c2',
     cequiv (IFB b  THEN c1  ELSE c2  FI)
            (IFB b' THEN c1' ELSE c2' FI).
 Proof.
-    unfold bequiv, cequiv. 
+    unfold bequiv, cequiv.
     intros b b' c1 c1' c2 c2' Hbe Hc1e Hc2e st st'.
     split; intro H; subst.
     Case "->".
         inversion H; subst.
         SCase "b = true".
-            apply E_IfTrue. 
+            apply E_IfTrue.
             SSCase "condition". rewrite <- Hbe. assumption.
             SSCase "command". rewrite <- Hc1e. assumption.
         SCase "b = false".
@@ -418,9 +418,9 @@ Example congruence_example:
       (* program 1 *)
       (X ::= ANum 0;;
        IFB (BEq (AId X) (ANum 0))
-       THEN 
+       THEN
          Y ::= ANum 0
-       ELSE 
+       ELSE
          Y ::= ANum 42
        FI)
        (* program 2 *)
@@ -567,7 +567,7 @@ Example fold_com_ex1:
                                 (APlus (ANum 2) (ANum 1)))
        THEN
            Y ::= ANum 0
-       ELSE 
+       ELSE
            SKIP
        FI;;
        WHILE BEq (AId Y) (ANum 0) DO
@@ -609,7 +609,7 @@ Proof.
         (* BTrue and BFalse are immediate *)
         try (simpl; reflexivity).
     Case "BEq".
-        rename a into a1. rename a0 into a2. simpl. 
+        rename a into a1. rename a0 into a2. simpl.
         remember (fold_constants_aexp a1) as a1' eqn:Heqa1'.
         remember (fold_constants_aexp a2) as a2' eqn:Heqa2'.
         replace (aeval st a1) with (aeval st a1') by
@@ -643,7 +643,7 @@ Proof.
         remember (fold_constants_bexp b2) as b2' eqn:Heqb2'.
         rewrite -> IHb1. rewrite -> IHb2.
         destruct b1'; destruct b2'; reflexivity.
-Qed. 
+Qed.
 
 Theorem fold_constant_com_sound:
     ctrans_sound fold_constants_com.
@@ -654,7 +654,7 @@ Proof.
     Case "::=".
         apply CAss_congruence. apply fold_constants_aexp_sound.
     Case ";;".
-        apply CSeq_congruence; assumption. 
+        apply CSeq_congruence; assumption.
     Case "IFB".
         assert (bequiv b (fold_constants_bexp b)).
             apply fold_constants_bexp_sound.
@@ -663,12 +663,12 @@ Proof.
             try (apply CIf_congruence; assumption).
         SCase "b always true".
             Check trans_cequiv.
-            apply trans_cequiv with c1; try assumption. 
+            apply trans_cequiv with c1; try assumption.
             Check IFB_true.
             apply IFB_true; assumption.
         SCase "b alwasy false".
             apply trans_cequiv with c2; try assumption.
-            apply IFB_false; assumption. 
+            apply IFB_false; assumption.
     Case "WHILE".
         remember (fold_constants_bexp b) as b' eqn:Heqb'.
         destruct b';
@@ -679,10 +679,10 @@ Proof.
          SCase "b always true".
              apply WHILE_true. rewrite -> Heqb'.
              apply fold_constants_bexp_sound.
-         SCase "b always false". 
+         SCase "b always false".
              apply WHILE_false. rewrite -> Heqb'.
              apply fold_constants_bexp_sound.
-Qed. 
+Qed.
 
 Fixpoint optimize_0plus_aexp (a : aexp) : aexp :=
     match a with
@@ -707,7 +707,7 @@ Fixpoint optimize_0plus_bexp (b : bexp) : bexp :=
             BLe (optimize_0plus_aexp a1) (optimize_0plus_aexp a2)
     | BNot b1 => BNot (optimize_0plus_bexp b1)
     | BAnd b1 b2 =>
-            BAnd (optimize_0plus_bexp b1) (optimize_0plus_bexp b2) 
+            BAnd (optimize_0plus_bexp b1) (optimize_0plus_bexp b2)
     end.
 
 Fixpoint optimize_0plus_com (c : com) : com :=
@@ -732,16 +732,16 @@ Proof.
         (* ANum, AId *)
         try reflexivity;
         (* AMinus, AMult *)
-        try (rewrite -> IHa1; rewrite -> IHa2; reflexivity). 
+        try (rewrite -> IHa1; rewrite -> IHa2; reflexivity).
     Case "APlus".
         remember (optimize_0plus_aexp a1) as a1'.
         remember (optimize_0plus_aexp a2) as a2'.
-        destruct a1; 
+        destruct a1;
            (* most of the cases *)
            try (rewrite -> IHa1; rewrite -> IHa2; reflexivity).
-        SCase "ANum". destruct n. 
+        SCase "ANum". destruct n.
            (* base *) simpl. reflexivity.
-           (* succ *) rewrite -> IHa1. rewrite -> IHa2. reflexivity. 
+           (* succ *) rewrite -> IHa1. rewrite -> IHa2. reflexivity.
 Qed.
 
 Theorem optimize_0plus_bexp_sound:
@@ -833,7 +833,7 @@ Theorem subst_inequiv:
 Proof.
     unfold subst_equiv_property.
     intro Contra.
-    
+
     (* setting up for a counter example *)
     remember (X ::= APlus (AId X) (ANum 1);;
               Y ::= AId X) as c1.
@@ -851,15 +851,15 @@ Proof.
                   (* two subgoals of the Seq generated *)
                   apply E_Ass; simpl; reflexivity).
     apply H in H1.
-    
+
     (* the states should be the same under the subst_equiv_prop *)
     assert (Hcontra: st1 = st2) by
         (apply (ceval_deterministic c2 empty_state); assumption).
-    
+
     (* extract value of Y from states *)
     assert (Hcontra' : st1 Y = st2 Y) by
         (rewrite -> Hcontra; reflexivity).
-    
+
     (* Y-es does not match *)
     subst. inversion Hcontra'.
 Qed.
