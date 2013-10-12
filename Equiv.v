@@ -770,4 +770,43 @@ Qed.
 Theorem optimize_0plus_com_sound:
     ctrans_sound optimize_0plus_com.
 Proof.
+    unfold ctrans_sound. intro c.
+    com_cases (induction c) Case; simpl.
+    Case "SKIP".
+        apply refl_cequiv.
+    Case "::=".
+        apply CAss_congruence. apply optimize_0plus_aexp_sound.
+    Case ";;".
+        apply CSeq_congruence; assumption.
+    Case "IFB".
+        apply CIf_congruence;
+            try (apply optimize_0plus_bexp_sound);
+            assumption.
+    Case "WHILE".
+        apply CWhile_congruence;
+            try (apply optimize_0plus_bexp_sound);
+            assumption.
+Qed.
+
+Definition optimizer (c : com) : com :=
+    optimize_0plus_com (fold_constants_com c).
+
+Example optimizer_ex1:
+    optimizer (X ::= APlus (AMinus (ANum 5) (ANum 5))
+                           (AId Z))
+    = (X ::= AId Z).
+Proof. reflexivity. Qed.
+
+Theorem optimizer_sound:
+    ctrans_sound optimizer.
+Proof.
+    unfold ctrans_sound. intro c. unfold optimizer.
+    remember (fold_constants_com c) as c'.
+    apply trans_cequiv with c'.
+    Case "c to c'".
+        rewrite -> Heqc'. apply fold_constant_com_sound.
+    Case "c' to (optimize_0plus_com c')".
+        apply optimize_0plus_com_sound.
+Qed.
+
 
