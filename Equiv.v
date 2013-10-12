@@ -809,4 +809,59 @@ Proof.
         apply optimize_0plus_com_sound.
 Qed.
 
+Fixpoint subst_aexp (i : id) (u : aexp) (a : aexp) : aexp :=
+    match a with
+    | ANum n => ANum n
+    | AId i' => if eq_id_dec i i' then u else AId i'
+    | APlus a1 a2 => APlus (subst_aexp i u a1) (subst_aexp i u a2)
+    | AMinus a1 a2 => AMinus (subst_aexp i u a1) (subst_aexp i u a2)
+    | AMult a1 a2 => AMult (subst_aexp i u a1) (subst_aexp i u a2)
+    end.
+
+Example subst_aexp_ex:
+    subst_aexp X (APlus (ANum 42) (ANum 53)) (APlus (AId Y) (AId X))
+    = (APlus (AId Y) (APlus (ANum 42) (ANum 53))).
+Proof. reflexivity. Qed.
+
+Definition subst_equiv_property :=
+    forall i1 i2 a1 a2,
+    cequiv (i1 ::= a1;; i2 ::= a2)
+           (i1 ::= a1;; i2 ::= subst_aexp i1 a1 a2).
+
+Theorem subst_inequiv:
+    ~ subst_equiv_property.
+Proof.
+    unfold subst_equiv_property.
+    intro Contra.
+    
+    (* setting up for a counter example *)
+    remember (X ::= APlus (AId X) (ANum 1);;
+              Y ::= AId X) as c1.
+    remember (X ::= APlus (AId X) (ANum 1);;
+              Y ::= APlus (AId X) (ANum 1)) as c2.
+    assert (cequiv c1 c2) by (subst; apply Contra).
+
+    (* bring states into the game *)
+    remember (update (update empty_state X 1) Y 1) as st1.
+    remember (update (update empty_state X 1) Y 2) as st2.
+    assert (H1: c1 / empty_state || st1); (* 2 goals now *)
+    assert (H2: c2 / empty_state || st2); (* 4 goals now *)
+            try ( subst;
+                  apply E_Seq with (st' := (update empty_state X 1));
+                  (* two subgoals of the Seq generated *)
+                  apply E_Ass; simpl; reflexivity).
+    apply H in H1.
+    
+    (* the states should be the same under the subst_equiv_prop *)
+    assert (Hcontra: st1 = st2) by
+        (apply (ceval_deterministic c2 empty_state); assumption).
+    
+    (* extract value of Y from states *)
+    assert (Hcontra' : st1 Y = st2 Y) by
+        (rewrite -> Hcontra; reflexivity).
+    
+    (* Y-es does not match *)
+    subst. inversion Hcontra'.
+Qed.
+
 
