@@ -592,15 +592,15 @@ Example hoare_asgn_example1' :
 Proof.
   eapply hoare_consequence_pre.
   apply hoare_asgn.
-  intros st H. reflexivity.  Qed.
+  intros st H.  reflexivity.  Qed.
 
-(** In general, [eapply H] tactic works just like [apply H]
-    except that, instead of failing if unifying the goal with the
-    conclusion of [H] does not determine how to instantiate all
-    of the variables appearing in the premises of [H], [eapply H]
-    will replace these variables with _existential variables_
-    (written [?nnn]) as placeholders for expressions that will be
-    determined (by further unification) later in the proof. *)
+(** In general, [eapply H] tactic works just like [apply H] except
+    that, instead of failing if unifying the goal with the conclusion
+    of [H] does not determine how to instantiate all of the variables
+    appearing in the premises of [H], [eapply H] will replace these
+    variables with so-called _existential variables_ (written [?nnn])
+    as placeholders for expressions that will be determined (by
+    further unification) later in the proof. *)
 
 (** In order for [Qed] to succeed, all existential variables need to
     be determined by the end of the proof. Otherwise Coq
@@ -622,6 +622,10 @@ Proof.
              Q : nat -> Prop
              HP : forall x y : nat, P x y
              HQ : forall x y : nat, P x y -> Q x |- nat] 
+  
+     (dependent evars: ?171 open,)
+
+     You can use Grab Existential Variables.
    Trying to finish the proof with [Qed] gives an error:
 <<
     Error: Attempt to save a proof with existential variables still
@@ -641,7 +645,6 @@ Lemma silly2 :
   Q 42.
 Proof.
   intros P Q HP HQ. eapply HQ. destruct HP as [y HP'].
-
 (** Doing [apply HP'] above fails with the following error:
      Error: Impossible to unify "?175" with "y".
     In this case there is an easy fix:
@@ -675,6 +678,8 @@ Lemma silly2_eassumption : forall (P : nat -> nat -> Prop) (Q : nat -> Prop),
 Proof.
   intros P Q HP HQ. destruct HP as [y HP']. eapply HQ. eassumption.
 Qed.
+
+    
 
 (** **** Exercise: 2 stars (hoare_asgn_examples_2) *)
 (** Translate these informal Hoare triples...
@@ -712,13 +717,13 @@ Proof.
         {{ P }} c1 {{ Q }} 
         {{ Q }} c2 {{ R }}
        ---------------------  (hoare_seq)
-       {{ P }} c1;c2 {{ R }}
+       {{ P }} c1;;c2 {{ R }}
 *)
 
 Theorem hoare_seq : forall P Q R c1 c2,
      {{Q}} c2 {{R}} ->
      {{P}} c1 {{Q}} ->
-     {{P}} c1;c2 {{R}}.
+     {{P}} c1;;c2 {{R}}.
 Proof.
   intros P Q R c1 c2 H1 H2 st st' H12 Pre.
   inversion H12; subst.
@@ -737,7 +742,7 @@ Proof.
     rule is as a "decorated program" where the intermediate assertion
     [Q] is written between [c1] and [c2]:
       {{ a = n }}
-    X ::= a;
+    X ::= a;;
       {{ X = n }}      <---- decoration for Q
     SKIP
       {{ X = n }}
@@ -745,7 +750,7 @@ Proof.
 
 Example hoare_asgn_example3 : forall a n,
   {{fun st => aeval st a = n}} 
-  (X ::= a; SKIP) 
+  (X ::= a;; SKIP) 
   {{fun st => st X = n}}.
 Proof.
   intros a n. eapply hoare_seq.
@@ -763,7 +768,7 @@ Proof.
 (** Translate this "decorated program" into a formal proof:
                    {{ True }} ->>
                    {{ 1 = 1 }}
-    X ::= 1;
+    X ::= 1;;
                    {{ X = 1 }} ->>
                    {{ X = 1 /\ 2 = 2 }}
     Y ::= 2
@@ -771,7 +776,7 @@ Proof.
 *)
 
 Example hoare_asgn_example4 :
-  {{fun st => True}} (X ::= (ANum 1); Y ::= (ANum 2)) 
+  {{fun st => True}} (X ::= (ANum 1);; Y ::= (ANum 2)) 
   {{fun st => st X = 1 /\ st Y = 2}}.
 Proof.
   (* FILL IN HERE *) Admitted.
@@ -799,7 +804,7 @@ Proof.
 (** Explain why the following proposition can't be proven:
       forall (a : aexp) (n : nat),
          {{fun st => aeval st a = n}}
-         (X ::= (ANum 3); Y ::= a)
+         (X ::= (ANum 3);; Y ::= a)
          {{fun st => st Y = n}}.
 *)
 
@@ -906,7 +911,7 @@ Proof.
     eapply hoare_consequence_pre. apply hoare_asgn.
     unfold bassn, assn_sub, update, assert_implies.
     simpl. intros st [_ H].
-    symmetry in H; apply beq_nat_eq in H.
+    apply beq_nat_true in H.
     rewrite H. omega.
   Case "Else".
     eapply hoare_consequence_pre. apply hoare_asgn.
@@ -964,7 +969,7 @@ Tactic Notation "com_cases" tactic(first) ident(c) :=
 
 Notation "'SKIP'" := 
   CSkip.
-Notation "c1 ; c2" := 
+Notation "c1 ;; c2" := 
   (CSeq c1 c2) (at level 80, right associativity).
 Notation "X '::=' a" := 
   (CAss X a) (at level 60).
@@ -986,7 +991,7 @@ Inductive ceval : com -> state -> state -> Prop :=
   | E_Ass : forall (st : state) (a1 : aexp) (n : nat) (X : id),
             aeval st a1 = n -> (X ::= a1) / st || update st X n
   | E_Seq : forall (c1 c2 : com) (st st' st'' : state),
-            c1 / st || st' -> c2 / st' || st'' -> (c1 ; c2) / st || st''
+            c1 / st || st' -> c2 / st' || st'' -> (c1 ;; c2) / st || st''
   | E_IfTrue : forall (st st' : state) (b1 : bexp) (c1 c2 : com),
                beval st b1 = true ->
                c1 / st || st' -> (IFB b1 THEN c1 ELSE c2 FI) / st || st'
@@ -1128,9 +1133,9 @@ Proof.
   (* Like we've seen before, we need to reason by induction 
      on He, because, in the "keep looping" case, its hypotheses 
      talk about the whole loop instead of just c *)
-  remember (WHILE b DO c END) as wcom.
+  remember (WHILE b DO c END) as wcom eqn:Heqwcom.
   ceval_cases (induction He) Case;
-    try (inversion Heqwcom); subst.
+    try (inversion Heqwcom); subst; clear Heqwcom.
 
   Case "E_WhileEnd".
     split. assumption. apply bexp_eval_false. assumption.
@@ -1154,9 +1159,9 @@ Proof.
   unfold bassn, assn_sub, assert_implies, update. simpl.
     intros st [H1 H2]. apply ble_nat_true in H2. omega.
   unfold bassn, assert_implies. intros st [Hle Hb]. 
-    simpl in Hb. remember (ble_nat (st X) 2) as le. destruct le. 
+    simpl in Hb. destruct (ble_nat (st X) 2) eqn : Heqle. 
     apply ex_falso_quodlibet. apply Hb; reflexivity.  
-    symmetry in Heqle. apply ble_nat_false in Heqle. omega. 
+    apply ble_nat_false in Heqle. omega. 
 Qed.
 
 
@@ -1227,7 +1232,7 @@ Tactic Notation "com_cases" tactic(first) ident(c) :=
 
 Notation "'SKIP'" := 
   CSkip.
-Notation "c1 ; c2" := 
+Notation "c1 ;; c2" := 
   (CSeq c1 c2) (at level 80, right associativity).
 Notation "X '::=' a" := 
   (CAsgn X a) (at level 60).
@@ -1253,7 +1258,7 @@ Inductive ceval : state -> com -> state -> Prop :=
   | E_Seq : forall c1 c2 st st' st'',
       ceval st c1 st' ->
       ceval st' c2 st'' ->
-      ceval st (c1 ; c2) st''
+      ceval st (c1 ;; c2) st''
   | E_IfTrue : forall st st' b1 c1 c2,
       beval st b1 = true ->
       ceval st c1 st' ->
@@ -1300,7 +1305,7 @@ Notation "{{ P }}  c  {{ Q }}" :=
 
 Definition ex1_repeat :=
   REPEAT
-    X ::= ANum 1;
+    X ::= ANum 1;;
     Y ::= APlus (AId Y) (ANum 1)
   UNTIL (BEq (AId X) (ANum 1)) END.
 
@@ -1320,7 +1325,7 @@ Proof.
     to prove the following valid Hoare triple:
   {{ X > 0 }}
   REPEAT
-    Y ::= X;
+    Y ::= X;;
     X ::= X - 1
   UNTIL X = 0 END
   {{ X = 0 /\ Y > 0 }}
@@ -1359,7 +1364,7 @@ Notation "'SKIP'" :=
   CSkip.
 Notation "X '::=' a" :=
   (CAsgn X a) (at level 60).
-Notation "c1 ; c2" :=
+Notation "c1 ;; c2" :=
   (CSeq c1 c2) (at level 80, right associativity).
 Notation "'WHILE' b 'DO' c 'END'" :=
   (CWhile b c) (at level 80, right associativity).
@@ -1374,7 +1379,7 @@ Inductive ceval : com -> state -> state -> Prop :=
   | E_Ass : forall (st : state) (a1 : aexp) (n : nat) (X : id),
             aeval st a1 = n -> (X ::= a1) / st || update st X n
   | E_Seq : forall (c1 c2 : com) (st st' st'' : state),
-            c1 / st || st' -> c2 / st' || st'' -> (c1 ; c2) / st || st''
+            c1 / st || st' -> c2 / st' || st'' -> (c1 ;; c2) / st || st''
   | E_IfTrue : forall (st st' : state) (b1 : bexp) (c1 c2 : com),
                beval st b1 = true ->
                c1 / st || st' -> (IFB b1 THEN c1 ELSE c2 FI) / st || st'
@@ -1446,7 +1451,7 @@ End Himp.
                {{ P }} c1 {{ Q }} 
                {{ Q }} c2 {{ R }}
               ---------------------  (hoare_seq)
-              {{ P }} c1;c2 {{ R }}
+              {{ P }} c1;;c2 {{ R }}
 
               {{P /\  b}} c1 {{Q}}
               {{P /\ ~b}} c2 {{Q}}
@@ -1466,5 +1471,5 @@ End Himp.
     that programs satisfy specifications of their behavior.
 *)
 
-(* $Date: 2013-04-01 09:15:45 -0400 (Mon, 01 Apr 2013) $ *)
+(* $Date: 2013-07-30 09:24:33 -0700 (Tue, 30 Jul 2013) $ *)
 
