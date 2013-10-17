@@ -345,6 +345,8 @@ Proof.
         try (apply IHe2; reflexivity).
 Qed.
 
+End AExp.
+
 Module aevalR_division.
 
 Inductive aexp : Type :=
@@ -429,6 +431,8 @@ Proof.
     Case "x <> y".
         reflexivity.
 Qed.
+
+End Id.
 
 Definition state := id -> nat.
 
@@ -1176,6 +1180,8 @@ Proof.
       try subst;
       try reflexivity.
 Admitted.
+
+End BreakImp.
 
 (* TODO: short_circuit *)
 (* TODO: add_for_loop *)
