@@ -221,4 +221,37 @@ Proof.
     unfold update. simpl. assumption.
 Qed.
 
+Theorem hoare_skip: forall P,
+    {{ P }} SKIP {{ P }}.
+Proof.
+    unfold hoare_triple. intros P st st' H HP.
+    inversion H; subst. assumption.
+Qed.
+
+Theorem hoare_seq: forall P Q R c1 c2,
+    {{ Q }} c2 {{ R }} ->
+    {{ P }} c1 {{ Q }} ->
+    {{ P }} c1;;c2 {{ R }}.
+Proof.
+    intros P Q R c1 c2 H1 H2. unfold hoare_triple.
+    intros st st' Heval HP.
+    inversion Heval; subst.
+    apply (H1 st'0 st'); try assumption.
+    apply (H2 st st'0); assumption.
+Qed.
+
+Example hoare_asgn_examples_example3: forall a n,
+    {{ fun st => aeval st a = n }}
+    X ::=a;; SKIP
+    {{ fun st => st X = n }}.
+Proof.
+    intros a n. eapply hoare_seq.
+    Case "c2".
+        apply hoare_skip.
+    Case "c1".
+        eapply hoare_consequence_pre. apply hoare_asgn.
+        unfold assert_implies. intros st H. subst.
+        unfold assn_sub. apply update_eq.
+Qed.
+
 
