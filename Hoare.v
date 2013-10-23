@@ -160,4 +160,65 @@ Proof.
        apply hoare_consequence_post with (Q' := Q') *)
 Qed.
 
+Example hoare_asgn_examples_ex1' :
+    {{ fun st => True }}
+    X ::= ANum 1
+    {{ fun st => st X = 1 }}.
+Proof.
+    eapply hoare_consequence_pre.
+    apply hoare_asgn.
+    unfold assert_implies. intros st H. reflexivity.
+Qed.
+
+Example silly1: forall (P : nat -> nat -> Prop) (Q : nat -> Prop),
+    (forall x y : nat, P x y) ->
+    (forall x y : nat, P x y -> Q x) ->
+    Q 42.
+Proof.
+    intros P Q HP HQ. eapply HQ. apply HP. 
+    (* What should y be? *)
+    (* Qed. => Error: Attempt to save a proof with
+               existential variables still non-instantiated *)
+Abort.
+
+Lemma silly2:
+    forall (P : nat -> nat -> Prop) (Q : nat -> Prop),
+    (exists y, P 42 y) ->
+    (forall x y : nat, P x y -> Q x) ->
+    Q 42.
+Proof.
+    intros P Q HP HQ. destruct HP as [y HP'].
+    (* y has been brought to the env. before eapply creates
+       existential variables => can be later used to instantiate
+       this ex. variable *)
+    eapply HQ. apply HP'.
+Qed.
+
+Lemma silly2_eassumption: forall (P : nat -> nat -> Prop) (Q : nat -> Prop),
+    (exists y, P 42 y) ->
+    (forall x y : nat, P x y -> Q x) ->
+    Q 42.
+Proof.
+    intros P Q HP HQ. destruct HP as [y HP'].
+    eapply HQ. eassumption.
+Qed.
+
+Example hoare_asgn_examples_examples_2_1:
+    {{ (fun st => st X <= 5) [ X |-> (APlus (AId X) (ANum 1)) ] }}
+    X ::= (APlus (AId X) (ANum 1))
+    {{ fun st => st X <= 5 }}.
+Proof. apply hoare_asgn. Qed.
+
+Example hoare_asgn_examples_examples_2_2:
+    {{ (fun st => (0 <= 3 /\ 3 <= 5)) }}
+    X ::= ANum 3
+    {{ (fun st => (0 <= st X /\ st X <= 5)) }}.
+Proof.
+    eapply hoare_consequence_pre.
+    apply hoare_asgn.
+    unfold assert_implies. intros st H.
+    unfold assn_sub. simpl.
+    unfold update. simpl. assumption.
+Qed.
+
 
