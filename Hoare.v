@@ -254,4 +254,39 @@ Proof.
         unfold assn_sub. apply update_eq.
 Qed.
 
+Example hoare_asgn_examples_example4:
+    {{ fun st => True }}
+    X ::= ANum 1;; Y ::= ANum 2
+    {{ fun st => (st X = 1 /\ st Y = 2) }}.
+Proof.
+    eapply hoare_seq.
+    Case "c2".
+        apply hoare_asgn.
+    Case "c1".
+        eapply hoare_consequence_pre.
+        apply hoare_asgn.
+        unfold assert_implies. unfold assn_sub. simpl.
+        intros st HTrue. split; reflexivity.
+Qed.
+
+Definition swap_program: com :=
+    Z ::= AId X;; X ::= AId Y;; Y ::= AId Z.
+
+Theorem swap_exercise:
+    {{ fun st => st X <= st Y }}
+    swap_program
+    {{ fun st => st Y <= st X }}.
+Proof.
+    eapply hoare_seq.
+    Case "c2;;c3".
+        eapply hoare_seq.
+        apply hoare_asgn.
+        apply hoare_asgn.
+    Case "c1".
+        eapply hoare_consequence_pre.
+        apply hoare_asgn.
+        unfold assert_implies, assn_sub. simpl.
+        intros st H. compute. fold X Y. assumption.
+Qed.
+
 
