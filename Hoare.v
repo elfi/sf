@@ -289,4 +289,79 @@ Proof.
         intros st H. compute. fold X Y. assumption.
 Qed.
 
+Definition bassn b : Assertion :=
+    fun st => (beval st b = true).
+
+Lemma bexp_eval_true : forall b st,
+    beval st b = true -> (bassn b) st.
+Proof.
+    intros b st H. unfold bassn. assumption.
+Qed.
+
+Lemma bexp_eval_false : forall b st,
+    beval st b = false -> ~ ((bassn b) st).
+Proof.
+    intros b st H. unfold not. intro contra.
+    unfold bassn in contra. rewrite H in contra. inversion contra.
+Qed.
+
+Theorem hoare_if: forall P Q b c1 c2,
+    {{ fun st => P st /\ bassn b st }} c1 {{ Q }} ->
+    {{ fun st => P st /\ ~(bassn b st) }} c2 {{ Q }} ->
+    {{ P }} (IFB b THEN c1 ELSE c2 FI) {{ Q }}.
+Proof.
+    intros P Q b c1 c2 Htrue Hfalse.
+    unfold hoare_triple. intros st st' Heval HP.
+    inversion Heval; subst.
+    Case "b is true".
+        eapply Htrue. 
+            eassumption. 
+            split. assumption. apply bexp_eval_true. assumption. 
+    Case "b is false".
+        eapply Hfalse.
+            eassumption.
+            split. assumption. apply bexp_eval_false. assumption.
+Qed.
+
+Example if_example:
+    {{ fun st => True }}
+    IFB (BEq (AId X) (ANum 0))
+        THEN (Y ::= (ANum 2))
+        ELSE (Y ::= APlus (AId X) (ANum 1))
+    FI
+    {{ fun st => st X <= st Y }}.
+Proof.
+    apply hoare_if.
+    Case "Then".
+        eapply hoare_consequence_pre. apply hoare_asgn.
+        unfold bassn, assn_sub, update, assert_implies.
+        simpl. intros st [_ H].
+        Check beq_nat_true.
+        apply beq_nat_true in H. rewrite -> H. omega.
+    Case "Else".
+        eapply hoare_consequence_pre. apply hoare_asgn.
+        unfold assn_sub, update, assert_implies.
+        simpl. intros st _. omega.
+Qed.
+
+Theorem if_minus_plus:
+    {{ fun st => True }}
+    IFB (BLe (AId X) (AId Y))
+        THEN (Z ::= AMinus (AId Y) (AId X))
+        ELSE (Y ::= APlus (AId X) (AId Z))
+    FI
+    {{ fun st => st Y = st X + st Z }}.
+Proof.
+    apply hoare_if.
+    Case "Then".
+        eapply hoare_consequence_pre. apply hoare_asgn.
+        unfold assert_implies, bassn, assn_sub, update.
+        simpl. intros st [_ H]. apply ble_nat_true in H.
+        inversion H; omega.
+    Case "False".
+        eapply hoare_consequence_pre. apply hoare_asgn.
+        unfold assert_implies, assn_sub, update. simpl.
+        intros st _. omega.
+Qed.
+
 
