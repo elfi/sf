@@ -364,4 +364,147 @@ Proof.
         intros st _. omega.
 Qed.
 
+Module If1.
+
+Inductive com : Type :=
+| CSkip : com
+| CAss : id -> aexp -> com
+| CSeq : com -> com -> com
+| CIf : bexp -> com -> com -> com
+| CWhile : bexp -> com -> com
+| CIf1 : bexp -> com -> com.
+
+Tactic Notation "com_cases" tactic(first) ident(c) :=
+    first;
+    [ Case_aux c "SKIP" | Case_aux c "::=" | Case_aux c ";;"
+    | Case_aux c "IFB" | Case_aux c "WHILE" | Case_aux c "CIF1" ].
+
+Notation "'SKIP'" := CSkip.
+Notation "c1 ;; c2" :=
+    (CSeq c1 c2) (at level 80, right associativity).
+Notation "X '::=' a" :=
+    (CAss X a) (at level 60).
+Notation "'WHILE' b 'DO' c 'END'" :=
+    (CWhile b c) (at level 80, right associativity).
+Notation "'IFB' e1 'THEN' e2 'ELSE' e3 'FI'" :=
+    (CIf e1 e2 e3) (at level 80, right associativity).
+Notation "'IF1' b 'THEN' c 'FI'" :=
+    (CIf1 b c) (at level 80, right associativity).
+
+Reserved Notation "c1 '/' st '||' st'" (at level 40, st at level 39).
+
+Inductive ceval : com -> state -> state -> Prop :=
+| E_Skip : forall st : state, SKIP / st || st
+| E_Ass : forall (st : state) (a : aexp) (n : nat) (X : id),
+        aeval st a = n -> (X ::= a) / st || update st X n
+| E_Seq: forall (c1 c2 : com) (st st' st'' : state),
+        c1 / st || st' -> c2 / st' || st'' -> (c1;; c2) / st || st''
+| E_IfTrue : forall (st st' : state) (b : bexp) (c1 c2 : com),
+        beval st b = true ->
+        c1 / st || st' -> (IFB b THEN c1 ELSE c2 FI) / st || st'
+| E_IfFalse : forall (st st' : state) (b : bexp) (c1 c2 : com),
+        beval st b = false ->
+        c2 / st || st' -> (IFB b THEN c1 ELSE c2 FI) / st || st'
+| E_WhileEnd : forall (b : bexp) (st : state) (c : com),
+        beval st b = false -> (WHILE b DO c END) / st || st
+| E_WhileLoop : forall (b : bexp) (st st' st'' : state) (c : com),
+        beval st b = true ->
+        c / st || st' -> 
+        (WHILE b DO c END) / st' || st'' ->
+        (WHILE b DO c END) / st || st''
+| E_If1True : forall (b : bexp) (st st' : state) (c : com),
+        beval st b = true ->
+        c / st || st' -> (IF1 b THEN c FI) / st || st'
+| E_If1False : forall (b : bexp) (st : state) (c : com),
+        beval st b = false -> (IF1 b THEN c FI) / st || st
+
+where "c1 '/' st '||' st'" := (ceval c1 st st').
+
+Tactic Notation "ceval_cases" tactic(first) ident(c) :=
+    first;
+    [ Case_aux c "E_Skip" | Case_aux c "E_Ass" | Case_aux c "E_Seq"
+    | Case_aux c "E_IfTrue" | Case_aux c "E_IfFalse"
+    | Case_aux c "E_WhileEnd" | Case_aux c "E_WhileLoop"
+    | Case_aux c "E_If1True" | Case_aux c "E_If1False" ].
+
+Definition hoare_triple (P:Assertion) (c:com) (Q:Assertion) : Prop :=
+    forall st st',
+    c / st || st' ->
+    P st ->
+    Q st'.
+
+Notation "{{ P }} c {{ Q }}" := (hoare_triple P c Q)
+    (at level 90, c at next level) : hoare_spec_scope.
+
+Theorem hoare_if1: forall P Q b c,
+    {{ fun st => P st /\ bassn b st }} c {{ Q }} ->
+    {{ fun st => P st /\ ~(bassn b st) }} SKIP {{ Q }} ->
+    {{ P }} (IF1 b THEN c FI) {{ Q }}.
+Proof.
+    intros P Q b c Htrue Hfalse. unfold hoare_triple.
+    intros st st' Heval HP.
+    inversion Heval; subst.
+    Case "b is true".
+        eapply Htrue. eassumption.
+        split. assumption. apply bexp_eval_true. assumption.
+    Case "b is false".
+        unfold hoare_triple in Hfalse.
+        eapply Hfalse. apply (E_Skip st').
+        split. assumption. apply bexp_eval_false. assumption. 
+Qed.
+
+Theorem hoare_consequence_pre: forall (P P' Q : Assertion) c,
+    {{ P' }} c {{ Q }} ->
+    P ->> P' ->
+    {{ P }} c {{ Q }}.
+Proof.
+    intros P P' Q c Hhoare Himp. unfold hoare_triple.
+    intros st st' Hc HP. apply (Hhoare st st').
+    assumption.
+    apply Himp. assumption.
+Qed.
+
+Theorem hoare_asgn: forall Q X a,
+    {{ Q [X |-> a] }} (X ::= a) {{ Q }}.
+Proof.
+    intros Q X a. unfold hoare_triple.
+    intros st st' Heval HQ'.
+    inversion Heval. subst.
+    unfold assn_sub in HQ'. assumption.
+Qed.
+
+Theorem hoare_skip: forall P,
+    {{ P }} SKIP {{ P }}.
+Proof.
+    unfold hoare_triple. intros P st st' H HP.
+    inversion H; subst. assumption.
+Qed.
+
+Lemma hoare_if1_good:
+    {{ fun st => st X + st Y = st Z }}
+    IF1 BNot (BEq (AId Y) (ANum 0)) THEN
+      X ::= APlus (AId X) (AId Y)
+    FI
+    {{ fun st => st X = st Z }}.
+Proof.
+    apply hoare_if1.
+    Case "b is true".
+        eapply hoare_consequence_pre. apply hoare_asgn.
+        unfold assert_implies, bassn, assn_sub, update.
+        simpl. intros st [H1 H2]. assumption.
+   Case "b is false".
+        eapply hoare_consequence_pre. apply hoare_skip.
+        unfold not, bassn, assert_implies.
+        simpl. intros st [H1 H2].
+        remember (beq_nat (st Y) 0) as HY.
+        destruct HY.
+        SCase "st Y = 0". (* true *)
+            symmetry in HeqHY. apply beq_nat_true in HeqHY.
+            rewrite HeqHY in H1. rewrite <- H1. omega.
+        SCase "st Y <> 0". (* contradiction *)
+            simpl in H2. 
+            apply ex_falso_quodlibet. apply H2. reflexivity.
+Qed.
+
+End If1.
 
