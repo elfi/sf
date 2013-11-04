@@ -508,3 +508,55 @@ Qed.
 
 End If1.
 
+Lemma hoare_while: forall P b c,
+    {{ fun st => P st /\ bassn b st }} c {{ P }} ->
+    {{ P }} WHILE b DO c END {{ fun st => P st /\ ~ (bassn b st) }}.
+Proof.
+    intros P b c. unfold hoare_triple. intros Hhoare st st' He HP.
+    remember (WHILE b DO c END) as wcom eqn:Heqwcom.
+    ceval_cases (induction He) Case;
+        try (inversion Heqwcom); subst; clear Heqwcom.
+    Case "E_WhileEnd".
+        split. assumption. apply bexp_eval_false. assumption.
+    Case "E_WhileLoop".
+        apply IHHe2. reflexivity.
+        eapply Hhoare. eassumption.
+        split. assumption. apply bexp_eval_true. assumption.
+Qed.
+
+Example while_example:
+    {{ fun st => st X <= 3 }}
+    WHILE (BLe (AId X) (ANum 2))
+    DO X ::= APlus (AId X) (ANum 1) END
+    {{ fun st => st X = 3 }}.
+Proof.
+    eapply hoare_consequence_post.
+    apply hoare_while.
+    eapply hoare_consequence_pre.
+    apply hoare_asgn.
+    unfold bassn, assn_sub, assert_implies, update. simpl.
+        intros st [H1 H2]. apply ble_nat_true in H2. omega.
+    unfold bassn, assn_sub, assert_implies. intros st [Hle Hb].
+        simpl in Hb. destruct (ble_nat (st X) 2) eqn:Heqle.
+        apply ex_falso_quodlibet. apply Hb. reflexivity.
+        apply ble_nat_false in Heqle. omega.
+Qed.
+
+Theorem always_loop_hoare: forall P Q,
+    {{ P }} WHILE BTrue DO SKIP END {{ Q }}.
+Proof.
+    intros P Q.
+    apply hoare_consequence_pre with (P' := fun st : state => True).
+    eapply hoare_consequence_post.
+    apply hoare_while.
+    Case "Loop body preserves invariant".
+        apply hoare_post_true. intros st. apply I.
+    Case "Loop invariant and negated guard imply postcondition".
+        simpl. intros st [Hinv Hguard].
+        apply ex_falso_quodlibet. apply Hguard.
+        unfold bassn. simpl. reflexivity.
+    Case "Precondition implies invariont".
+        unfold assert_implies. intros st H. constructor.
+Qed.
+
+
