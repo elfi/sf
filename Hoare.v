@@ -94,7 +94,7 @@ Theorem hoare_asgn_fwd:
     forall m a Q,
     {{ fun st => Q st /\ st X = m }}
     X ::= a
-    {{ fun st => Q (update st X m) /\ 
+    {{ fun st => Q (update st X m) /\
                  st X = aeval (update st X m) a }}.
 Proof.
     intros functional_extensionality m a Q.
@@ -175,7 +175,7 @@ Example silly1: forall (P : nat -> nat -> Prop) (Q : nat -> Prop),
     (forall x y : nat, P x y -> Q x) ->
     Q 42.
 Proof.
-    intros P Q HP HQ. eapply HQ. apply HP. 
+    intros P Q HP HQ. eapply HQ. apply HP.
     (* What should y be? *)
     (* Qed. => Error: Attempt to save a proof with
                existential variables still non-instantiated *)
@@ -314,9 +314,9 @@ Proof.
     unfold hoare_triple. intros st st' Heval HP.
     inversion Heval; subst.
     Case "b is true".
-        eapply Htrue. 
-            eassumption. 
-            split. assumption. apply bexp_eval_true. assumption. 
+        eapply Htrue.
+            eassumption.
+            split. assumption. apply bexp_eval_true. assumption.
     Case "b is false".
         eapply Hfalse.
             eassumption.
@@ -409,7 +409,7 @@ Inductive ceval : com -> state -> state -> Prop :=
         beval st b = false -> (WHILE b DO c END) / st || st
 | E_WhileLoop : forall (b : bexp) (st st' st'' : state) (c : com),
         beval st b = true ->
-        c / st || st' -> 
+        c / st || st' ->
         (WHILE b DO c END) / st' || st'' ->
         (WHILE b DO c END) / st || st''
 | E_If1True : forall (b : bexp) (st st' : state) (c : com),
@@ -450,7 +450,7 @@ Proof.
     Case "b is false".
         unfold hoare_triple in Hfalse.
         eapply Hfalse. apply (E_Skip st').
-        split. assumption. apply bexp_eval_false. assumption. 
+        split. assumption. apply bexp_eval_false. assumption.
 Qed.
 
 Theorem hoare_consequence_pre: forall (P P' Q : Assertion) c,
@@ -502,7 +502,7 @@ Proof.
             symmetry in HeqHY. apply beq_nat_true in HeqHY.
             rewrite HeqHY in H1. rewrite <- H1. omega.
         SCase "st Y <> 0". (* contradiction *)
-            simpl in H2. 
+            simpl in H2.
             apply ex_falso_quodlibet. apply H2. reflexivity.
 Qed.
 
