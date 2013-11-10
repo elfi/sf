@@ -559,4 +559,221 @@ Proof.
         unfold assert_implies. intros st H. constructor.
 Qed.
 
+Module RepeatExercise.
+
+Inductive com : Type :=
+| CSkip : com
+| CAsgn : id -> aexp -> com
+| CSeq : com -> com -> com
+| CIf : bexp -> com -> com -> com
+| CWhile : bexp -> com -> com
+| CRepeat : com -> bexp -> com.
+
+Tactic Notation "com_cases" tactic(first) ident(c) :=
+    first;
+    [ Case_aux c "SKIP" | Case_aux c "::="
+    | Case_aux c ";;" | Case_aux c "IFB"
+    | Case_aux c "WHILE" | Case_aux c "CRepeat" ].
+
+Notation "'SKIP'" := CSkip.
+Notation "c1 ;; c2" :=
+    (CSeq c1 c2) (at level 80, right associativity).
+Notation "X '::=' a" :=
+    (CAsgn X a) (at level 60).
+Notation "'WHILE' b 'DO' c 'END'" :=
+    (CWhile b c) (at level 80, right associativity).
+Notation "'IFB' b 'THEN' e1 'ELSE' e2 'FI'" :=
+    (CIf b e1 e2) (at level 80, right associativity).
+Notation "'REPEAT' c 'UNTIL' b 'END'" :=
+    (CRepeat c b) (at level 89, right associativity).
+
+Inductive ceval : state -> com -> state -> Prop :=
+| E_Skip : forall st,
+        ceval st SKIP st
+| E_Ass : forall st a n X,
+        aeval st a = n ->
+        ceval st (X ::= a) (update st X n)
+| E_Seq : forall c1 c2 st st' st'',
+        ceval st c1 st' ->
+        ceval st' c2 st'' ->
+        ceval st (c1 ;; c2) st''
+| E_IfTrue : forall st st' b c1 c2,
+        beval st b = true ->
+        ceval st c1 st' ->
+        ceval st (IFB b THEN c1 ELSE c2 FI) st'
+| E_IfFalse : forall st st' b c1 c2,
+        beval st b = false ->
+        ceval st c2 st' ->
+        ceval st (IFB b THEN c1 ELSE c2 FI) st'
+| E_WhileEnd : forall st st' b c,
+        beval st b = false ->
+        ceval st c st' ->
+        ceval st (WHILE b DO c END) st'
+| E_WhileLoop : forall st st' st'' b c,
+        beval st b = true ->
+        ceval st c st' ->
+        ceval st' (WHILE b DO c END) st'' ->
+        ceval st (WHILE b DO c END) st''
+| E_RepeatEnd : forall st st' b c,
+        ceval st c st' ->
+        beval st' b = true ->
+        ceval st (REPEAT c UNTIL b END) st'
+| E_RepeatLoop : forall st st' st'' b c,
+        ceval st c st' ->
+        beval st' b = false ->
+        ceval st' (REPEAT c UNTIL b END) st'' ->
+        ceval st (REPEAT c UNTIL b END) st''.
+
+Tactic Notation "ceval_cases" tactic(first) ident(c) :=
+    first;
+    [ Case_aux c "E_Skip" | Case_aux c "E_Ass"
+    | Case_aux c "E_Seq" | Case_aux c "E_IfTrue"
+    | Case_aux c "E_IfFalse" | Case_aux c "E_WhileEnd"
+    | Case_aux c "E_WhileLoop" | Case_aux c "E_RepeatEnd"
+    | Case_aux c "E_RepeatLoop" ].
+
+Notation "c1 '/' st '||' st'" := (ceval st c1 st')
+        (at level 40, st at level 39).
+
+Definition hoare_triple (P:Assertion) (c:com) (Q:Assertion)
+    : Prop :=
+    forall st st', (c / st || st') -> P st -> Q st'.
+
+Notation "{{ P }} c {{ Q }}" :=
+    (hoare_triple P c Q) (at level 90, c at next level).
+
+Definition ex1_repeat :=
+    REPEAT
+        X ::= ANum 1;;
+        Y ::= APlus (AId Y) (ANum 1)
+    UNTIL (BEq (AId X) (ANum 1)) END.
+
+Theorem ex1_repeat_works :
+    ex1_repeat / empty_state ||
+                 (update (update empty_state X 1) Y 1).
+Proof.
+    apply E_RepeatEnd.
+    Case "command".
+        eapply E_Seq.
+        SCase "c1". apply E_Ass. simpl. reflexivity.
+        SCase "c2". apply E_Ass. simpl. reflexivity.
+    Case "condition".
+        simpl. reflexivity.
+Qed.
+
+Theorem hoare_repeat: forall P Q b c,
+    {{ P }} c {{ Q }} ->
+    (fun st => Q st /\ ~ (bassn b st)) ->> P ->
+    {{ P }} REPEAT c UNTIL b END {{ fun st => Q st /\ (bassn b st) }}.
+Proof.
+    intros P Q b c Hc Hcond.
+    unfold hoare_triple. intros st st' Heval HP.
+    remember (REPEAT c UNTIL b END) as repeatLoop.
+    ceval_cases (induction Heval) Case;
+        try inversion HeqrepeatLoop; subst.
+    Case "E_RepeatEnd".
+        unfold hoare_triple in Hc. split.
+        eapply Hc; eassumption.
+        apply bexp_eval_true. assumption.
+    Case "E_RepeatLoop".
+        apply IHHeval2. apply HeqrepeatLoop.
+        unfold assert_implies in Hcond.
+        apply Hcond. split.
+        unfold hoare_triple in Hc.
+        eapply Hc; eassumption.
+        apply bexp_eval_false; assumption.
+Qed.
+
+Theorem hoare_consequence_pre: forall (P P' Q : Assertion) c,
+    {{ P' }} c {{ Q }} ->
+    P ->> P' ->
+    {{ P }} c {{ Q }}.
+Proof.
+    intros P P' Q c Hhoare Himp. unfold hoare_triple.
+    intros st st' Hc HP. apply (Hhoare st st').
+    assumption.
+    apply Himp. assumption.
+Qed.
+
+Theorem hoare_consequence_post: forall (P Q Q' : Assertion) c,
+    {{ P }} c {{ Q' }} ->
+    Q' ->> Q ->
+    {{ P }} c {{ Q }}.
+Proof.
+    intros P Q Q' c Hhoare Himp. unfold hoare_triple.
+    intros st st' Hc HP. apply Himp. apply (Hhoare st st').
+    assumption. assumption.
+Qed.
+
+Theorem hoare_asgn: forall Q X a,
+    {{ Q [X |-> a] }} (X ::= a) {{ Q }}.
+Proof.
+    intros Q X a. unfold hoare_triple.
+    intros st st' Heval HQ'.
+    inversion Heval. subst.
+    unfold assn_sub in HQ'. assumption.
+Qed.
+
+Theorem hoare_seq: forall P Q R c1 c2,
+    {{ Q }} c2 {{ R }} ->
+    {{ P }} c1 {{ Q }} ->
+    {{ P }} c1;;c2 {{ R }}.
+Proof.
+    intros P Q R c1 c2 H1 H2. unfold hoare_triple.
+    intros st st' Heval HP.
+    inversion Heval; subst.
+    apply (H1 st'0 st'); try assumption.
+    apply (H2 st st'0); assumption.
+Qed.
+
+Example hoare_repeat_ex:
+    {{ fun st => st X > 0 }}
+    REPEAT
+       Y ::= AId X;;
+       X ::= AMinus (AId X) (ANum 1)
+    UNTIL (BEq (AId X) (ANum 0)) END
+    {{ fun st => st X = 0 /\ st Y > 0 }}.
+Proof.
+    (* make it to the post-condition in two steps *)
+    eapply hoare_consequence_post.
+    Case "main part with P := X > 0 and Q := Y > 0".
+      (* whole repeat command *)
+      apply (hoare_repeat (fun st => st X > 0)
+                          (fun st => st Y > 0)).
+      (* the inner command part of repeat command *)
+      SCase "{{P}} c {{Q}}".
+        (* we have got a sequece of commands *)
+        (* the post-condition of c1 is st Y > 0,
+           coq will ask us for that; inner variable Q *)
+        apply hoare_seq with (fun st => st Y > 0).
+        SSCase "c2 of seq".
+            (* we will fix the pre-condition in two steps *)
+            eapply hoare_consequence_pre.
+            SSSCase "assignment".
+                apply hoare_asgn.
+            SSSCase "stronging pre-condition".
+                unfold assn_sub, assert_implies, update. simpl.
+                intros st H. assumption.
+        SSCase "c1 of seq".
+            (* we will fix the pre-condition in two steps *)
+            eapply hoare_consequence_pre.
+            SSSCase "assignment".
+                apply hoare_asgn.
+            SSSCase "stronging pre-condition".
+                unfold assn_sub, assert_implies, update. simpl.
+                intros st H. assumption.
+      SCase "looping condition, Q /\ ~b => P".
+        unfold assert_implies, update, bassn. simpl.
+        intros st [HY HX]. destruct (st X).
+            apply ex_falso_quodlibet. apply HX. reflexivity.
+            omega.
+    Case "weakening of post-condition".
+      unfold assert_implies, bassn. simpl.
+      intros st [HY HX]. split.
+          apply beq_nat_true in HX. apply HX.
+          apply HY.
+Qed.
+
+End RepeatExercise.
+
 
