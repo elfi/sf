@@ -820,7 +820,7 @@ Inductive ceval : com -> state -> state -> Prop :=
 | E_IfTrue: forall st st' c1 c2 b,
         beval st b = true ->
         c1 / st || st' ->
-        (IFB b THEN c1 ELSE c2 END) / st || st' 
+        (IFB b THEN c1 ELSE c2 END) / st || st'
 | E_IfFalse: forall st st' c1 c2 b,
         beval st b = false ->
         c2 / st || st' ->
