@@ -776,4 +776,94 @@ Qed.
 
 End RepeatExercise.
 
+Module Himp.
+
+Inductive com : Type :=
+| CSkip : com
+| CAsgn : id -> aexp -> com
+| CSeq : com -> com -> com
+| CIf : bexp -> com -> com -> com
+| CWhile : bexp -> com -> com
+| CHavoc : id -> com.
+
+Tactic Notation "com_cases" tactic(first) ident(c) :=
+    first;
+    [ Case_aux c "SKIP" | Case_aux c "::="
+    | Case_aux c ";;" | Case_aux c "IFB"
+    | Case_aux c "WHILE" | Case_aux c "HAVOC" ].
+
+Notation "'SKIP'" :=
+    CSkip.
+Notation "X '::=' a" :=
+    (CAsgn X a) (at level 60).
+Notation "c1 ;; c2" :=
+    (CSeq c1 c2) (at level 80, right associativity).
+Notation "'WHILE' b 'DO' c 'END'" :=
+    (CWhile b c) (at level 80, right associativity).
+Notation "'IFB' b 'THEN' c1 'ELSE' c2 'END'" :=
+    (CIf b c1 c2) (at level 80, right associativity).
+Notation "'HAVOC' X" :=
+    (CHavoc X) (at level 60).
+
+Reserved Notation "c1 '/' st '||' st'" (at level 40, st at level 39).
+
+Inductive ceval : com -> state -> state -> Prop :=
+| E_Skip : forall st,
+        SKIP / st || st
+| E_Ass: forall st a X n,
+        aeval st a = n ->
+        (X ::= a) / st || update st X n
+| E_Seq: forall st st' st'' c1 c2,
+        c1 / st || st' ->
+        c2 / st' || st'' ->
+        (c1 ;; c2) / st || st''
+| E_IfTrue: forall st st' c1 c2 b,
+        beval st b = true ->
+        c1 / st || st' ->
+        (IFB b THEN c1 ELSE c2 END) / st || st' 
+| E_IfFalse: forall st st' c1 c2 b,
+        beval st b = false ->
+        c2 / st || st' ->
+        (IFB b THEN c1 ELSE c2 END) / st || st'
+| E_WhileEnd: forall st c b,
+        beval st b = false ->
+        (WHILE b DO c END) / st || st
+| E_WhileLoop: forall st st' st'' c b,
+        beval st b = true ->
+        c / st || st' ->
+        (WHILE b DO c END) / st' || st'' ->
+        (WHILE b DO c END) / st || st''
+| E_Havoc: forall st X n,
+        (HAVOC X) / st || (update st X n)
+
+where "c '/' st '||' st'" := (ceval c st st').
+
+Tactic Notation "ceval_cases" tactic(first) ident(c) :=
+    first;
+    [ Case_aux c "E_Skip" | Case_aux c "E_Ass"
+    | Case_aux c "E_Seq" | Case_aux c "E_IfTrue"
+    | Case_aux c "E_IfFalse" | Case_aux c "E_WhileEnd"
+    | Case_aux c "E_WhileLoop" | Case_aux c "E_Havoc" ].
+
+Definition hoare_triple (P:Assertion) (c:com) (Q:Assertion) : Prop :=
+    forall st st', c / st || st' -> P st -> Q st'.
+
+Notation "{{ P }} c {{ Q }}" := (hoare_triple P c Q)
+    (at level 90, c at next level) : hoare_spec_scope.
+
+Definition havoc_pre (X:id) (Q:Assertion) : Assertion :=
+    fun (st : state) =>                    (* take a state, and *)
+        forall (n:nat), Q (update st X n). (* return a Prop *)
+
+Theorem hoare_havoc: forall (Q:Assertion) (X:id),
+    {{ havoc_pre X Q }} HAVOC X {{ Q }}.
+Proof.
+    intros Q X. unfold hoare_triple. intros st st' Heval Hpre.
+    inversion Heval; subst.
+    unfold havoc_pre in Hpre.
+    apply Hpre.
+Qed.
+
+End Himp.
+
 
