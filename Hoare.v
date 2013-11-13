@@ -16,6 +16,8 @@ Definition as6 : Assertion := fun st => False.
 
 Print False.
 
+End ExAssertions.
+
 Definition assert_implies (P Q : Assertion) : Prop :=
     forall st, P st -> Q st.
 
