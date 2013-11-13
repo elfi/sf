@@ -3,6 +3,7 @@
 Require Export Hoare.
 
 
+
 (* ####################################################### *)
 (** * Decorated Programs *)
 
@@ -33,7 +34,7 @@ Require Export Hoare.
         {{ Z - X = p - m }}
     END;
       {{ Z - X = p - m /\ ~ (X <> 0) }} ->>
-      {{ Z = p - m }} ->>
+      {{ Z = p - m }} 
 *)
 
 (** Concretely, a decorated program consists of the program text
@@ -48,6 +49,9 @@ Require Export Hoare.
           {{ P }}
           SKIP
           {{ P }}
+*)
+
+(**
     - The sequential composition of [c1] and [c2] is locally
       consistent (with respect to assertions [P] and [R]) if [c1] is
       locally consistent (with respect to [P] and [Q]) and [c2] is
@@ -57,12 +61,18 @@ Require Export Hoare.
           {{ Q }}
           c2
           {{ R }}
+*)
+
+(**
 
     - An assignment is locally consistent if its precondition is
       the appropriate substitution of its postcondition:
           {{ P [X |-> a] }}
           X ::= a
           {{ P }}
+*)
+
+(**
     - A conditional is locally consistent (with respect to assertions
       [P] and [Q]) if the assertions at the top of its "then" and
       "else" branches are exactly [P /\ b] and [P /\ ~b] and if its "then"
@@ -80,6 +90,9 @@ Require Export Hoare.
             {{ Q }}
           FI
           {{ Q }}
+*)
+
+(**
 
     - A while loop with precondition [P] is locally consistent if its
       postcondition is [P /\ ~b] and if the pre- and postconditions of
@@ -91,6 +104,9 @@ Require Export Hoare.
             {{ P }}
           END
           {{ P /\ ~b }}
+*)
+
+(**
 
     - A pair of assertions separated by [->>] is locally consistent if
       the first implies the second (in all states):
@@ -444,8 +460,8 @@ Proof.
 
     This time, condition (b) holds trivially, but (a) and (c) are
     broken. Condition (a) requires that (1) [X = m /\ Y = n]
-    implies (2) [Y = n - m].  If we substitute [X] by [m] we have to
-    show that [m = n - m] for arbitrary [m] and [n], which does not
+    implies (2) [Y = n - m].  If we substitute [Y] by [n] we have to
+    show that [n = n - m] for arbitrary [m] and [n], which does not
     hold (for instance, when [m = n = 1]).  Condition (c) requires that
     [n - m - 1 = n - m], which fails, for instance, for [n = 1] and [m =
     0]. So, although [Y = n - m] holds at the end of the loop, it does
@@ -1038,7 +1054,7 @@ Notation "{{ P }} d"
 Notation "d '->>' {{ P }}"
       := (DCPost d P)
       (at level 80, right associativity)  : dcom_scope.
-Notation " d ; d' "
+Notation " d ;; d' "
       := (DCSeq d d')
       (at level 80, right associativity)  : dcom_scope.
 
@@ -1073,7 +1089,7 @@ Example dec_while : dcom := (
 Fixpoint extract (d:dcom) : com :=
   match d with
   | DCSkip _           => SKIP
-  | DCSeq d1 d2        => (extract d1 ; extract d2)
+  | DCSeq d1 d2        => (extract d1 ;; extract d2)
   | DCAsgn X a _       => X ::= a
   | DCIf b _ d1 _ d2 _ => IFB b THEN extract d1 ELSE extract d2 FI
   | DCWhile b _ d _    => WHILE b DO extract d END
@@ -1087,7 +1103,7 @@ Fixpoint extract (d:dcom) : com :=
     this would result in very verbose programs with a lot of repeated
     annotations: for example, a program like [SKIP;SKIP] would have to
     be annotated as
-        {{P}} ({{P}} SKIP {{P}}) ; ({{P}} SKIP {{P}}) {{P}},
+        {{P}} ({{P}} SKIP {{P}}) ;; ({{P}} SKIP {{P}}) {{P}},
     with pre- and post-conditions on each [SKIP], plus identical pre-
     and post-conditions on the semicolon!
 
@@ -1297,7 +1313,7 @@ Tactic Notation "verify" :=
   unfold bassn in *; unfold beval in *; unfold aeval in *;
   unfold assn_sub; intros;
   repeat rewrite update_eq;
-  repeat (rewrite update_neq; [| reflexivity]);
+  repeat (rewrite update_neq; [| (intro X; inversion X)]);
   simpl in *;
   repeat match goal with [H : _ /\ _ |- _] => destruct H end;
   repeat rewrite not_true_iff_false in *;
@@ -1338,7 +1354,7 @@ Example subtract_slowly_dec (m:nat) (p:nat) : dcom := (
   DO   {{ fun st => st Z - st X = p - m /\ st X <> 0 }} ->>
        {{ fun st => (st Z - 1) - (st X - 1) = p - m }}
      Z ::= AMinus (AId Z) (ANum 1)
-       {{ fun st => st Z - (st X - 1) = p - m }} ;
+       {{ fun st => st Z - (st X - 1) = p - m }} ;;
      X ::= AMinus (AId X) (ANum 1)
        {{ fun st => st Z - st X = p - m }}
   END
@@ -1386,5 +1402,5 @@ Fixpoint real_fact (n:nat) : nat :=
 
 
 
-(* $Date: 2013-04-03 14:52:03 -0400 (Wed, 03 Apr 2013) $ *)
+(* $Date: 2013-07-17 16:19:11 -0400 (Wed, 17 Jul 2013) $ *)
 
