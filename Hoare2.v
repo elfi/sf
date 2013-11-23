@@ -317,4 +317,91 @@ Qed.
 
 End Himp2.
 
+Inductive dcom : Type :=
+| DCSkip : Assertion -> dcom
+| DCSeq : dcom -> dcom -> dcom
+| DCAsgn : id -> aexp -> Assertion -> dcom
+| DCIf : bexp -> Assertion -> dcom -> Assertion -> dcom
+         -> Assertion -> dcom
+| DCWhile : bexp -> Assertion -> dcom -> Assertion -> dcom
+| DCPre : Assertion -> dcom -> dcom
+| DCPost : dcom -> Assertion -> dcom.
+
+Tactic Notation "dcom_cases" tactic(first) ident(c) :=
+    first;
+    [ Case_aux c "Skip" | Case_aux c "Seq" | Case_aux c "Asgn"
+    | Case_aux c "If" | Case_aux c "While"
+    | Case_aux c "Pre" | Case_aux c "Post" ].
+
+Notation "'SKIP' {{ P }}" :=
+    (DCSkip P) (at level 10) : dcom_scope.
+Notation "l '::=' a {{ P }}" :=
+    (DCAsgn l a P) (at level 60, a at next level) : dcom_scope.
+Notation "'WHILE' b 'DO' {{ Pbody }} d 'END' {{ Ppost }}" :=
+    (DCWhile b Pbody d Ppost) (at level 80, right associativity)
+    : dcom_scope.
+Notation "'IFB' b 'THEN' {{ P }} d 'ELSE' {{ P' }} d' 'FI' {{ Q }}" :=
+    (DCIf b P d P' d' Q) (at level 80, right associativity)
+    : dcom_scope.
+Notation "'->>' {{ P }} d" :=
+    (DCPre P d) (at level 90, right associativity) : dcom_scope.
+Notation "{{ P }} d" :=
+    (DCPre P d) (at level 90) : dcom_scope.
+Notation "d '->>' {{ P }}" :=
+    (DCPost d P) (at level 80, right associativity) : dcom_scope.
+Notation "d ;; d' " :=
+    (DCSeq d d') (at level 80, right associativity) : dcom_scope.
+
+Delimit Scope dcom_scope with dcom.
+
+Example dec_while : dcom := (
+    {{ fun st => True }}
+    WHILE (BNot (BEq (AId X) (ANum 0)))
+    DO
+       {{ fun st => True /\ st X <> 0 }}
+       X ::= (AMinus (AId X) (ANum 1))
+       {{ fun _ => True }}
+    END
+    {{ fun st => True /\ st X = 0 }} ->>
+    {{ fun st => st X = 0 }}
+) % dcom.
+
+Fixpoint extract (d:dcom) : com :=
+    match d with
+    | DCSkip _           => SKIP
+    | DCSeq d1 d2        => (extract d1 ;; extract d2)
+    | DCAsgn x a  _      => x ::= a
+    | DCIf b _ d1 _ d2 _ => IFB b THEN (extract d1) ELSE (extract d2) FI
+    | DCWhile b _ d _    => WHILE b DO (extract d) END
+    | DCPre _ d          => extract d
+    | DCPost d _         => extract d
+    end.
+
+Eval simpl in (extract dec_while).
+
+Fixpoint post (d:dcom) : Assertion :=
+    match d with
+    | DCSkip P            => P
+    | DCSeq _ d2          => post d2
+    | DCAsgn _ _ Q        => Q
+    | DCIf _ _ _ _ _ Q    => Q
+    | DCWhile _ _ _ Ppost => Ppost
+    | DCPre _ d           => post d
+    | DCPost _ Q          => Q
+    end.
+
+Fixpoint pre (d:dcom) : Assertion :=
+    match d with
+    | DCSkip _            => fun st => True
+    | DCSeq d1 _          => pre d1
+    | DCAsgn _ _ _        => fun st => True
+    | DCIf _ _ _ _ _ _    => fun st => True
+    | DCWhile _ _ _ _     => fun st => True
+    | DCPre P _           => P
+    | DCPost d _          => pre d
+    end.
+
+Definition dec_correct (d:dcom) :=
+    {{ pre d }} (extract d) {{ post d }}.
+
 
