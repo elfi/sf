@@ -2,6 +2,8 @@
 
 Require Export Imp.
 
+
+
 (** The evaluators we have seen so far (e.g., the ones for
     [aexp]s, [bexp]s, and commands) have been formulated in a
     "big-step" style -- they specify how a given expression can be
@@ -66,21 +68,6 @@ Require Export Imp.
     with a "small-step" relation that specifies, for a given program,
     how the "atomic steps" of computation are performed. *)
 
-(* ########################################################### *)
-(** * Relations *)
-
-(** A _relation_ on a set [X] is a family of propositions
-    parameterized by two elements of [X] -- i.e., a proposition about
-    pairs of elements of [X].  *)
-
-Definition relation (X: Type) := X->X->Prop.
-
-(** Our main examples of such relations in this chapter will be
-    the single-step and multi-step reduction relations on terms, [==>]
-    and [==>*], but there are many other examples -- some that come to
-    mind are the "equals," "less than," "less than or equal to," and
-    "is the square of" relations on numbers, and the "prefix of"
-    relation on lists and strings. *)
 
 (* ########################################################### *)
 (** * A Toy Language *)
@@ -153,6 +140,8 @@ Module SimpleArith1.
                       P (C n1) t2 ==> P (C n1) t2'
 *)
 
+
+
 Reserved Notation " t '==>' t' " (at level 40).
 
 Inductive step : tm -> tm -> Prop :=
@@ -183,6 +172,7 @@ Tactic Notation "step_cases" tactic(first) ident(c) :=
       itself; the other two rules tell how to find it.
 
     - A term that is just a constant cannot take a step. *)
+
 
 (** Let's pause and check a couple of examples of reasoning with
     the [step] relation... *)
@@ -222,6 +212,29 @@ Example test_step_2 :
 Proof. 
   (* FILL IN HERE *) Admitted.
 (** [] *)
+
+
+
+
+(* ########################################################### *)
+(** * Relations *)
+
+(** We will be using several different step relations, so it is
+    helpful to generalize a bit... *)
+
+(** A (binary) _relation_ on a set [X] is a family of propositions
+    parameterized by two elements of [X] -- i.e., a proposition about
+    pairs of elements of [X].  *)
+
+Definition relation (X: Type) := X->X->Prop.
+
+
+(** Our main examples of such relations in this chapter will be
+    the single-step and multi-step reduction relations on terms, [==>]
+    and [==>*], but there are many other examples -- some that come to
+    mind are the "equals," "less than," "less than or equal to," and
+    "is the square of" relations on numbers, and the "prefix of"
+    relation on lists and strings. *)
 
 
 (** One simple property of the [==>] relation is that, like the
@@ -298,7 +311,8 @@ End SimpleArith1.
 
       - The _halting states_ of the machine are ones where there is no
         more computation to be done.
-
+*)
+(**
     We can then execute a term [t] as follows:
 
       - Take [t] as the starting state of the machine.
@@ -320,6 +334,7 @@ Inductive value : tm -> Prop :=
 (** Having introduced the idea of values, we can use it in the
     definition of the [==>] relation to write [ST_Plus2] rule in a
     slightly more elegant way: *)
+
 (** 
                      -------------------------------        (ST_PlusConstConst)
                      P (C n1) (C n2) ==> C (n1 + n2)
@@ -340,6 +355,8 @@ Inductive value : tm -> Prop :=
     to maintain a close correspondence between the informal and Coq
     versions of the rules, but later on we'll drop it in informal
     rules, for the sake of brevity.) *)
+
+(**  Here are the formal rules: *)
 
 Reserved Notation " t '==>' t' " (at level 40).
 
@@ -531,7 +548,6 @@ Inductive step : tm -> tm -> Prop :=
   where " t '==>' t' " := (step t t').
 
 
-(** *)
 
 (** **** Exercise: 3 stars, advanced (value_not_same_as_normal_form) *)
 Lemma value_not_same_as_normal_form :
@@ -539,7 +555,6 @@ Lemma value_not_same_as_normal_form :
 Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
-
 End Temp1.
 
 (* ##################################################### *)
@@ -569,8 +584,6 @@ Inductive step : tm -> tm -> Prop :=
   where " t '==>' t' " := (step t t').
 
 
-(** *)
-
 (** **** Exercise: 2 stars, advanced (value_not_same_as_normal_form) *)
 Lemma value_not_same_as_normal_form :
   exists v, value v /\ ~ normal_form step v.
@@ -578,7 +591,6 @@ Proof.
   (* FILL IN HERE *) Admitted.
 
 (** [] *)
-
 End Temp2.
 
 (* ########################################################### *)
@@ -606,8 +618,6 @@ Inductive step : tm -> tm -> Prop :=
   where " t '==>' t' " := (step t t').
 
 (** (Note that [ST_Plus2] is missing.) *)
-
-(** *)
 
 (** **** Exercise: 3 stars, advanced (value_not_same_as_normal_form') *)
 Lemma value_not_same_as_normal_form :
@@ -1123,7 +1133,6 @@ Proof.
 (* FILL IN HERE *)
 []
 *)
-
 (** For the other direction, we need one lemma, which establishes a
     relation between single-step reduction and big-step evaluation. *)
 
@@ -1369,9 +1378,9 @@ Inductive cstep : (com * state) -> (com * state) -> Prop :=
       (i ::= (ANum n)) / st ==> SKIP / (update st i n)
   | CS_SeqStep : forall st c1 c1' st' c2,
       c1 / st ==> c1' / st' ->
-      (c1 ; c2) / st ==> (c1' ; c2) / st'
+      (c1 ;; c2) / st ==> (c1' ;; c2) / st'
   | CS_SeqFinish : forall st c2,
-      (SKIP ; c2) / st ==> c2 / st
+      (SKIP ;; c2) / st ==> c2 / st
   | CS_IfTrue : forall st c1 c2,
       IFB BTrue THEN c1 ELSE c2 FI / st ==> c1 / st
   | CS_IfFalse : forall st c1 c2,
@@ -1381,9 +1390,10 @@ Inductive cstep : (com * state) -> (com * state) -> Prop :=
       IFB b THEN c1 ELSE c2 FI / st ==> (IFB b' THEN c1 ELSE c2 FI) / st
   | CS_While : forall st b c1,
           (WHILE b DO c1 END) / st
-      ==> (IFB b THEN (c1; (WHILE b DO c1 END)) ELSE SKIP FI) / st
+      ==> (IFB b THEN (c1;; (WHILE b DO c1 END)) ELSE SKIP FI) / st
 
   where " t '/' st '==>' t' '/' st' " := (cstep (t,st) (t',st')).
+
 
 (* ########################################################### *)
 (** * Concurrent Imp *)
@@ -1415,7 +1425,7 @@ Notation "'SKIP'" :=
   CSkip.
 Notation "x '::=' a" := 
   (CAss x a) (at level 60).
-Notation "c1 ; c2" := 
+Notation "c1 ;; c2" := 
   (CSeq c1 c2) (at level 80, right associativity).
 Notation "'WHILE' b 'DO' c 'END'" := 
   (CWhile b c) (at level 80, right associativity).
@@ -1433,9 +1443,9 @@ Inductive cstep : (com * state)  -> (com * state) -> Prop :=
       (i ::= (ANum n)) / st ==> SKIP / (update st i n)
   | CS_SeqStep : forall st c1 c1' st' c2,
       c1 / st ==> c1' / st' ->
-      (c1 ; c2) / st ==> (c1' ; c2) / st'
+      (c1 ;; c2) / st ==> (c1' ;; c2) / st'
   | CS_SeqFinish : forall st c2,
-      (SKIP ; c2) / st ==> c2 / st
+      (SKIP ;; c2) / st ==> c2 / st
   | CS_IfTrue : forall st c1 c2,
       (IFB BTrue THEN c1 ELSE c2 FI) / st ==> c1 / st
   | CS_IfFalse : forall st c1 c2,
@@ -1445,7 +1455,7 @@ Inductive cstep : (com * state)  -> (com * state) -> Prop :=
       (IFB b THEN c1 ELSE c2 FI) / st ==> (IFB b' THEN c1 ELSE c2 FI) / st
   | CS_While : forall st b c1,
       (WHILE b DO c1 END) / st ==> 
-               (IFB b THEN (c1; (WHILE b DO c1 END)) ELSE SKIP FI) / st
+               (IFB b THEN (c1;; (WHILE b DO c1 END)) ELSE SKIP FI) / st
     (* New part: *)
   | CS_Par1 : forall st c1 c1' c2 st',
       c1 / st ==> c1' / st' -> 
@@ -1456,6 +1466,7 @@ Inductive cstep : (com * state)  -> (com * state) -> Prop :=
   | CS_ParDone : forall st,
       (PAR SKIP WITH SKIP END) / st ==> SKIP / st
   where " t '/' st '==>' t' '/' st' " := (cstep (t,st) (t',st')).
+
 
 Definition cmultistep := multi cstep. 
 
@@ -1593,7 +1604,7 @@ Proof.
   eapply multi_step. apply CS_ParDone.
   apply multi_refl.
 
-  rewrite update_neq. assumption. reflexivity.
+  rewrite update_neq. assumption. intro X; inversion X. 
 Qed.
 
 End CImp.
@@ -1645,5 +1656,6 @@ Proof.
 (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(* $Date: 2013-04-10 23:51:37 -0400 (Wed, 10 Apr 2013) $ *)
+(* $Date: 2013-07-17 16:19:11 -0400 (Wed, 17 Jul 2013) $ *)
+
 
