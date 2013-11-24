@@ -377,6 +377,13 @@ Fixpoint extract (d:dcom) : com :=
     | DCPost d _         => extract d
     end.
 
+(*
+  {{ P }} SKIP {{ P }} ->> {{ P' }} is constructed by
+  DCPre P (DCPost (DCSkip P) P')
+
+  and extract on it would return SKIP.
+*)
+
 Eval simpl in (extract dec_while).
 
 Fixpoint post (d:dcom) : Assertion :=
@@ -401,7 +408,7 @@ Fixpoint pre (d:dcom) : Assertion :=
     | DCPost d _          => pre d
     end.
 
+(* Construct a hoare triple out of decorated program *)
 Definition dec_correct (d:dcom) :=
     {{ pre d }} (extract d) {{ post d }}.
-
 
