@@ -56,7 +56,7 @@ where " t '==>' t' " := (step t t').
 
 Tactic Notation "step_cases" tactic(first) ident(c) :=
     first;
-    [ Case_aux c "ST_PlusConstConts"
+    [ Case_aux c "ST_PlusConstConst"
     | Case_aux c "ST_Plus1" | Case_aux c "ST_Plus2" ].
 
 Example test_step_1 :
@@ -81,8 +81,45 @@ Proof.
     apply ST_Plus2. apply ST_Plus2. apply ST_PlusConstConst.
 Qed.
 
+Definition relation (X : Type) := X -> X -> Prop.
 
+Definition deterministic {X : Type} (R : relation X) :=
+    forall x y1 y2 : X,
+    R x y1 -> R x y2 -> y1 = y2.
 
+Theorem step_deterministic:
+    deterministic step.
+Proof.
+    unfold deterministic. intros x y1 y2 Hy1 Hy2.
+    generalize dependent y2.
+    step_cases (induction Hy1) Case; intros y2 Hy2.
+    Case "ST_PlusConstConst".
+        step_cases (inversion Hy2) SCase.
+        SCase "ST_PlusConstConst".
+            reflexivity.
+        SCase "ST_Plus1".
+            inversion H2.
+        SCase "ST_Plus2".
+            inversion H2.
+    Case "ST_Plus1".
+        step_cases (inversion Hy2) SCase.
+        SCase "ST_PlusConstConst".
+            rewrite <- H0 in Hy1. inversion Hy1.
+        SCase "ST_Plus1".
+            rewrite <- (IHHy1 t1'0). reflexivity. assumption.
+        SCase "ST_Plus2".
+            rewrite <- H in Hy1. inversion Hy1.
+    Case "ST_Plus2".
+        step_cases (inversion Hy2) SCase.
+        SCase "ST_PlusConstConst".
+            rewrite <- H1 in Hy1. inversion Hy1.
+        SCase "ST_Plus1".
+            inversion H2.
+        SCase "ST_Plus2".
+            rewrite <- (IHHy1 t2'0). reflexivity. assumption.
+Qed.
+
+End SimpleArith1.
 
 
 
