@@ -121,5 +121,41 @@ Qed.
 
 End SimpleArith1.
 
+Inductive value : tm -> Prop :=
+    v_const : forall n, value (C n).
 
 
+Reserved Notation " t '==>' t' " (at level 40).
+
+Inductive step : tm -> tm -> Prop :=
+  (* the only reduction step *)
+| ST_PlusConstConst : forall n1 n2,
+        P (C n1) (C n2) ==> C (n1 + n2)
+  (* expand on t1, eventually reaching state
+     where the first or third rule apply *)
+| ST_Plus1 : forall t1 t1' t2,
+        t1 ==> t1' ->
+        P t1 t2 ==> P t1' t2
+  (* t1 now must be a constant, expand on t2,
+     eventually reaching state where
+     the first or second rule apply *)
+| ST_Plus2: forall v1 t2 t2',
+        value v1 ->
+        t2 ==> t2' ->
+        P v1 t2 ==> P v1 t2'
+
+where " t '==>' t' " := (step t t').
+
+Tactic Notation "step_cases" tactic(first) ident(c) :=
+    first;
+    [ Case_aux c "ST_PlusConstConst"
+    | Case_aux c "ST_Plus1" | Case_aux c "ST_Plus2" ].
+
+Theorem step_deterministic :
+    deterministic step.
+Proof.
+    unfold deterministic. intros x y1 y2 Hy1 Hy2.
+    generalize dependent y2.
+    step_cases (induction Hy1) Case; intros y2 Hy2.
+    Case "ST_PlusConstConst".
+        
