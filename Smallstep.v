@@ -187,4 +187,28 @@ Proof.
             reflexivity. assumption.
 Qed.
 
+Theorem strong_progress: forall t,
+    value t \/ (exists t', t ==> t').
+Proof.
+    tm_cases (induction t) Case.
+    Case "C".
+        left. apply v_const.
+    Case "P".
+        right. inversion IHt1.
+        SCase "left part, value t1".
+            inversion IHt2.
+            SSCase "left part, value t2".
+                inversion H. inversion H0.
+                exists (C (n + n0)).
+                apply ST_PlusConstConst.
+            SSCase "right part, exists t', t2 ==> t'".
+                inversion H0 as [t' H1].
+                exists (P t1 t').
+                apply ST_Plus2. apply H. apply H1.
+        SCase "right part, exists t', t1 ==> t'".
+            inversion H as [t' H0].
+            exists (P t' t2).
+            apply ST_Plus1. apply H0.
+Qed.
+
 
