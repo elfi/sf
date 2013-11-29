@@ -211,4 +211,33 @@ Proof.
             apply ST_Plus1. apply H0.
 Qed.
 
+Definition normal_form {X:Type} (R:relation X) (t:X) : Prop :=
+    ~ exists t', R t t'.
+
+Lemma value_is_nf: forall v,
+    value v -> normal_form step v.
+Proof.
+    unfold normal_form. intros v H. inversion H.
+    intro contra. inversion contra. inversion H1.
+Qed.
+
+Lemma nf_is_value: forall t,
+    normal_form step t -> value t.
+Proof. (* a corollary of strong progres *)
+    unfold normal_form. intros t H.
+    assert (G: value t \/ exists t', t ==> t') by
+        (apply strong_progress).
+    inversion G as [left_part | right_part].
+    Case "value".
+        apply left_part.
+    Case "contra".
+        apply H in right_part. inversion right_part.
+Qed.
+
+Corollary nf_same_as_value: forall t,
+    normal_form step t <-> value t.
+Proof.
+    split. apply nf_is_value. apply value_is_nf.
+Qed.
+
 
