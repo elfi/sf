@@ -240,4 +240,34 @@ Proof.
     split. apply nf_is_value. apply value_is_nf.
 Qed.
 
+Module Temp1.
+
+Inductive value : tm -> Prop :=
+| v_const : forall n, value (C n)
+| v_funny : forall t1 n2, value (P t1 (C n2)).
+
+Reserved Notation " t '==>' t' " (at level 40).
+
+Inductive step : tm -> tm -> Prop :=
+| ST_PlusConstConst : forall n1 n2,
+        P (C n1) (C n2) ==> C (n1 + n2)
+| ST_Plus1 : forall t1 t1' t2,
+        t1 ==> t1' ->
+        P t1 t2 ==> P t1' t2
+| ST_Plus2 : forall v1 t2 t2',
+        value v1 ->
+        t2 ==> t2' ->
+        P v1 t2 ==> P v1 t2'
+
+where " t '==>' t' " := (step t t').
+
+Lemma value_not_same_as_normal_form:
+    exists v, value v /\ ~ normal_form step v.
+Proof.
+
+Admitted.
+
+End Temp1.
+
+
 
