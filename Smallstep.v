@@ -442,4 +442,73 @@ Proof.
             assumption.
 Qed.
 
+Module Temp5.
+
+Reserved Notation " t '==' t' " (at level 40).
+
+Inductive step : tm -> tm -> Prop :=
+| ST_IfTrue : forall t1 t2,
+        tif ttrue t1 t2 ==> t1
+| ST_IfFalse : forall t1 t2,
+        tif tfalse t1 t2 ==> t2
+| ST_If : forall t1 t1' t2 t3,
+        t1 ==> t1' ->
+        tif t1 t2 t3 ==> tif t1' t2 t3
+| ST_IfShort : forall t1 t2,
+        value t2 ->
+        tif t1 t2 t2 ==> t2
+
+where " t '==>' t' " := (step t t').
+
+Definition bool_step_prop4 :=
+    tif (tif ttrue ttrue ttrue)
+        tfalse
+        tfalse
+    ==>
+    tfalse.
+
+Example bool_step_prop4_holds: bool_step_prop4.
+Proof.
+    unfold bool_step_prop4.
+    apply ST_IfShort. apply v_false.
+Qed.
+
+Theorem bool_with_shortcut_step_not_deterministic:
+    ~(deterministic step).
+Proof.
+    unfold deterministic. intro contra.
+    remember (tif (tif ttrue ttrue ttrue)
+                  tfalse
+                  tfalse) as t.
+    assert (H1: t ==> tfalse).
+       rewrite Heqt. apply ST_IfShort. apply v_false.
+    assert (H2: t ==> (tif ttrue tfalse tfalse)).
+       rewrite Heqt. apply ST_If. apply ST_IfTrue.
+    remember (contra t tfalse (tif ttrue tfalse tfalse)
+                     H1 H2) as H3.
+    inversion H3.
+Qed.
+
+Theorem bool_with_shortcut_strong_progress:
+    forall t, value t \/ (exists t', t ==> t').
+Proof.
+    (* it holds as before, we use establised evaluation paths *)
+    induction t.
+    Case "ttrue". left. apply v_true.
+    Case "tfalse". left. apply v_false.
+    Case "tif".
+        inversion IHt1.
+        SCase "value t1".
+            inversion H.
+            SSCase "ttrue". right. exists t2. apply ST_IfTrue.
+            SSCase "tfalse". right. exists t3. apply ST_IfFalse.
+        SCase "exists t', t1 ==> t'".
+            inversion H.
+            right. exists (tif x t2 t3).
+            apply ST_If. assumption.
+Qed.
+
+End Temp5.
+End Temp4.
+
 
