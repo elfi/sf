@@ -264,8 +264,14 @@ where " t '==>' t' " := (step t t').
 Lemma value_not_same_as_normal_form:
     exists v, value v /\ ~ normal_form step v.
 Proof.
-
-Admitted.
+    exists (P (C 1) (C 2)).
+    split.
+    Case "left".
+        apply v_funny.
+    Case "right".
+        unfold normal_form. intro contra. apply contra.
+        exists (C (1 + 2)). apply ST_PlusConstConst.
+Qed.
 
 End Temp1.
 
