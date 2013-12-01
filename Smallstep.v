@@ -341,5 +341,105 @@ Qed.
 
 End Temp3.
 
+Module Temp4.
+
+Inductive tm : Type :=
+| ttrue : tm
+| tfalse : tm
+| tif : tm -> tm -> tm -> tm.
+
+Inductive value : tm -> Prop :=
+| v_true : value ttrue
+| v_false : value tfalse.
+
+Reserved Notation " t '==>' t' " (at level 40).
+
+Inductive step : tm -> tm -> Prop :=
+| ST_IfTrue : forall t1 t2,
+        tif ttrue t1 t2 ==> t1
+| ST_IfFalse : forall t1 t2,
+        tif tfalse t1 t2 ==> t2
+| ST_If : forall t1 t1' t2 t3,
+        t1 ==> t1' ->
+        tif t1 t2 t3 ==> tif t1' t2 t3
+
+where " t '==>' t' " := (step t t').
+
+Definition bool_step_prop1 :=
+    tfalse ==> tfalse.
+
+Theorem bool_step_prop1_false: ~bool_step_prop1.
+Proof.
+    unfold bool_step_prop1. intro contra. inversion contra.
+Qed.
+
+Definition bool_step_prop2 :=
+    tif ttrue
+        (tif ttrue ttrue ttrue)
+        (tif tfalse tfalse tfalse)
+    ==> ttrue.
+
+Theorem bool_step_prop2_false : ~bool_step_prop2.
+Proof.
+    unfold bool_step_prop2. intro contra. inversion contra.
+Qed.
+
+Definition bool_step_prop3 :=
+    tif (tif ttrue ttrue ttrue)
+        (tif ttrue ttrue ttrue)
+        tfalse
+    ==>
+    tif ttrue
+        (tif ttrue ttrue ttrue)
+        tfalse.
+
+Theorem bool_step_prop3_true : bool_step_prop3.
+Proof.
+    unfold bool_step_prop3.
+    apply ST_If. apply ST_IfTrue.
+Qed.
+
+Theorem strong_progress : forall t,
+    value t \/ (exists t', t ==> t').
+Proof.
+    induction t.
+    Case "ttrue". left. apply  v_true.
+    Case "tfalse". left. apply v_false.
+    Case "tif".
+        inversion IHt1.
+        SCase "value t1".
+            (* which value *)
+            inversion H.
+            SSCase "ttrue". right. exists t2. apply ST_IfTrue.
+            SSCase "tfalse". right. exists t3. apply ST_IfFalse.
+        SCase "exists t', t1 ==> t'".
+            (* what t' *)
+            inversion H.
+            right. exists (tif x t2 t3). apply ST_If.
+            assumption.
+Qed.
+
+Theorem step_deterministic :
+    deterministic step.
+Proof.
+    unfold deterministic. intros x y1 y2 Hy1 Hy2.
+    generalize dependent y2.
+    induction Hy1; intros y2 Hy2.
+    Case "ttrue".
+        inversion Hy2.
+        reflexivity. inversion H3.
+    Case "tfalse".
+        inversion Hy2.
+        reflexivity. inversion H3.
+    Case "tif".
+        inversion Hy2.
+        SCase "t1 = ttrue".
+            rewrite <- H0 in Hy1. inversion Hy1.
+        SCase "t1 = tfalse".
+            rewrite <- H0 in Hy1. inversion Hy1.
+        SCase "t1 ==> t1'0".
+            rewrite -> (IHHy1 t1'0). reflexivity.
+            assumption.
+Qed.
 
 
