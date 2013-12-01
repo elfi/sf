@@ -275,5 +275,41 @@ Qed.
 
 End Temp1.
 
+Module Temp2.
+
+Inductive value : tm -> Prop :=
+| v_const : forall n, value (C n).
+
+Reserved Notation " t '==>' t' " (at level 40).
+
+Inductive step : tm -> tm -> Prop :=
+| ST_Funny : forall n,
+        C n ==> P (C n) (C 0)
+| ST_PlusConstConst : forall n1 n2,
+        P (C n1) (C n2) ==> C (n1 + n2)
+| ST_Plus1 : forall t1 t1' t2,
+        t1 ==> t1' ->
+        P t1 t2 ==> P t1' t2
+| ST_Plus2 : forall v1 t2 t2',
+        value v1 ->
+        t2 ==> t2' ->
+        P v1 t2 ==> P v1 t2'
+
+where " t '==>' t' " := (step t t').
+
+Lemma value_not_same_as_normal_form :
+    exists v, value v /\ ~ normal_form step v.
+Proof.
+    exists (C 1).
+    split.
+    Case "left".
+        apply v_const.
+    Case "right".
+        unfold normal_form. intro contra. apply contra.
+        exists (P (C 1) (C 0)). apply ST_Funny.
+Qed.
+
+End Temp2.
+
 
 
