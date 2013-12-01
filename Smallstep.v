@@ -511,4 +511,41 @@ Qed.
 End Temp5.
 End Temp4.
 
+Inductive multi {X:Type} (R: relation X) : relation X :=
+| multi_refl : forall (x:X), multi R x x
+| multi_step : forall (x y z : X),
+        R x y ->
+        multi R y z ->
+        multi R x z.
+
+Tactic Notation "multi_cases" tactic(first) ident(c) :=
+    first;
+    [ Case_aux c "multi_refl" | Case_aux c "multi_step" ].
+
+Definition multistep := multi step.
+Notation " t '==>*' t' " := (multistep t t') (at level 40).
+
+Theorem multi_P : forall (X:Type) (R:relation X) (x y : X),
+    R x y -> (multi R) x y.
+Proof.
+    intros X R x y H. apply multi_step with y.
+    apply H. apply multi_refl.
+Qed.
+
+Theorem multi_trans:
+    forall (X:Type) (R:relation X) (x y z : X),
+    multi R x y ->
+    multi R y z ->
+    multi R x z.
+Proof.
+    intros X R x y z G H.
+    multi_cases (induction G) Case.
+    Case "multi_refl". assumption.
+    Case "multi_step".
+        apply multi_step with y. assumption.
+        apply IHG. assumption.
+Qed.
+
+
+
 
