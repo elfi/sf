@@ -525,7 +525,7 @@ Tactic Notation "multi_cases" tactic(first) ident(c) :=
 Definition multistep := multi step.
 Notation " t '==>*' t' " := (multistep t t') (at level 40).
 
-Theorem multi_P : forall (X:Type) (R:relation X) (x y : X),
+Theorem multi_R : forall (X:Type) (R:relation X) (x y : X),
     R x y -> (multi R) x y.
 Proof.
     intros X R x y H. apply multi_step with y.
@@ -546,6 +546,63 @@ Proof.
         apply IHG. assumption.
 Qed.
 
+Lemma test_multistep_1:
+    P (P (C 0) (C 3))
+      (P (C 2) (C 4))
+    ==>*
+    C ((0 + 3) + (2 + 4)).
+Proof.
+    apply multi_step with
+        (P (C (0 + 3))
+           (P (C 2) (C 4))).
+    apply ST_Plus1. apply ST_PlusConstConst.
+    apply multi_step with
+        (P (C (0 + 3))
+           (C (2 + 4))).
+    apply ST_Plus2. apply v_const. apply ST_PlusConstConst.
+    apply multi_R.
+    apply ST_PlusConstConst.
+Qed.
 
+Lemma test_multistep_1':
+    P (P (C 0) (C 3))
+      (P (C 2) (C 4))
+    ==>*
+    C ((0 + 3) + (2 + 4)).
+Proof.
+    eapply multi_step.
+        apply ST_Plus1. apply ST_PlusConstConst.
+    eapply multi_step.
+        apply ST_Plus2. apply v_const. apply ST_PlusConstConst.
+    eapply multi_step.
+        apply ST_PlusConstConst.
+    apply multi_refl.
+Qed.
+
+Lemma test_multistep_3:
+    P (C 0) (C 3)
+    ==>*
+    P (C 0) (C 3).
+Proof.
+    apply multi_refl.
+Qed.
+
+Lemma test_multistep_4:
+    P (C 0)
+      (P (C 2)
+         (P (C 0) (C 3)))
+    ==>*
+    P (C 0)
+      (C (2 + (0 + 3))).
+Proof.
+    eapply multi_step.
+        apply ST_Plus2. apply v_const.
+        apply ST_Plus2. apply v_const.
+        apply ST_PlusConstConst.
+    eapply multi_step.
+        apply ST_Plus2. apply v_const.
+        apply ST_PlusConstConst.
+    apply multi_refl.
+Qed.
 
 
