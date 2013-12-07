@@ -605,4 +605,107 @@ Proof.
     apply multi_refl.
 Qed.
 
+Definition step_normal_form := normal_form step.
+
+Definition normal_form_of (t t' : tm) :=
+    (t ==>* t' /\ step_normal_form t').
+
+Theorem normal_forms_unique:
+    deterministic normal_form_of.
+Proof.
+    unfold deterministic. unfold normal_form_of.
+    intros x y1 y2 P1 P2.
+    inversion P1 as [P11 P12]; clear P1.
+    inversion P2 as [P21 P22]; clear P2.
+    generalize dependent y2.
+    multi_cases (induction P11) Case; intros y2 P21 P22.
+    Case "multi_refl".
+        multi_cases (inversion P21) SCase; subst.
+        SCase "multi_refl".
+            reflexivity.
+        SCase "multi_step".
+            apply ex_falso_quodlibet.
+            unfold step_normal_form in P12.
+            unfold normal_form in P12.
+            apply P12. exists y. assumption.
+    Case "multi_step".
+        multi_cases (inversion P21) SCase; subst.
+        SCase "multi_refl".
+            apply ex_falso_quodlibet. apply P22.
+            exists y. assumption.
+        SCase "multi_step".
+            apply IHP11. assumption.
+            (* use H1 to prove next goal,
+               y = y0 from H and H0 *)
+            assert (HEq_y_y0: y = y0).
+                eapply step_deterministic.
+                apply H. apply H0.
+            rewrite <- HEq_y_y0 in H1.
+            apply H1.
+            assumption.
+Qed.
+
+Definition normalizing {X:Type} (R:relation X) :=
+    forall t, exists t',
+    (multi R) t t' /\ normal_form R t'.
+
+Lemma multistep_congr_1: forall t1 t1' t2,
+    t1 ==>* t1' ->
+    P t1 t2 ==>* P t1' t2.
+Proof.
+    intros t1 t1' t2 H.
+    multi_cases (induction H) Case.
+    Case "multi_refl".
+        apply multi_refl.
+    Case "multi_step".
+        apply multi_step with (P y t2).
+        apply ST_Plus1. assumption.
+        apply IHmulti.
+Qed.
+
+Lemma multistep_congr_2: forall t1 t2 t2',
+    value t1 ->
+    t2 ==>* t2' ->
+    P t1 t2 ==>* P t1 t2'.
+Proof.
+    intros t1 t2 t2' Hv H.
+    multi_cases (induction H) Case.
+    Case "multi_refl".
+        apply multi_refl.
+    Case "multi_step".
+        apply multi_step with (P t1 y).
+        apply ST_Plus2; assumption.
+        apply IHmulti.
+Qed.
+
+Theorem step_normalizing:
+    normalizing step.
+Proof.
+    unfold normalizing.
+    tm_cases (induction t) Case.
+    Case "C".
+        exists (C n). split.
+        SCase "multistep".
+            apply multi_refl.
+        SCase "normal form".
+            rewrite -> nf_same_as_value. apply v_const.
+    Case "P".
+        inversion IHt1 as [t1' H1]; clear IHt1.
+        inversion IHt2 as [t2' H2]; clear IHt2.
+        inversion H1 as [H11 H12]. inversion H2 as [H21 H22].
+        rewrite -> nf_same_as_value in H12.
+        rewrite -> nf_same_as_value in H22.
+        inversion H12 as [n1]. inversion H22 as [n2].
+        rewrite <- H in H11. rewrite <- H0 in H21.
+        exists (C (n1 + n2)). split.
+        SCase "multistep".
+            apply multi_trans with (P (C n1) t2).
+            apply multistep_congr_1. apply H11.
+            apply multi_trans with (P (C n1) (C n2)).
+            apply multistep_congr_2. apply v_const. apply H21.
+            apply multi_R. apply ST_PlusConstConst.
+        SCase "normal form".
+            apply nf_same_as_value. apply v_const.
+Qed.
+
 
