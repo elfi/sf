@@ -761,4 +761,25 @@ Proof.
         apply step__eval with y. apply H. apply H1.
 Qed.
 
+Theorem evalF_eval : forall t n,
+    evalF t = n <-> t || n.
+Proof.
+    split.
+    Case "left".
+        generalize dependent n.
+        tm_cases (induction t) SCase.
+        SCase "C".
+            intros n' H. simpl in H. subst.
+            apply E_Const.
+        SCase "P".
+            intros n H. rewrite <- H. simpl.
+            apply E_Plus.
+            apply IHt1. reflexivity.
+            apply IHt2. reflexivity.
+    Case "right".
+        intro H. induction H; simpl.
+        reflexivity.
+        rewrite -> IHeval1. rewrite -> IHeval2. reflexivity.
+Qed.
+
 
