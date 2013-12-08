@@ -782,4 +782,63 @@ Proof.
         rewrite -> IHeval1. rewrite -> IHeval2. reflexivity.
 Qed.
 
+Module Combined.
+
+Inductive tm : Type :=
+| C : nat -> tm
+| P : tm -> tm -> tm
+| ttrue : tm
+| tfalse : tm
+| tif : tm -> tm -> tm -> tm.
+
+Tactic Notation "tm_cases" tactic(first) ident(c) :=
+    first;
+    [ Case_aux c "C" | Case_aux c "P"
+    | Case_aux c "ttrue" | Case_aux c "tfalse"
+    | Case_aux c "tif" ].
+
+Inductive value : tm -> Prop :=
+| v_const : forall n, value (C n)
+| v_true : value ttrue
+| v_false : value tfalse.
+
+Reserved Notation " t '==>' t' " (at level 40).
+
+Inductive step : tm -> tm -> Prop :=
+| ST_PlusConstConst : forall n1 n2,
+        P (C n1) (C n2) ==> C (n1 + n2)
+| ST_Plus1 : forall t1 t1' t2,
+        t1 ==> t1' ->
+        P t1 t2 ==> P t1' t2
+| ST_Plus2 : forall v1 t2 t2',
+        value v1 ->
+        t2 ==> t2' ->
+        P v1 t2 ==> P v1 t2'
+| ST_IfTrue : forall t1 t2,
+        tif ttrue t1 t2 ==> t1
+| ST_IfFalse : forall t1 t2,
+        tif tfalse t1 t2 ==> t2
+| ST_If : forall t1 t1' t2 t3,
+        t1 ==> t1' ->
+        tif t1 t2 t3 ==> tif t1' t2 t3
+
+where " t '==>' t' " := (step t t').
+
+Tactic Notation "step_cases" tactic(first) ident(c) :=
+    first;
+    [ Case_aux c "ST_PlusConstConst"
+    | Case_aux c "ST_Plus1" | Case_aux c "ST_Plus2"
+    | Case_aux c "ST_IfTrue" | Case_aux c "ST_IfFalse"
+    | Case_aux c "ST_If" ].
+
+Theorem step_deterministic:
+    deterministic step.
+Proof.
+    Admitted.
+
+Theorem strong_progress : forall t,
+    value t \/ (exists t', t ==> t').
+Proof.
+    Admitted.
+
 
