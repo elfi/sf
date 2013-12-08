@@ -708,4 +708,57 @@ Proof.
             apply nf_same_as_value. apply v_const.
 Qed.
 
+Theorem eval__multistep : forall t n,
+    t || n -> t ==>* C n.
+Proof.
+    tm_cases (induction t) Case; intros n' Heval.
+    Case "C".
+        inversion Heval; subst.
+        apply multi_refl.
+    Case "P".
+        inversion Heval; subst.
+        apply IHt1 in H1. apply IHt2 in H3.
+        apply multi_trans with (P (C n1) t2).
+        apply multistep_congr_1. apply H1.
+        apply multi_trans with (P (C n1) (C n2)).
+        apply multistep_congr_2. apply v_const. apply H3.
+        apply multi_R. apply ST_PlusConstConst.
+Qed.
+
+Lemma step__eval : forall t t' n,
+    t ==> t' ->
+    t' || n ->
+    t || n.
+Proof.
+    intros t t' n Hstep. generalize dependent n.
+    step_cases (induction Hstep) Case; intros n Heval.
+    Case "ST_PlusConstConst".
+        inversion Heval. apply E_Plus; apply E_Const.
+    Case "ST_Plus1".
+        inversion Heval; subst. apply E_Plus.
+        apply IHHstep. apply H1.
+        apply H3.
+    Case "ST_Plus2".
+        inversion Heval; subst. apply E_Plus.
+        apply H2.
+        apply IHHstep. apply H4.
+Qed.
+
+Theorem multistep__eval: forall t t',
+    normal_form_of t t' -> exists n, t' = C n /\ t || n.
+Proof.
+    unfold normal_form_of. intros t t' [Hmstep Hnormal].
+    multi_cases (induction Hmstep) Case.
+    Case "multi_refl".
+        unfold step_normal_form in Hnormal.
+        apply nf_is_value in Hnormal. inversion Hnormal.
+        exists n. split. reflexivity. apply E_Const.
+    Case "multi_step".
+        apply IHHmstep in Hnormal.
+        destruct Hnormal as [n [H0 H1]].
+        exists n. split.
+        apply H0.
+        apply step__eval with y. apply H. apply H1.
+Qed.
+
 
