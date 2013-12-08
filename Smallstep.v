@@ -834,11 +834,47 @@ Tactic Notation "step_cases" tactic(first) ident(c) :=
 Theorem step_deterministic:
     deterministic step.
 Proof.
-    Admitted.
+    unfold deterministic. intros x y1 y2 Hy1 Hy2.
+    generalize dependent y2.
+    step_cases (induction Hy1) Case; intros y2 Hy2.
+    Case "ST_PlusConstConst".
+        inversion Hy2; subst.
+        reflexivity.
+        inversion H2.
+        inversion H3.
+    Case "ST_Plus1".
+        inversion Hy2.
+        rewrite <- H0 in Hy1. inversion Hy1.
+        rewrite -> (IHHy1 t1'0). reflexivity. assumption.
+        inversion H1; rewrite <- H4 in Hy1; inversion Hy1.
+    Case "ST_Plus2".
+        inversion Hy2.
+        rewrite <- H2 in Hy1. inversion Hy1.
+        inversion H. rewrite <- H4 in H3. inversion H3.
+        rewrite <- H4 in H3. inversion H3.
+        rewrite <- H4 in H3. inversion H3.
+        rewrite -> (IHHy1 t2'0). reflexivity. assumption.
+    Case "ST_IfTrue".
+        inversion Hy2. reflexivity. inversion H3.
+    Case "ST_IfFalse".
+        inversion Hy2. reflexivity. inversion H3.
+    Case "ST_If".
+        inversion Hy2.
+        rewrite <- H0 in Hy1. inversion Hy1.
+        rewrite <- H0 in Hy1. inversion Hy1.
+        rewrite -> (IHHy1 t1'0). reflexivity. assumption.
+Qed.
 
-Theorem strong_progress : forall t,
-    value t \/ (exists t', t ==> t').
+Theorem strong_progress_false :
+    exists t, ~(value t) /\ ~(exists t', t ==> t').
 Proof.
-    Admitted.
+    exists (P ttrue tfalse).
+    split.
+    Case "left".
+        intro contra. inversion contra.
+    Case "right".
+        intros [t' H]. inversion H.
+        inversion H3. inversion H4.
+Qed.
 
 
