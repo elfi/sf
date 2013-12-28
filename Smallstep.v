@@ -1097,6 +1097,7 @@ Example par_loop_example_2:
 Proof.
     eapply ex_intro. split. unfold par_loop.
     eapply multi_step. apply CS_Par2. apply CS_While.
+Abort.
 
 Lemma par_body_n__Sn: forall n st,
     st X = n /\ st Y = 0 ->
@@ -1104,4 +1105,8 @@ Lemma par_body_n__Sn: forall n st,
 Proof.
     intros n st [HX HY]. unfold par_loop.
     eapply multi_step.
+Abort.
+
+End CImp.
+
 
