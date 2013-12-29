@@ -214,5 +214,67 @@ Proof.
     intros t H. inversion H. apply H1.
 Qed.
 
+Lemma bool_canonical : forall t,
+    |- t \in TBool -> value t -> bvalue t.
+Proof.
+    intros t HT HV. inversion HV.
+    Case "H : bvalue t". assumption.
+    Case "H : nvalue t". destruct H; solve by inversion.
+Qed.
+
+Lemma nat_canonical : forall t,
+    |- t \in TNat -> value t -> nvalue t.
+Proof.
+    intros t HT HV. inversion HV.
+    Case "H : bvalue t". destruct H; solve by inversion.
+    Case "H : nvalue t". assumption.
+Qed.
+
+Theorem progress : forall t T,
+    |- t \in T ->
+    value t \/ exists t', t ==> t'.
+Proof.
+    intros t T HT.
+    has_type_cases (induction HT) Case; auto.
+    Case "T_If".
+        right. inversion IHHT1; clear IHHT1.
+        SCase "t1 is a value".
+            apply (bool_canonical t1 HT1) in H.
+            inversion H; subst; clear H.
+               exists t2. auto.
+               exists t3. auto.
+        SCase "t1 can take a step".
+            inversion H as [t1' H1].
+            exists (tif t1' t2 t3). auto.
+    Case "T_Succ".
+        inversion IHHT; clear IHHT.
+        SCase "t1 is a value".
+             left. apply (nat_canonical t1 HT) in H.
+             inversion H; subst; clear H; auto.
+        SCase "t1 can take a step".
+             right.
+             inversion H as [t' H1].
+             exists (tsucc t'). auto.
+    Case "T_Pred".
+        right. inversion IHHT; clear IHHT.
+        SCase "t1 is a value".
+            apply (nat_canonical t1 HT) in H.
+            inversion H; subst.
+                exists tzero. auto.
+                exists t. auto.
+        SCase "t1 can take a step".
+            inversion H as [t' H1].
+            exists (tpred t'). auto.
+    Case "T_Iszero".
+        right. inversion IHHT; clear IHHT.
+        SCase "t1 is a value".
+            apply (nat_canonical t1 HT) in H.
+            inversion H; subst.
+                exists ttrue. auto.
+                eexists. auto. (* more automation *)
+        SCase "t1 can take a step".
+            inversion H as [t' H1].
+            eexists. eauto. (* yet more automation *)
+Qed.
 
 
