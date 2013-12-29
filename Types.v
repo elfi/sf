@@ -150,4 +150,69 @@ Proof with eauto.
             rewrite (IHHy1 t1'0). reflexivity. assumption.
 Qed.
 
+Inductive ty : Type :=
+| TBool : ty
+| TNat : ty.
+
+Reserved Notation "'|-' t '\in' T" (at level 40).
+
+Inductive has_type : tm -> ty -> Prop :=
+| T_True :
+    |- ttrue \in TBool
+| T_False :
+    |- tfalse \in TBool
+| T_If : forall t1 t2 t3 T,
+    |- t1 \in TBool ->
+    |- t2 \in T ->
+    |- t3 \in T ->
+    |- tif t1 t2 t3 \in T
+| T_Zero :
+    |- tzero \in TNat
+| T_Succ : forall t1,
+    |- t1 \in TNat ->
+    |- tsucc t1 \in TNat
+| T_Pred : forall t1,
+    |- t1 \in TNat ->
+    |- tpred t1 \in TNat
+| T_Iszero : forall t1,
+    |- t1 \in TNat ->
+    |- tiszero t1 \in TBool
+
+where "'|-' t '\in' T" := (has_type t T).
+
+Tactic Notation "has_type_cases" tactic(first) ident(c) :=
+    first;
+    [ Case_aux c "T_True" | Case_aux c "T_False"
+    | Case_aux c "T_If" | Case_aux c "T_Zero"
+    | Case_aux c "T_Succ" | Case_aux c "T_Pred"
+    | Case_aux c "T_Iszero" ].
+
+Hint Constructors has_type.
+
+Example has_type_1:
+    |- tif tfalse tzero (tsucc tzero) \in TNat.
+Proof.
+    apply T_If.
+        apply T_False.
+        apply T_Zero.
+        apply T_Succ.
+            apply T_Zero.
+Qed.
+
+Example has_type_not :
+    ~ (|- tif tfalse tzero ttrue \in TBool).
+Proof.
+    (* first inversion on contra, and then
+       inversion on tzero \in TBool *)
+    intro contra. solve by inversion 2.
+Qed.
+
+Example succ_hastype_nat__hastype_nat : forall t,
+    |- tsucc t \in TNat ->
+    |- t \in TNat.
+Proof.
+    intros t H. inversion H. apply H1.
+Qed.
+
+
 
