@@ -277,4 +277,48 @@ Proof.
             eexists. eauto. (* yet more automation *)
 Qed.
 
+Theorem preservation : forall t t' T,
+    |- t \in T ->
+    t ==> t' ->
+    |- t' \in T.
+Proof.
+    intros t t' T HT HE.
+    generalize dependent t'.
+    has_type_cases (induction HT) Case;
+        intros t' HE;
+        try solve by inversion.
+    Case "T_If".
+        inversion HE; subst; clear HE.
+        SCase "ttrue". assumption.
+        SCase "tfalse". assumption.
+        SCase "tif". apply T_If; try assumption.
+            apply IHHT1. assumption.
+    Case "T_Succ".
+        inversion HE; subst; clear HE.
+        apply IHHT in H0. apply T_Succ. assumption.
+    Case "T_Pred".
+        inversion HE; subst; clear HE.
+        SCase "tzero". apply T_Zero.
+        SCase "tsucc". inversion HT; subst. assumption.
+        SCase "t1". apply T_Pred. apply IHHT. assumption.
+    Case "T_Iszero".
+        inversion HE; subst; clear HE;
+        (* constructors, inductive hypothesis, assumption *)
+        auto.
+Qed.
+
+Theorem preservation' : forall t t' T,
+    |- t \in T ->
+    t ==> t' ->
+    |- t' \in T.
+Proof.
+    intros t t' T HT HE. generalize dependent T.
+    step_cases (induction HE) Case;
+        intros T HT;
+        inversion HT; subst; clear HT;
+        try auto.
+    Case "ST_PredSucc".
+        inversion H1; auto.
+Qed.
+
 
