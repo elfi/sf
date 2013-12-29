@@ -321,4 +321,23 @@ Proof.
         inversion H1; auto.
 Qed.
 
+Definition multistep := (multi step).
+Notation "t1 '==>*' t2" := (multistep t1 t2) (at level 40).
+
+Corollary soundness : forall t t' T,
+    |- t \in T ->
+    t ==>* t' ->
+    ~(stuck t').
+Proof.
+    intros t t' T HT P. unfold stuck. induction P; intros [R S].
+    Case "multi_refl".
+        (* progress tells us that either we have a value or step
+           is possible ... this contradicts S and R respectively *)
+        destruct (progress x T HT); auto.
+    Case "multi_step".
+        apply IHP.
+            apply (preservation x y T HT H).
+            split; assumption.
+Qed.
+
 
