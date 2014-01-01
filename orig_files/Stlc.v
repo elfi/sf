@@ -255,12 +255,6 @@ Notation notB := (tabs x TBool (tif (tvar x) tfalse ttrue)).
     function is actually applied to an argument.  We also make the
     second choice here. *)
 
-(** Finally, having made the choice not to reduce under abstractions,
-    we don't need to worry about whether variables are values, since
-    we'll always be reducing programs "from the outside in," and that
-    means the [step] relation will always be working with closed
-    terms (ones with no free variables).  *)
-
 Inductive value : tm -> Prop :=
   | v_abs : forall x T t,
       value (tabs x T t)
@@ -272,8 +266,25 @@ Inductive value : tm -> Prop :=
 Hint Constructors value.
 
 
+(** Finally, we must consider what constitutes a _complete_ program.
+
+  Intuitively, a "complete" program must not refer to any undefined
+  variables.  We'll see shortly how to define the "free" variables 
+  in a STLC term.  A program is "closed", that is, it contains no
+  free variables.
+   
+*)
+
+(** Having made the choice not to reduce under abstractions,
+    we don't need to worry about whether variables are values, since
+    we'll always be reducing programs "from the outside in," and that
+    means the [step] relation will always be working with closed
+    terms (ones with no free variables).  *)
+
+
+
 (* ###################################################################### *)
-(** *** Free Variables and Substitution *)
+(** *** Substitution *)
 
 (** Now we come to the heart of the STLC: the operation of
     substituting one term for a variable in another term.
@@ -330,16 +341,18 @@ Hint Constructors value.
    [x:=s](if t1 then t2 else t3) = 
                    if [x:=s]t1 then [x:=s]t2 else [x:=s]t3
 ]]  
-    ... and formally: *)
+*)
+
+(**    ... and formally: *)
 
 Reserved Notation "'[' x ':=' s ']' t" (at level 20).
 
 Fixpoint subst (x:id) (s:tm) (t:tm) : tm :=
   match t with
   | tvar x' => 
-      if beq_id x x' then s else t
+      if eq_id_dec x x' then s else t
   | tabs x' T t1 => 
-      tabs x' T (if beq_id x x' then t1 else ([x:=s] t1)) 
+      tabs x' T (if eq_id_dec x x' then t1 else ([x:=s] t1)) 
   | tapp t1 t2 => 
       tapp ([x:=s] t1) ([x:=s] t2)
   | ttrue => 
@@ -583,7 +596,7 @@ Proof.
     variables.
 
     This leads us to a three-place "typing judgment", informally
-    written [Gamma |- t : T], where [Gamma] is a
+    written [Gamma |- t \in T], where [Gamma] is a
     "typing context" -- a mapping from variables to their types. *)
 
 (** We hide the definition of partial maps in a module since it is
@@ -600,19 +613,19 @@ Definition empty {A:Type} : partial_map A := (fun _ => None).
     function [extend] to add a binding to a partial map. *)
 
 Definition extend {A:Type} (Gamma : partial_map A) (x:id) (T : A) :=
-  fun x' => if beq_id x x' then Some T else Gamma x'.
+  fun x' => if eq_id_dec x x' then Some T else Gamma x'.
 
 Lemma extend_eq : forall A (ctxt: partial_map A) x T,
   (extend ctxt x T) x = Some T.
 Proof.
-  intros. unfold extend. rewrite <- beq_id_refl. auto.
+  intros. unfold extend. rewrite eq_id. auto.
 Qed.
 
 Lemma extend_neq : forall A (ctxt: partial_map A) x1 T x2,
-  beq_id x2 x1 = false ->
+  x2 <> x1 ->                       
   (extend ctxt x2 T) x1 = ctxt x1.
 Proof.
-  intros. unfold extend. rewrite H. auto.
+  intros. unfold extend. rewrite neq_id; auto.
 Qed.
 
 End PartialMap.
@@ -797,8 +810,7 @@ Proof.
 
 
 
-
 End STLC.
 
-(* $Date: 2013-04-17 11:24:12 -0400 (Wed, 17 Apr 2013) $ *)
+(* $Date: 2013-11-20 13:03:49 -0500 (Wed, 20 Nov 2013) $ *)
 
