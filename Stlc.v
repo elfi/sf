@@ -40,7 +40,7 @@ Notation idBBBB := (tabs x (TArrow (TArrow TBool TBool)
 Notation k := (tabs x TBool (tabs y TBool (tvar))).
 
 (* notB = \x:Bool . if x then false else true *)
-Notation notB := (tabs x TBool (tif (tvar x) false true)).
+Notation notB := (tabs x TBool (tif (tvar x) tfalse ttrue)).
 
 Inductive value : tm -> Prop :=
 | v_abs   : forall x T t, value (tabs x T t)
@@ -121,5 +121,105 @@ Proof.
             rewrite -> IHsubsti3.
             reflexivity.
 Qed.
+
+Reserved Notation "t1 '==>' t2" (at level 40).
+
+Inductive step : tm -> tm -> Prop :=
+| ST_AppAbs : forall x T t v,
+        value v ->
+        (tapp (tabs x T t) v) ==> [x:=v]t
+| ST_App1 : forall t1 t1' t2,
+        t1 ==> t1' ->
+        tapp t1 t2 ==> tapp t1' t2
+| ST_App2 : forall v t2 t2',
+        value v ->
+        t2 ==> t2' ->
+        tapp v t2 ==> tapp v t2'
+| ST_IfTrue : forall t1 t2,
+        (tif ttrue t1 t2) ==> t1
+| ST_IfFalse : forall t1 t2,
+        (tif tfalse t1 t2) ==> t2
+| ST_If : forall t1 t1' t2 t3,
+        t1 ==> t1' ->
+        (tif t1 t2 t3) ==> (tif t1' t2 t3)
+
+where "t1 '==>' t2" := (step t1 t2).
+
+Tactic Notation "step_cases" tactic(first) ident(c) :=
+    first;
+    [ Case_aux c "ST_AppAbs" | Case_aux c "ST_App1"
+    | Case_aux c "ST_App2" | Case_aux c "ST_IfTrue"
+    | Case_aux c "ST_IfFalse" | Case_aux c "ST_If" ].
+
+Hint Constructors step.
+
+Notation multistep := (multi step).
+Notation "t1 '==>*' t2" := (multistep t1 t2) (at level 40).
+
+Lemma step_example1:
+    (tapp idBB idB) ==>* idB.
+Proof.
+    eapply multi_step.
+      apply ST_AppAbs. apply v_abs.
+      simpl. apply multi_refl.
+Qed.
+
+Lemma step_example2:
+    (tapp idBB (tapp idBB idB)) ==>* idB.
+Proof.
+    eapply multi_step.
+        apply ST_App2.
+            apply v_abs.
+            apply ST_AppAbs. apply v_abs.
+        simpl. eapply multi_step.
+            apply ST_AppAbs. apply v_abs.
+            simpl. apply multi_refl.
+Qed.
+
+Lemma step_example3:
+    tapp (tapp idBB notB) ttrue ==>* tfalse.
+Proof.
+    eapply multi_step; auto.
+    simpl. eapply multi_step; auto.
+    simpl. eapply multi_step; auto.
+Qed.
+
+Lemma step_example4:
+    tapp idBB (tapp notB ttrue) ==>* tfalse.
+Proof.
+    eapply multi_step. auto.
+    simpl. eapply multi_step. auto.
+    simpl. eapply multi_step. auto.
+    simpl. apply multi_refl.
+Qed.
+
+
+Lemma step_example1':
+    (tapp idBB idB) ==>* idB.
+Proof. normalize. Qed.
+
+Lemma step_example2':
+    (tapp idBB (tapp idBB idB)) ==>* idB.
+Proof. normalize. Qed.
+
+Lemma step_example3':
+    tapp (tapp idBB notB) ttrue ==>* tfalse.
+Proof. normalize. Qed.
+
+Lemma step_example4':
+    tapp idBB (tapp notB ttrue) ==>* tfalse.
+Proof. normalize. Qed.
+
+Lemma step_example5:
+    (tapp (tapp idBBBB idBB) idB) ==>* idB.
+Proof.
+    eapply multi_step. auto.
+    simpl. eapply multi_step. auto.
+    simpl. apply multi_refl.
+Qed.
+
+Lemma step_example5':
+    (tapp (tapp idBBBB idBB) idB) ==>* idB.
+Proof. normalize. Qed.
 
 
