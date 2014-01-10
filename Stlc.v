@@ -222,4 +222,78 @@ Lemma step_example5':
     (tapp (tapp idBBBB idBB) idB) ==>* idB.
 Proof. normalize. Qed.
 
+Module PartialMap.
+
+Definition partial_map (A:Type) := id -> option A.
+
+Definition empty {A:Type} : partial_map A := (fun _ => None).
+
+Definition extend {A:Type} (Gamma : partial_map A)
+    (x:id) (T:A) :=
+    fun x' => if eq_id_dec x x' then Some T else Gamma x'.
+
+Lemma extend_eq : forall A (ctxt: partial_map A) x T,
+    (extend ctxt x T) x = Some T.
+Proof.
+    intros. unfold extend. rewrite -> eq_id. reflexivity.
+Qed.
+
+Lemma extend_neq : forall A (ctxt: partial_map A) x1 T x2,
+    x2 <> x1 ->
+    (extend ctxt x2 T) x1 = ctxt x1.
+Proof.
+    intros. unfold extend. rewrite -> neq_id.
+      reflexivity.
+      assumption.
+Qed.
+
+End PartialMap.
+
+Definition context := partial_map ty.
+
+Reserved Notation "Gamma '|-' t '\in' T" (at level 40).
+
+Inductive has_type : context -> tm -> ty -> Prop :=
+| T_Var : forall Gamma x T,
+        Gamma x = Some T ->
+        Gamma |- tvar x \in T
+| T_Abs : forall Gamma x T1 t T2,
+        extend Gamma x T1 |- t \in T2 ->
+        Gamma |- tabs x T1 t \in TArrow T1 T2
+| T_App : forall Gamma tt t1 T1 T2,
+        Gamma |- tt \in TArrow T1 T2 ->
+        Gamma |- t1 \in T1 ->
+        Gamma |- tapp tt t1 \in T2
+| T_True : forall Gamma,
+        Gamma |- ttrue \in TBool
+| T_False: forall Gamma,
+        Gamma |- tfalse \in TBool
+| T_If : forall Gamma t1 t2 t3 T,
+        Gamma |- t1 \in TBool ->
+        Gamma |- t2 \in T ->
+        Gamma |- t3 \in T ->
+        Gamma |- tif t1 t2 t3 \in T
+
+where "Gamma '|-' t '\in' T" := (has_type Gamma t T).
+
+Tactic Notation "has_type_cases" tactic(first) ident(c) :=
+    first;
+    [ Case_aux c "T_Var" | Case_aux c "T_Abs"
+    | Case_aux c "T_App" | Case_aux c "T_True"
+    | Case_aux c "T_False" | Case_aux c "T_If" ].
+
+Hint Constructors has_type.
+
+Example typing_example_1 :
+    empty |- tabs x TBool (tvar x) \in TArrow TBool TBool.
+Proof.
+    apply T_Abs. apply T_Var. reflexivity.
+Qed.
+
+Example typing_example_1' :
+    empty |- tabs x TBool (tvar x) \in TArrow TBool TBool.
+Proof. auto. Qed.
+
+
+
 
