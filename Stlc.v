@@ -379,3 +379,5 @@ Proof.
     apply (uniqueness T1 T2). assumption.
 Qed.
 
+End STLC.
+

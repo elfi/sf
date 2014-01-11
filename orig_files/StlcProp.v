@@ -10,6 +10,29 @@ Import STLC.
     theorem. *)
 
 (* ###################################################################### *)
+(** * Canonical Forms *)
+
+Lemma cannonical_forms_bool : forall t,
+  empty |- t \in TBool ->
+  value t ->
+  (t = ttrue) \/ (t = tfalse).
+Proof.
+  intros t HT HVal.
+  inversion HVal; intros; subst; try inversion HT; auto.
+Qed.
+
+Lemma cannonical_forms_fun : forall t T1 T2,
+  empty |- t \in (TArrow T1 T2) ->
+  value t ->
+  exists x u, t = tabs x T1 u.
+Proof.
+  intros t T1 T2 HT HVal.
+  inversion HVal; intros; subst; try inversion HT; subst; auto.
+  exists x0. exists t0.  auto.
+Qed.
+   
+
+(* ###################################################################### *)
 (** * Progress *)
 
 (** As before, the _progress_ theorem tells us that closed, well-typed
@@ -78,11 +101,11 @@ Proof with eauto.
     SCase "t1 is a value".
       destruct IHHt2...
       SSCase "t2 is also a value".
-        (* Since [t1] is a value and has an arrow type, it
-           must be an abs. Sometimes this is proved separately 
-           and called a "canonical forms" lemma. *) 
-        inversion H; subst. exists ([x0:=t2]t)...
-        solve by inversion. solve by inversion. 
+        assert (exists x0 t0, t1 = tabs x0 T11 t0).
+        eapply cannonical_forms_fun; eauto.
+        destruct H1 as [x0 [t0 Heq]]. subst.
+        exists ([x0:=t2]t0)...
+
       SSCase "t2 steps".
         inversion H0 as [t2' Hstp]. exists (tapp t1 t2')...
 
@@ -93,11 +116,7 @@ Proof with eauto.
     right. destruct IHHt1...
     
     SCase "t1 is a value".
-      (* Since [t1] is a value of boolean type, it must
-         be true or false *)
-      inversion H; subst. solve by inversion.
-      SSCase "t1 = true". eauto.
-      SSCase "t1 = false". eauto.
+      destruct (cannonical_forms_bool t1); subst; eauto.
 
     SCase "t1 also steps".
       inversion H as [t1' Hstp]. exists (tif t1' t2 t3)...
@@ -251,7 +270,6 @@ Proof.
   Case "afi_abs".
     inversion H1; subst.
     apply IHappears_free_in in H7.
-    apply not_eq_beq_id_false in H. 
     rewrite extend_neq in H7; assumption.
 Qed.
 
@@ -332,7 +350,7 @@ Proof with eauto.
     apply IHhas_type. intros x1 Hafi.
     (* the only tricky step... the [Gamma'] we use to 
        instantiate is [extend Gamma x T11] *)
-    unfold extend. remember (beq_id x0 x1) as e. destruct e...
+    unfold extend. destruct (eq_id_dec x0 x1)... 
   Case "T_App".
     apply T_App with T11...  
 Qed.
@@ -359,25 +377,25 @@ Lemma substitution_preserves_typing : forall Gamma x U t v T,
      Gamma |- [x:=v]t \in T.
 
 (** One technical subtlety in the statement of the lemma is that we
-    assign [t'] the type [U] in the _empty_ context -- in other words,
-    we assume [t'] is closed.  This assumption considerably simplifies
-    the [T_Abs] case of the proof (compared to assuming [Gamma |- t' \in
+    assign [v] the type [U] in the _empty_ context -- in other words,
+    we assume [v] is closed.  This assumption considerably simplifies
+    the [T_Abs] case of the proof (compared to assuming [Gamma |- v \in
     U], which would be the other reasonable assumption at this point)
-    because the context invariance lemma then tells us that [t'] has
+    because the context invariance lemma then tells us that [v] has
     type [U] in any context at all -- we don't have to worry about
-    free variables in [t'] clashing with the variable being introduced
+    free variables in [v] clashing with the variable being introduced
     into the context by [T_Abs].
 
     _Proof_: We prove, by induction on [t], that, for all [T] and
-    [Gamma], if [Gamma,x:U |- t \in T] and [|- t' \in U], then [Gamma |-
-    [x:=t']t \in T].
+    [Gamma], if [Gamma,x:U |- t \in T] and [|- v \in U], then [Gamma |-
+    [x:=v]t \in T].
  
       - If [t] is a variable, there are two cases to consider, depending
         on whether [t] is [x] or some other variable.
 
           - If [t = x], then from the fact that [Gamma, x:U |- x \in T] we
-            conclude that [U = T].  We must show that [[x:=t']x = t'] has
-            type [T] under [Gamma], given the assumption that [t'] has
+            conclude that [U = T].  We must show that [[x:=v]x = v] has
+            type [T] under [Gamma], given the assumption that [v] has
             type [U = T] under the empty context.  This follows from
             context invariance: if a closed term has type [T] in the
             empty context, it has that type in any context.
@@ -388,13 +406,13 @@ Lemma substitution_preserves_typing : forall Gamma x U t v T,
 
       - If [t] is an abstraction [\y:T11. t12], then the IH tells us,
         for all [Gamma'] and [T'], that if [Gamma',x:U |- t12 \in T']
-        and [|- t' \in U], then [Gamma' |- [x:=t']t12 \in T'].
+        and [|- v \in U], then [Gamma' |- [x:=v]t12 \in T'].
 
         The substitution in the conclusion behaves differently,
         depending on whether [x] and [y] are the same variable name.
 
         First, suppose [x = y].  Then, by the definition of
-        substitution, [[x:=t']t = t], so we just need to show [Gamma |-
+        substitution, [[x:=v]t = t], so we just need to show [Gamma |-
         t \in T].  But we know [Gamma,x:U |- t : T], and since the
         variable [y] does not appear free in [\y:T11. t12], the
         context invariance lemma yields [Gamma |- t \in T].
@@ -402,10 +420,10 @@ Lemma substitution_preserves_typing : forall Gamma x U t v T,
         Second, suppose [x <> y].  We know [Gamma,x:U,y:T11 |- t12 \in
         T12] by inversion of the typing relation, and [Gamma,y:T11,x:U
         |- t12 \in T12] follows from this by the context invariance
-        lemma, so the IH applies, giving us [Gamma,y:T11 |- [x:=t']t12 \in
-        T12].  By [T_Abs], [Gamma |- \y:T11. [x:=t']t12 \in T11->T12], and
+        lemma, so the IH applies, giving us [Gamma,y:T11 |- [x:=v]t12 \in
+        T12].  By [T_Abs], [Gamma |- \y:T11. [x:=v]t12 \in T11->T12], and
         by the definition of substitution (noting that [x <> y]),
-        [Gamma |- \y:T11. [x:=t']t12 \in T11->T12] as required. 
+        [Gamma |- \y:T11. [x:=v]t12 \in T11->T12] as required.
 
       - If [t] is an application [t1 t2], the result follows
         straightforwardly from the definition of substitution and the
@@ -425,15 +443,15 @@ Lemma substitution_preserves_typing : forall Gamma x U t v T,
     hand, _is_ completely generic. *)
 
 Proof with eauto.
-  intros Gamma x U t t' T Ht Ht'.
+  intros Gamma x U t v T Ht Ht'.
   generalize dependent Gamma. generalize dependent T. 
   t_cases (induction t) Case; intros T Gamma H;
     (* in each case, we'll want to get at the derivation of H *)
     inversion H; subst; simpl...
   Case "tvar".
-    rename i into y. remember (beq_id x y) as e. destruct e.
+    rename i into y. destruct (eq_id_dec x y).
     SCase "x=y".
-      apply beq_id_eq in Heqe. subst.
+      subst. 
       rewrite extend_eq in H2.
       inversion H2; subst. clear H2.
                   eapply context_invariance... intros x Hcontra.
@@ -443,18 +461,17 @@ Proof with eauto.
       apply T_Var. rewrite extend_neq in H2... 
   Case "tabs".
     rename i into y. apply T_Abs.
-    remember (beq_id x y) as e. destruct e.
+    destruct (eq_id_dec x y).
     SCase "x=y".
       eapply context_invariance...
-      apply beq_id_eq in Heqe. subst.
+      subst.
       intros x Hafi. unfold extend.
-      destruct (beq_id y x)...
+      destruct (eq_id_dec y x)...
     SCase "x<>y".
       apply IHt. eapply context_invariance...
       intros z Hafi. unfold extend.
-      remember (beq_id y z) as e0. destruct e0...
-      apply beq_id_eq in Heqe0. subst.
-      rewrite <- Heqe...  
+      destruct (eq_id_dec y z)...
+      subst. rewrite neq_id... 
 Qed.
 
 (** The substitution lemma can be viewed as a kind of "commutation"
@@ -773,5 +790,5 @@ Tactic Notation "t_cases" tactic(first) ident(c) :=
 
 End STLCArith.
 
-(* $Date: 2013-04-17 15:00:53 -0400 (Wed, 17 Apr 2013) $ *)
+(* $Date: 2013-11-20 13:03:49 -0500 (Wed, 20 Nov 2013) $ *)
 
