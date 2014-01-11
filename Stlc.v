@@ -294,6 +294,88 @@ Example typing_example_1' :
     empty |- tabs x TBool (tvar x) \in TArrow TBool TBool.
 Proof. auto. Qed.
 
+Example typing_example_2 :
+    empty |-
+        (tabs x TBool
+           (tabs y (TArrow TBool TBool)
+              (tapp (tvar y) (tapp (tvar y) (tvar x))))) \in
+        (TArrow TBool (TArrow (TArrow TBool TBool) TBool)).
+Proof.
+    apply T_Abs.
+    apply T_Abs.
+    eapply T_App. apply T_Var. apply extend_eq.
+    eapply T_App. apply T_Var. apply extend_eq.
+    apply T_Var. reflexivity.
+Qed.
 
+Example typing_example_2' :
+    empty |-
+        (tabs x TBool
+           (tabs y (TArrow TBool TBool)
+              (tapp (tvar y) (tapp (tvar y) (tvar x))))) \in
+        (TArrow TBool (TArrow (TArrow TBool TBool) TBool)).
+Proof.
+    apply T_Abs.
+    apply T_Abs.
+    apply T_App with (T1:=TBool). apply T_Var. reflexivity.
+    apply T_App with (T1:=TBool). apply T_Var. reflexivity.
+    apply T_Var. reflexivity.
+Qed.
 
+Example typing_example_3 :
+    exists T,
+       empty |-
+          (tabs x (TArrow TBool TBool)
+             (tabs y (TArrow TBool TBool)
+                (tabs z TBool
+                   (tapp (tvar y) (tapp (tvar x) (tvar z))))))
+          \in T.
+Proof.
+    eexists.
+    apply T_Abs.
+    apply T_Abs.
+    apply T_Abs.
+    eapply T_App. apply T_Var. reflexivity.
+    eapply T_App. apply T_Var. reflexivity.
+    apply T_Var. reflexivity.
+Qed.
+
+Example typing_nonexample_1 :
+    ~ exists T,
+        empty |-
+           (tabs x TBool
+              (tabs y TBool
+                 (tapp (tvar x) (tvar y))))
+           \in T.
+Proof.
+    intro Hc. inversion Hc.
+    inversion H. subst. clear H.
+    inversion H5. subst. clear H5.
+    inversion H4. subst. clear H4.
+    inversion H2. subst. clear H2.
+    inversion H1.
+Qed.
+
+Example typing_nonexample_3 :
+    ~ (exists S, exists T,
+         empty |-
+            (tabs x S
+               (tapp (tvar x) (tvar x)))
+            \in T).
+Proof.
+    intro Hc. inversion Hc.
+    inversion H. subst. clear H.
+    inversion H0. subst. clear H0.
+    inversion H5. subst. clear H5.
+    inversion H4. subst. clear H4.
+    inversion H1. subst. clear H1.
+    inversion H2. subst. clear H2.
+    inversion H1.
+    assert (uniqueness: forall A B, ~(A = TArrow A B)).
+        induction A; intros B contra.
+        Case "TBool". inversion contra.
+        Case "TArrow".
+            inversion contra. apply (IHA1 A2). assumption.
+    apply (uniqueness T1 T2). assumption.
+Qed.
 
