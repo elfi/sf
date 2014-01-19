@@ -127,3 +127,38 @@ Hint Constructors appears_free_in.
 Definition closed (t:tm) :=
     forall x, ~ appears_free_in x t.
 
+Lemma free_in_context : forall x t T Gamma,
+    appears_free_in x t ->
+    Gamma |- t \in T ->
+    exists T', Gamma x = Some T'.
+Proof.
+    intros x t T Gamma H H0.
+    generalize dependent Gamma.
+    generalize dependent T.
+    afi_cases (induction H) Case;
+        intros; try solve [inversion H0; eauto].
+    Case "afi_abs".
+        inversion H1; subst.
+        apply IHappears_free_in in H7.
+        rewrite -> extend_neq in H7;
+          assumption.
+Qed.
+
+Corollary typeable_empty__closed : forall t T,
+    empty |- t \in T  ->
+    closed t.
+Proof.
+    unfold closed, not. intros.
+    (* make the context to _appear_ more generic *)
+    remember (@empty ty) as Gamma.
+    (* by H0: t contains a free variable x0, and thus
+       this variable must have a type assigned to it
+       in Gamma *)
+    assert (H1: exists T', Gamma x0 = Some T').
+    eapply free_in_context. eassumption. eassumption.
+    inversion H1 as [T' HEq].
+    (* but in the actual contex in actally empty *)
+    subst. inversion HEq.
+Qed.
+
+
