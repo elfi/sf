@@ -92,4 +92,38 @@ Proof.
             exists (tif t1' t2 t3). auto.
 Qed.
 
+Inductive appears_free_in : id -> tm -> Prop :=
+| afi_var : forall x,
+        appears_free_in x (tvar x)
+| afi_app1 : forall x t1 t2,
+        appears_free_in x t1 ->
+        appears_free_in x (tapp t1 t2)
+| afi_app2 : forall x t1 t2,
+        appears_free_in x t2 ->
+        appears_free_in x (tapp t1 t2)
+| afi_abs : forall x y T t,
+        y <> x ->
+        appears_free_in x t ->
+        appears_free_in x (tabs y T t)
+| afi_if1 : forall x t1 t2 t3,
+        appears_free_in x t1 ->
+        appears_free_in x (tif t1 t2 t3)
+| afi_if2 : forall x t1 t2 t3,
+        appears_free_in x t2 ->
+        appears_free_in x (tif t1 t2 t3)
+| afi_if3 : forall x t1 t2 t3,
+        appears_free_in x t3 ->
+        appears_free_in x (tif t1 t2 t3).
+
+Tactic Notation "afi_cases" tactic(first) ident(c) :=
+    first;
+    [ Case_aux c "afi_var" | Case_aux c "afi_app1"
+    | Case_aux c "afi_app2" | Case_aux c "afi_abs"
+    | Case_aux c "aif_if1" | Case_aux c "aif_if2"
+    | Case_aux c "aif_if3" ].
+
+Hint Constructors appears_free_in.
+
+Definition closed (t:tm) :=
+    forall x, ~ appears_free_in x t.
 
