@@ -12,7 +12,7 @@ Import STLC.
 (* ###################################################################### *)
 (** * Canonical Forms *)
 
-Lemma cannonical_forms_bool : forall t,
+Lemma canonical_forms_bool : forall t,
   empty |- t \in TBool ->
   value t ->
   (t = ttrue) \/ (t = tfalse).
@@ -21,7 +21,7 @@ Proof.
   inversion HVal; intros; subst; try inversion HT; auto.
 Qed.
 
-Lemma cannonical_forms_fun : forall t T1 T2,
+Lemma canonical_forms_fun : forall t T1 T2,
   empty |- t \in (TArrow T1 T2) ->
   value t ->
   exists x u, t = tabs x T1 u.
@@ -102,7 +102,7 @@ Proof with eauto.
       destruct IHHt2...
       SSCase "t2 is also a value".
         assert (exists x0 t0, t1 = tabs x0 T11 t0).
-        eapply cannonical_forms_fun; eauto.
+        eapply canonical_forms_fun; eauto.
         destruct H1 as [x0 [t0 Heq]]. subst.
         exists ([x0:=t2]t0)...
 
@@ -116,7 +116,7 @@ Proof with eauto.
     right. destruct IHHt1...
     
     SCase "t1 is a value".
-      destruct (cannonical_forms_bool t1); subst; eauto.
+      destruct (canonical_forms_bool t1); subst; eauto.
 
     SCase "t1 also steps".
       inversion H as [t1' Hstp]. exists (tif t1' t2 t3)...
@@ -790,5 +790,5 @@ Tactic Notation "t_cases" tactic(first) ident(c) :=
 
 End STLCArith.
 
-(* $Date: 2013-11-20 13:03:49 -0500 (Wed, 20 Nov 2013) $ *)
+(* $Date: 2014-04-23 09:37:37 -0400 (Wed, 23 Apr 2014) $ *)
 

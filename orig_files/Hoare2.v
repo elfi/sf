@@ -317,7 +317,7 @@ Proof.
 
 (** In order to give a specification to this program we need to
     remember that dividing [m] by [n] produces a reminder [X] and a
-    quotient [Y] so that [n * Y + X = m /\ X > n].
+    quotient [Y] so that [n * Y + X = m /\ X < n].
 
     It turns out that we get lucky with this program and don't have to
     think very hard about the loop invariant: the invariant is the
@@ -1402,5 +1402,5 @@ Fixpoint real_fact (n:nat) : nat :=
 
 
 
-(* $Date: 2013-07-17 16:19:11 -0400 (Wed, 17 Jul 2013) $ *)
+(* $Date: 2014-04-03 23:55:40 -0400 (Thu, 03 Apr 2014) $ *)
 

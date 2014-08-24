@@ -1149,7 +1149,7 @@ Proof.
 (** The fact that small-step reduction implies big-step is now
     straightforward to prove, once it is stated correctly. 
 
-    The proof proceeds by induction on the multip-step reduction
+    The proof proceeds by induction on the multi-step reduction
     sequence that is buried in the hypothesis [normal_form_of t t']. *)
 (** Make sure you understand the statement before you start to
     work on the proof.  *)
@@ -1656,6 +1656,6 @@ Proof.
 (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(* $Date: 2013-07-17 16:19:11 -0400 (Wed, 17 Jul 2013) $ *)
+(* $Date: 2014-04-02 10:55:30 -0400 (Wed, 02 Apr 2014) $ *)
 
 

@@ -1,8 +1,15 @@
 (** * Basics: Functional Programming in Coq *)
  
-(* This library definition is included here temporarily 
-   for backward compatibility with Coq 8.3.  
-   Please ignore. *)
+(*
+   [Admitted] is Coq's "escape hatch" that says accept this definition
+   without proof.  We use it to mark the 'holes' in the development
+   that should be completed as part of your homework exercises.  In
+   practice, [Admitted] is useful when you're incrementally developing
+   large proofs.
+
+   As of Coq 8.4 [admit] is in the standard library, but we include
+   it here for backwards compatibility.
+*)
 Definition admit {T: Type} : T.  Admitted.
 
 (* ###################################################################### *)
@@ -31,6 +38,7 @@ Definition admit {T: Type} : T.  Admitted.
     _polymorphic type systems_ that support abstraction and code
     reuse.  Coq shares all of these features.
 *)
+
 
 (* ###################################################################### *)
 (** * Enumerated Types *)
@@ -92,12 +100,12 @@ Definition next_weekday (d:day) : day :=
 
 (** Having defined a function, we should check that it works on
     some examples.  There are actually three different ways to do this
-    in Coq.  First, we can use the command [Eval simpl] to evaluate a
+    in Coq.  First, we can use the command [Eval compute] to evaluate a
     compound expression involving [next_weekday].  *)
 
-Eval simpl in (next_weekday friday).
+Eval compute in (next_weekday friday).
    (* ==> monday : day *)
-Eval simpl in (next_weekday (next_weekday saturday)).
+Eval compute in (next_weekday (next_weekday saturday)).
    (* ==> tuesday : day *)
 
 (** If you have a computer handy, now would be an excellent
@@ -107,8 +115,8 @@ Eval simpl in (next_weekday (next_weekday saturday)).
     find the above example, submit it to Coq, and observe the
     result. *)
 
-(** The keyword [simpl] ("simplify") tells Coq precisely how to
-    evaluate the expression we give it.  For the moment, [simpl] is
+(** The keyword [compute] tells Coq precisely how to
+    evaluate the expression we give it.  For the moment, [compute] is
     the only one we'll need; later on we'll see some alternatives that
     are sometimes useful. *)
 
@@ -127,10 +135,11 @@ Example test_next_weekday:
 
 Proof. simpl. reflexivity.  Qed.
 
+
 (** The details are not important for now (we'll come back to
     them in a bit), but essentially this can be read as "The assertion
     we've just made can be proved by observing that both sides of the
-    equality are the same after simplification." *)
+    equality evaluate to the same thing, after some simplification." *)
 
 (** Third, we can ask Coq to "extract," from a [Definition], a
     program in some other, more conventional, programming
@@ -200,7 +209,7 @@ Proof. reflexivity.  Qed.
 
 (** (Note that we've dropped the [simpl] in the proofs.  It's not
     actually needed because [reflexivity] will automatically perform
-    the same simplification. *)
+    simplification.) *)
 
 (** _A note on notation_: We use square brackets to delimit
     fragments of Coq code in comments in .v files; this convention,
@@ -215,7 +224,7 @@ Proof. reflexivity.  Qed.
 
 (** **** Exercise: 1 star (nandb) *)
 (** Complete the definition of the following function, then make
-    sure that the [Example] assertions below each can be verified by
+    sure that the [Example] assertions below can each be verified by
     Coq.  *)
 
 (** This function should return [true] if either or both of
@@ -365,7 +374,7 @@ Definition minustwo (n : nat) : nat :=
     prints numbers in arabic form by default: *)
 
 Check (S (S (S (S O)))).
-Eval simpl in (minustwo 4).
+Eval compute in (minustwo 4).
 
 (** The constructor [S] has the type [nat -> nat], just like the
     functions [minustwo] and [pred]: *)
@@ -419,7 +428,7 @@ Fixpoint plus (n : nat) (m : nat) : nat :=
 
 (** Adding three to two now gives us five, as we'd expect. *)
 
-Eval simpl in (plus (S (S (S O))) (S (S O))).
+Eval compute in (plus (S (S (S O))) (S (S O))).
 
 (** The simplification that Coq performs to reach this conclusion can
     be visualized as follows: *)
@@ -579,85 +588,61 @@ Example test_blt_nat3:             (blt_nat 4 2) = false.
     behavior.  Actually, in a sense, we've already started doing this:
     each [Example] in the previous sections makes a precise claim
     about the behavior of some function on some particular inputs.
-    The proofs of these claims were always the same: use the
-    function's definition to simplify the expressions on both sides of
-    the [=] and notice that they become identical.
+    The proofs of these claims were always the same: use [reflexivity] 
+    to check that both sides of the [=] simplify to identical values. 
 
-    The same sort of "proof by simplification" can be used to prove
-    more interesting properties as well.  For example, the fact that
-    [0] is a "neutral element" for [+] on the left can be proved
-    just by observing that [0 + n] reduces to [n] no matter what
-    [n] is, since the definition of [+] is recursive in its first
-    argument. *)
-
-Theorem plus_O_n : forall n : nat, 0 + n = n.
-Proof.
-  reflexivity.  Qed.
-
-(** (_Note_: You may notice that the above statement looks
-    different in the original source file and the final output. In Coq
-    files, we write the [forall] universal quantifier using the
-    "_forall_" reserved identifier. This gets printed as an
-    upside-down "A", the familiar symbol used in logic.) *)
-
-(** The form of this theorem and proof are almost exactly the
-    same as the examples above: the only differences are that we've
-    added the quantifier [forall n:nat] and that we've used the
-    keyword [Theorem] instead of [Example].  Indeed, the latter
-    difference is purely a matter of style; the keywords [Example] and
-    [Theorem] (and a few others, including [Lemma], [Fact], and
-    [Remark]) mean exactly the same thing to Coq.
-
-    The keywords [simpl] and [reflexivity] are examples of _tactics_.
-    A tactic is a command that is used between [Proof] and [Qed] to
-    tell Coq how it should check the correctness of some claim we are
-    making.  We will see several more tactics in the rest of this
-    lecture, and yet more in future lectures. *)
-
-(** (By the way, it will be useful later to know that
-    [reflexivity] actually does somewhat more than [simpl] -- for
-    example, it tries "unfolding" defined terms, replacing them with
+    (By the way, it will be useful later to know that
+    [reflexivity] actually does somewhat more simplification than [simpl] 
+    does -- for example, it tries "unfolding" defined terms, replacing them with
     their right-hand sides.  The reason for this difference is that,
     when reflexivity succeeds, the whole goal is finished and we don't
     need to look at whatever expanded expressions [reflexivity] has
     found; by contrast, [simpl] is used in situations where we may
     have to read and understand the new goal, so we would not want it
-    blindly expanding definitions.) *)
+    blindly expanding definitions.) 
 
-(** **** Exercise: 1 star, optional (simpl_plus) *)
-(** What will Coq print in response to this query? *)
+    The same sort of "proof by simplification" can be used to prove
+    more interesting properties as well.  For example, the fact that
+    [0] is a "neutral element" for [+] on the left can be proved
+    just by observing that [0 + n] reduces to [n] no matter what
+    [n] is, a fact that can be read directly off the definition of [plus].*)
 
-(* Eval simpl in (forall n:nat, n + 0 = n). *)
-
-(** What about this one? *)
-
-(* Eval simpl in (forall n:nat, 0 + n = n). *)
-
-(** Explain the difference.  [] *)
-
-
-(* ###################################################################### *)
-(** * The [intros] Tactic *)
-
-(** Aside from unit tests, which apply functions to particular
-    arguments, most of the properties we will be interested in proving
-    about programs will begin with some quantifiers (e.g., "for all
-    numbers [n], ...") and/or hypothesis ("assuming [m=n], ...").  In
-    such situations, we will need to be able to reason by _assuming
-    the hypothesis_ -- i.e., we start by saying "OK, suppose [n] is
-    some arbitrary number," or "OK, suppose [m=n]."
-
-    The [intros] tactic permits us to do this by moving one or more
-    quantifiers or hypotheses from the goal to a "context" of current
-    assumptions.
-
-    For example, here is a slightly different proof of the same theorem. *)
-
-Theorem plus_O_n'' : forall n:nat, 0 + n = n.
+Theorem plus_O_n : forall n : nat, 0 + n = n.
 Proof.
   intros n. reflexivity.  Qed.
 
-(** Step through this proof in Coq and notice how the goal and
+
+(** (_Note_: You may notice that the above statement looks
+    different in the original source file and the final html output. In Coq
+    files, we write the [forall] universal quantifier using the
+    "_forall_" reserved identifier. This gets printed as an
+    upside-down "A", the familiar symbol used in logic.)  *)
+
+(** The form of this theorem and proof are almost exactly the
+    same as the examples above; there are just a few differences.
+
+    First, we've used the keyword [Theorem] instead of
+    [Example].  Indeed, the difference is purely a matter of
+    style; the keywords [Example] and [Theorem] (and a few others,
+    including [Lemma], [Fact], and [Remark]) mean exactly the same
+    thing to Coq.
+
+    Secondly, we've added the quantifier [forall n:nat], so that our
+    theorem talks about _all_ natural numbers [n].  In order to prove
+    theorems of this form, we need to to be able to reason by
+    _assuming_ the existence of an arbitrary natural number [n].  This
+    is achieved in the proof by [intros n], which moves the quantifier
+    from the goal to a "context" of current assumptions. In effect, we
+    start the proof by saying "OK, suppose [n] is some arbitrary number."
+
+    The keywords [intros], [simpl], and [reflexivity] are examples of
+    _tactics_.  A tactic is a command that is used between [Proof] and
+    [Qed] to tell Coq how it should check the correctness of some
+    claim we are making.  We will see several more tactics in the rest
+    of this lecture, and yet more in future lectures. *)
+
+
+(** Step through these proofs in Coq and notice how the goal and
     context change. *)
 
 Theorem plus_1_l : forall n:nat, 1 + n = S n. 
@@ -670,6 +655,7 @@ Proof.
 
 (** The [_l] suffix in the names of these theorems is
     pronounced "on the left." *)
+
 
 (* ###################################################################### *)
 (** * Proof by Rewriting *)
@@ -684,6 +670,11 @@ Theorem plus_id_example : forall n m:nat,
     [n] and [m], this theorem talks about a more specialized property
     that only holds when [n = m].  The arrow symbol is pronounced
     "implies."
+
+    As before, we need to be able to reason by assuming the existence
+    of some numbers [n] and [m].  We also need to assume the hypothesis
+    [n = m]. The [intros] tactic will serve to move all three of these
+    from the goal into assumptions in the current context. 
 
     Since [n] and [m] are arbitrary numbers, we can't just use
     simplification to prove this theorem.  Instead, we prove it by
@@ -700,10 +691,10 @@ Proof.
 
 (** The first line of the proof moves the universally quantified
     variables [n] and [m] into the context.  The second moves the
-    hypothesis [n = m] into the context and gives it the name [H].
-    The third tells Coq to rewrite the current goal ([n + n = m + m])
-    by replacing the left side of the equality hypothesis [H] with the
-    right side.
+    hypothesis [n = m] into the context and gives it the (arbitrary)
+    name [H].  The third tells Coq to rewrite the current goal ([n + n
+    = m + m]) by replacing the left side of the equality hypothesis
+    [H] with the right side.
 
     (The arrow symbol in the [rewrite] has nothing to do with
     implication: it tells Coq to apply the rewrite from left to right.
@@ -742,12 +733,15 @@ Proof.
   rewrite -> plus_O_n.
   reflexivity.  Qed.
 
-(** **** Exercise: 2 stars (mult_1_plus) *)
-Theorem mult_1_plus : forall n m : nat,
-  (1 + n) * m = m + (n * m).
+(** **** Exercise: 2 stars (mult_S_1) *)
+Theorem mult_S_1 : forall n m : nat,
+  m = S n -> 
+  m * (1 + n) = m * m.
 Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
+
+
 
 (* ###################################################################### *)
 (** * Proof by Case Analysis *) 
@@ -854,8 +848,9 @@ Proof.
 (* FILL IN HERE *)
 
 (** **** Exercise: 2 stars (andb_eq_orb) *)
-(** Prove the following theorem.  (You may need to first prove a
-    subsidiary lemma or two.) *)
+(** Prove the following theorem.  (You may want to first prove a
+    subsidiary lemma or two. Alternatively, remember that you do
+    not have to introduce all hypotheses at the same time.) *)
 
 Theorem andb_eq_orb : 
   forall (b c : bool),
@@ -968,5 +963,5 @@ Fixpoint plus' (n : nat) (m : nat) : nat :=
 (* FILL IN HERE *)
 (** [] *)
 
-(* $Date: 2013-03-08 21:28:08 -0500 (Fri, 08 Mar 2013) $ *)
+(* $Date: 2013-12-03 07:45:41 -0500 (Tue, 03 Dec 2013) $ *)
 

@@ -214,6 +214,7 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
+
 (** **** Exercise: 3 stars, optional (step_deterministic) *)
 (** Using [value_is_nf], we can show that the [step] relation is
     also deterministic... *)
@@ -783,4 +784,4 @@ Proof.
 []
 *)
 
-(* $Date: 2013-11-20 13:03:49 -0500 (Wed, 20 Nov 2013) $ *)
+(* $Date: 2014-04-08 23:31:16 -0400 (Tue, 08 Apr 2014) $ *)
