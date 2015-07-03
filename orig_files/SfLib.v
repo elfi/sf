@@ -1,7 +1,5 @@
 (** * SfLib: Software Foundations Library *)
 
-(* $Date: 2013-07-17 16:19:11 -0400 (Wed, 17 Jul 2013) $ *)
-
 (** Here we collect together several useful definitions and theorems
     from Basics.v, List.v, Poly.v, Ind.v, and Logic.v that are not
     already in the Coq standard library.  From now on we can [Import]
@@ -248,3 +246,6 @@ Tactic Notation "solve" "by" "inversion" "3" :=
   solve_by_inversion_step (solve by inversion 2).
 Tactic Notation "solve" "by" "inversion" :=
   solve by inversion 1.
+
+(** $Date: 2014-12-31 12:04:02 -0500 (Wed, 31 Dec 2014) $ *)
+

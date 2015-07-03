@@ -1,4 +1,4 @@
-(** * More Logic *)
+(** * MoreLogic: More on Logic in Coq *)
 
 Require Export "Prop".
 
@@ -93,7 +93,7 @@ Proof.
   apply b_3. apply b_5.
 Qed.
 
-(** **** Exercise: 1 star, optional (english_exists) *)
+(** **** Exercise: 1 star, optional (english_exists)  *)
 (** In English, what does the proposition 
       ex nat (fun n => beautiful (S n))
 ]] 
@@ -103,7 +103,7 @@ Qed.
 
 (*
 *)
-(** **** Exercise: 1 star (dist_not_exists) *)
+(** **** Exercise: 1 star (dist_not_exists)  *)
 (** Prove that "[P] holds for all [x]" implies "there is no [x] for
     which [P] does not hold." *)
 
@@ -113,7 +113,7 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** **** Exercise: 3 stars, optional (not_exists_dist) *)
+(** **** Exercise: 3 stars, optional (not_exists_dist)  *)
 (** (The other direction of this theorem requires the classical "law
     of the excluded middle".) *)
 
@@ -125,7 +125,7 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** **** Exercise: 2 stars (dist_exists_or) *)
+(** **** Exercise: 2 stars (dist_exists_or)  *)
 (** Prove that existential quantification distributes over
     disjunction. *)
 
@@ -136,22 +136,20 @@ Proof.
 (** [] *)
 
 (* ###################################################### *)
-(** * Evidence-carrying booleans. *)
+(** * Evidence-Carrying Booleans *)
 
 (** So far we've seen two different forms of equality predicates:
-[eq], which produces a [Prop], and
-the type-specific forms, like [beq_nat], that produce [boolean]
-values.  The former are more convenient to reason about, but
-we've relied on the latter to let us use equality tests 
-in _computations_.  While it is straightforward to write lemmas
-(e.g. [beq_nat_true] and [beq_nat_false]) that connect the two forms,
-using these lemmas quickly gets tedious. 
-*)
+    [eq], which produces a [Prop], and the type-specific forms, like
+    [beq_nat], that produce [boolean] values.  The former are more
+    convenient to reason about, but we've relied on the latter to let
+    us use equality tests in _computations_.  While it is
+    straightforward to write lemmas (e.g. [beq_nat_true] and
+    [beq_nat_false]) that connect the two forms, using these lemmas
+    quickly gets tedious. *)
 
 (** *** *)
-(** 
-It turns out that we can get the benefits of both forms at once 
-by using a construct called [sumbool]. *)
+(** It turns out that we can get the benefits of both forms at once by
+    using a construct called [sumbool]. *)
 
 Inductive sumbool (A B : Prop) : Set :=
  | left : A -> sumbool A B 
@@ -160,13 +158,13 @@ Inductive sumbool (A B : Prop) : Set :=
 Notation "{ A } + { B }" :=  (sumbool A B) : type_scope.
 
 (** Think of [sumbool] as being like the [boolean] type, but instead
-of its values being just [true] and [false], they carry _evidence_
-of truth or falsity. This means that when we [destruct] them, we
-are left with the relevant evidence as a hypothesis -- just as with [or].
-(In fact, the definition of [sumbool] is almost the same as for [or].
-The only difference is that values of [sumbool] are declared to be in
-[Set] rather than in [Prop]; this is a technical distinction 
-that allows us to compute with them.) *) 
+    of its values being just [true] and [false], they carry _evidence_
+    of truth or falsity. This means that when we [destruct] them, we
+    are left with the relevant evidence as a hypothesis -- just as
+    with [or].  (In fact, the definition of [sumbool] is almost the
+    same as for [or].  The only difference is that values of [sumbool]
+    are declared to be in [Set] rather than in [Prop]; this is a
+    technical distinction that allows us to compute with them.) *)
 
 (** *** *)
 
@@ -196,21 +194,21 @@ Proof.
 Defined. 
   
 (** Read as a theorem, this says that equality on [nat]s is decidable:
-that is, given two [nat] values, we can always produce either 
-evidence that they are equal or evidence that they are not.
-Read computationally, [eq_nat_dec] takes two [nat] values and returns
-a [sumbool] constructed with [left] if they are equal and [right] 
-if they are not; this result can be tested with a [match] or, better,
-with an [if-then-else], just like a regular [boolean]. 
-(Notice that we ended this proof with [Defined] rather than [Qed]. 
-The only difference this makes is that the proof becomes _transparent_,
-meaning that its definition is available when Coq tries to do reductions,
-which is important for the computational interpretation.)
-*) 
+    that is, given two [nat] values, we can always produce either
+    evidence that they are equal or evidence that they are not.  Read
+    computationally, [eq_nat_dec] takes two [nat] values and returns a
+    [sumbool] constructed with [left] if they are equal and [right] if
+    they are not; this result can be tested with a [match] or, better,
+    with an [if-then-else], just like a regular [boolean].  (Notice
+    that we ended this proof with [Defined] rather than [Qed].  The
+    only difference this makes is that the proof becomes
+    _transparent_, meaning that its definition is available when Coq
+    tries to do reductions, which is important for the computational
+    interpretation.) *) 
 
 (** *** *)
-(** 
-Here's a simple example illustrating the advantages of the [sumbool] form. *)
+(** Here's a simple example illustrating the advantages of the
+   [sumbool] form. *)
 
 Definition override' {X: Type} (f: nat->X) (k:nat) (x:X) : nat->X:=
   fun (k':nat) => if eq_nat_dec k k' then x else f k'.
@@ -228,13 +226,12 @@ Proof.
   Case "k1 <> k2". 
     reflexivity.  Qed.
 
-(** Compare this to the more laborious proof (in MoreCoq.v) for the 
-   version of [override] defined using [beq_nat], where we had to
-   use the auxiliary lemma [beq_nat_true] to convert a fact about booleans
-   to a Prop. *)
+(** Compare this to the more laborious proof (in MoreCoq.v) for the
+    version of [override] defined using [beq_nat], where we had to use
+    the auxiliary lemma [beq_nat_true] to convert a fact about
+    booleans to a Prop. *)
 
-
-(** **** Exercise: 1 star (override_shadow') *)
+(** **** Exercise: 1 star (override_shadow')  *)
 Theorem override_shadow' : forall (X:Type) x1 x2 k1 k2 (f : nat->X),
   (override' (override' f k1 x2) k1 x1) k2 = (override' f k1 x1) k2.
 Proof.
@@ -245,11 +242,10 @@ Proof.
 
 
 
-
 (* ####################################################### *)
 (** * Additional Exercises *)
 
-(** **** Exercise: 3 stars (all_forallb) *)
+(** **** Exercise: 3 stars (all_forallb)  *)
 (** Inductively define a property [all] of lists, parameterized by a
     type [X] and a property [P : X -> Prop], such that [all X P l]
     asserts that [P] is true for every element of the list [l]. *)
@@ -277,7 +273,7 @@ Fixpoint forallb {X : Type} (test : X -> bool) (l : list X) : bool :=
 (* FILL IN HERE *)
 (** [] *)
 
-(** **** Exercise: 4 stars, advanced (filter_challenge) *)
+(** **** Exercise: 4 stars, advanced (filter_challenge)  *)
 (** One of the main purposes of Coq is to prove that programs match
     their specifications.  To this end, let's prove that our
     definition of [filter] matches a specification.  Here is the
@@ -305,7 +301,7 @@ Fixpoint forallb {X : Type} (test : X -> bool) (l : list X) : bool :=
 (* FILL IN HERE *)
 (** [] *)
 
-(** **** Exercise: 5 stars, advanced, optional (filter_challenge_2) *)
+(** **** Exercise: 5 stars, advanced, optional (filter_challenge_2)  *)
 (** A different way to formally characterize the behavior of [filter]
     goes like this: Among all subsequences of [l] with the property
     that [test] evaluates to [true] on all their members, [filter test
@@ -314,7 +310,7 @@ Fixpoint forallb {X : Type} (test : X -> bool) (l : list X) : bool :=
 (* FILL IN HERE *)
 (** [] *)
 
-(** **** Exercise: 4 stars, advanced (no_repeats) *)
+(** **** Exercise: 4 stars, advanced (no_repeats)  *)
 (** The following inductively defined proposition... *)
 
 Inductive appears_in {X:Type} (a:X) : list X -> Prop :=
@@ -337,6 +333,7 @@ Lemma app_appears_in : forall (X:Type) (xs ys : list X) (x:X),
 Proof.
   (* FILL IN HERE *) Admitted.
 
+
 (** Now use [appears_in] to define a proposition [disjoint X l1 l2],
     which should be provable exactly when [l1] and [l2] are
     lists (with elements of type X) that have no elements in common. *)
@@ -358,18 +355,16 @@ Proof.
 (* FILL IN HERE *)
 (** [] *)
 
-
-(** **** Exercise: 3 stars (nostutter) *)
+(** **** Exercise: 3 stars (nostutter)  *)
 (** Formulating inductive definitions of predicates is an important
     skill you'll need in this course.  Try to solve this exercise
-    without any help at all (except from your study group partner, if
-    you have one).
+    without any help at all.
 
     We say that a list of numbers "stutters" if it repeats the same
     number consecutively.  The predicate "[nostutter mylist]" means
     that [mylist] does not stutter.  Formulate an inductive definition
     for [nostutter].  (This is different from the [no_repeats]
-    predicate in the exercise above; the sequence [1,4,1] repeats but
+    predicate in the exercise above; the sequence [1;4;1] repeats but
     does not stutter.) *)
 
 Inductive nostutter:  list nat -> Prop :=
@@ -417,7 +412,7 @@ Example test_nostutter_4:      not (nostutter [3;1;1;4]).
 *)
 (** [] *)
 
-(** **** Exercise: 4 stars, advanced (pigeonhole principle) *)
+(** **** Exercise: 4 stars, advanced (pigeonhole principle)  *)
 (** The "pigeonhole principle" states a basic fact about counting:
    if you distribute more than [n] items into [n] pigeonholes, some 
    pigeonhole must contain at least two items.  As is often the case,
@@ -470,4 +465,4 @@ Proof.
 (* FILL IN HERE *)
 
 
-(* $Date: 2014-02-22 09:43:41 -0500 (Sat, 22 Feb 2014) $ *)
+(** $Date: 2014-12-31 16:01:37 -0500 (Wed, 31 Dec 2014) $ *)

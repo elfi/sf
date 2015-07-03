@@ -1,6 +1,5 @@
 (** * UseAuto: Theory and Practice of Automation in Coq Proofs *)
 
-(* $Date: 2013-07-17 16:19:11 -0400 (Wed, 17 Jul 2013) $ *)
 (* Chapter maintained by Arthur Chargueraud *)
 
 (** In a machine-checked proof, every single detail has to be
@@ -599,12 +598,7 @@ Hint Resolve Le.le_refl.
     invoking automation after calling a tactic. In short, it suffices
     to add the symbol star ([*]) to the name of a tactic. For example,
     [apply* H] is equivalent to [apply H; auto_star], where [auto_star]
-    is a tactic that can be defined as needed. By default, [auto_star]  
-    first tries to solve the goal using [auto], and if this does not
-    succeed then it tries to call [jauto]. Even though [jauto] is
-    strictly stronger than [auto], it makes sense to call [auto] first:
-    when [auto] succeeds it may save a lot of time, and when [auto]
-    fails to prove the goal, it fails very quickly.
+    is a tactic that can be defined as needed.
 
     The definition of [auto_star], which determines the meaning of the
     star symbol, can be modified whenever needed. Simply write:
@@ -614,7 +608,7 @@ Hint Resolve Le.le_refl.
     tactic is being rebound to a new definition. So, the default
     definition is as follows. *)
 
-Ltac auto_star ::= try solve [ auto | jauto ].
+Ltac auto_star ::= try solve [ jauto ].
 
 (** Nearly all standard Coq tactics and all the tactics from
     "LibTactics" can be called with a star symbol. For example, one
@@ -635,10 +629,25 @@ Ltac auto_star ::= try solve [ auto | jauto ].
     tilde symbol is described by the [auto_tilde] tactic, whose
     default implementation is [auto]. *)
 
+
 Ltac auto_tilde ::= auto.
 
 (** In the examples that follow, only [auto_star] is needed. *)
 
+(** An alternative, possibly more efficient version of auto_star is the
+    following":
+
+    Ltac auto_star ::= try solve [ eassumption | auto | jauto ].
+
+    With the above definition, [auto_star] first tries to solve the
+    goal using the assumptions; if it fails, it tries using [auto],
+    and if this still fails, then it calls [jauto]. Even though
+    [jauto] is strictly stronger than [eassumption] and [auto], it
+    makes sense to call these tactics first, because, when the
+    succeed, they save a lot of time, and when they fail to prove
+    the goal, they fail very quickly.".
+
+*)
 
 (* ####################################################### *)
 (** * Examples of Use of Automation *)
@@ -1882,10 +1891,4 @@ Proof. congruence. Qed.
     some investment, however this investment will pay off very quickly.
 *)
 
-
-
-
-
-
-
-
+(** $Date: 2014-12-31 11:17:56 -0500 (Wed, 31 Dec 2014) $ *)

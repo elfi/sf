@@ -1,7 +1,5 @@
 (** * Extraction: Extracting ML from Coq *)
 
-(* $Date: 2013-01-16 22:29:57 -0500 (Wed, 16 Jan 2013) $ *)
-
 (** * Basic Extraction *)
 
 (** In its simplest form, program extraction from Coq is completely straightforward. *)
@@ -123,3 +121,5 @@ Extraction "imp.ml" empty_state ceval_step parse.
     program can be viewed as a _certified_ Imp interpreter.  (Of
     course, the parser is not certified in any interesting sense,
     since we didn't prove anything about it.) *)
+
+(** $Date: 2014-12-31 11:17:56 -0500 (Wed, 31 Dec 2014) $ *)

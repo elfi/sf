@@ -1,7 +1,5 @@
 (** * MoreStlc: A Typechecker for STLC *)
 
-(* $Date: 2013-07-17 16:19:11 -0400 (Wed, 17 Jul 2013) $ *)
-
 Require Export Stlc.
 
 (** The [has_type] relation of the STLC defines what it means for a
@@ -155,4 +153,6 @@ Proof with auto.
 Qed.
 
 End STLCChecker.
+
+(** $Date: 2014-12-31 11:17:56 -0500 (Wed, 31 Dec 2014) $ *)
 

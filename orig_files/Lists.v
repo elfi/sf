@@ -106,14 +106,14 @@ Theorem surjective_pairing : forall (p : natprod),
 Proof.
   intros p.  destruct p as [n m].  simpl.  reflexivity.  Qed.
 
-(** **** Exercise: 1 star (snd_fst_is_swap) *)
+(** **** Exercise: 1 star (snd_fst_is_swap)  *)
 Theorem snd_fst_is_swap : forall (p : natprod),
   (snd p, fst p) = swap_pair p.
 Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** **** Exercise: 1 star, optional (fst_swap_is_snd) *)
+(** **** Exercise: 1 star, optional (fst_swap_is_snd)  *)
 Theorem fst_swap_is_snd : forall (p : natprod),
   fst (swap_pair p) = snd p.
 Proof.
@@ -251,7 +251,7 @@ Proof. reflexivity.  Qed.
 Example test_tl:              tl [1;2;3] = [2;3].
 Proof. reflexivity.  Qed.
 
-(** **** Exercise: 2 stars (list_funs) *)
+(** **** Exercise: 2 stars (list_funs)  *)
 (** Complete the definitions of [nonzeros], [oddmembers] and
     [countoddmembers] below. Have a look at the tests to understand
     what these functions should do. *)
@@ -279,7 +279,7 @@ Example test_countoddmembers3:    countoddmembers nil = 0.
  (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** **** Exercise: 3 stars, advanced (alternate) *)
+(** **** Exercise: 3 stars, advanced (alternate)  *)
 (** Complete the definition of [alternate], which "zips up" two lists
     into one, alternating between elements taken from the first list
     and elements from the second.  See the tests below for more
@@ -317,7 +317,7 @@ Example test_alternate4:        alternate [] [20;30] = [20;30].
 
 Definition bag := natlist.  
 
-(** **** Exercise: 3 stars (bag_functions) *)
+(** **** Exercise: 3 stars (bag_functions)  *)
 (** Complete the following definitions for the functions
     [count], [sum], [add], and [member] for bags. *)
 
@@ -366,7 +366,7 @@ Example test_member2:             member 2 [1;4;1] = false.
  (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** **** Exercise: 3 stars, optional (bag_more_functions) *)
+(** **** Exercise: 3 stars, optional (bag_more_functions)  *)
 (** Here are some more bag functions for you to practice with. *)
 
 Fixpoint remove_one (v:nat) (s:bag) : bag :=
@@ -404,9 +404,9 @@ Example test_subset2:              subset [1;2;2] [2;1;4;1] = false.
  (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** **** Exercise: 3 stars (bag_theorem) *)
-(** Write down an interesting theorem about bags involving the
-    functions [count] and [add], and prove it.  Note that, since this
+(** **** Exercise: 3 stars (bag_theorem)  *)
+(** Write down an interesting theorem [bag_theorem] about bags involving
+    the functions [count] and [add], and prove it.  Note that, since this
     problem is somewhat open-ended, it's possible that you may come up
     with a theorem which is true, but whose proof requires techniques
     you haven't learned yet.  Feel free to ask for help if you get
@@ -456,11 +456,11 @@ Proof.
 (* ###################################################### *)
 (** ** Micro-Sermon *)
 
-(** Simply reading example proofs will not get you very far!  It is
-    very important to work through the details of each one, using Coq
-    and thinking about what each step of the proof achieves.
-    Otherwise it is more or less guaranteed that the exercises will
-    make no sense. *)
+(** Simply reading example proof scripts will not get you very far!
+    It is very important to work through the details of each one,
+    using Coq and thinking about what each step achieves.  Otherwise
+    it is more or less guaranteed that the exercises will make no
+    sense... *)
 
 (* ###################################################### *)
 (** ** Induction on Lists *)
@@ -727,7 +727,7 @@ Proof.
 (* ###################################################### *)
 (** ** List Exercises, Part 1 *)
 
-(** **** Exercise: 3 stars (list_exercises) *)
+(** **** Exercise: 3 stars (list_exercises)  *)
 (** More practice with lists. *)
 
 Theorem app_nil_end : forall l : natlist, 
@@ -769,7 +769,7 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** **** Exercise: 2 stars (beq_natlist) *)
+(** **** Exercise: 2 stars (beq_natlist)  *)
 (** Fill in the definition of [beq_natlist], which compares
     lists of numbers for equality.  Prove that [beq_natlist l l]
     yields [true] for every list [l]. *)
@@ -793,16 +793,16 @@ Proof.
 (* ###################################################### *)
 (** ** List Exercises, Part 2 *)
 
-(** **** Exercise: 2 stars (list_design) *)
+(** **** Exercise: 2 stars (list_design)  *)
 (** Design exercise: 
-     - Write down a non-trivial theorem involving [cons]
-       ([::]), [snoc], and [app] ([++]).  
+     - Write down a non-trivial theorem [cons_snoc_app]
+       involving [cons] ([::]), [snoc], and [app] ([++]).  
      - Prove it. *) 
 
 (* FILL IN HERE *)
 (** [] *)
 
-(** **** Exercise: 3 stars, advanced (bag_proofs) *)
+(** **** Exercise: 3 stars, advanced (bag_proofs)  *)
 (** Here are a couple of little theorems to prove about your
     definitions about bags earlier in the file. *)
 
@@ -828,14 +828,14 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** **** Exercise: 3 stars, optional (bag_count_sum) *)  
-(** Write down an interesting theorem about bags involving the
-    functions [count] and [sum], and prove it.*)
+(** **** Exercise: 3 stars, optional (bag_count_sum)  *)  
+(** Write down an interesting theorem [bag_count_sum] about bags 
+    involving the functions [count] and [sum], and prove it.*)
 
 (* FILL IN HERE *)
 (** [] *)
 
-(** **** Exercise: 4 stars, advanced (rev_injective) *)
+(** **** Exercise: 4 stars, advanced (rev_injective)  *)
 (** Prove that the [rev] function is injective, that is,
 
     forall (l1 l2 : natlist), rev l1 = rev l2 -> l1 = l2.
@@ -922,7 +922,7 @@ Definition option_elim (d : nat) (o : natoption) : nat :=
   | None => d
   end.
 
-(** **** Exercise: 2 stars (hd_opt) *)
+(** **** Exercise: 2 stars (hd_opt)  *)
 (** Using the same idea, fix the [hd] function from earlier so we don't
    have to pass a default element for the [nil] case.  *)
 
@@ -939,7 +939,7 @@ Example test_hd_opt3 : hd_opt [5;6] = Some 5.
  (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** **** Exercise: 1 star, optional (option_elim_hd) *)
+(** **** Exercise: 1 star, optional (option_elim_hd)  *)
 (** This exercise relates your new [hd_opt] to the old [hd]. *)
 
 Theorem option_elim_hd : forall (l:natlist) (default:nat),
@@ -988,7 +988,7 @@ Fixpoint find (key : nat) (d : dictionary) : natoption :=
 
 
 
-(** **** Exercise: 1 star (dictionary_invariant1) *)
+(** **** Exercise: 1 star (dictionary_invariant1)  *)
 (** Complete the following proof. *)
 
 Theorem dictionary_invariant1' : forall (d : dictionary) (k v: nat),
@@ -997,7 +997,7 @@ Proof.
  (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** **** Exercise: 1 star (dictionary_invariant2) *)
+(** **** Exercise: 1 star (dictionary_invariant2)  *)
 (** Complete the following proof. *)
 
 Theorem dictionary_invariant2' : forall (d : dictionary) (m n o: nat),
@@ -1012,5 +1012,5 @@ End Dictionary.
 
 End NatList.
 
-(* $Date: 2014-01-28 13:19:45 -0500 (Tue, 28 Jan 2014) $ *)
+(** $Date: 2014-12-31 11:17:56 -0500 (Wed, 31 Dec 2014) $ *)
 

@@ -1,7 +1,5 @@
 (** * Symbols: Special symbols *)
 
-(* $Date: 2013-04-01 20:39:05 -0400 (Mon, 01 Apr 2013) $ *)
-
 (* This file defines some HTML symbols for use by the coqdoc
    preprocessor.  It is not intended to be read by anybody. *)
 
@@ -24,4 +22,6 @@
 (** printing Gamma' #<span style="font-family: serif; font-size:85%;">&Gamma;'</span># *)
 (** printing Gamma'' #<span style="font-family: serif; font-size:85%;">&Gamma;''</span># *)
 (** printing |-> #<span style="font-family: arial;">&#8614;</span># *)
+
+(** $Date: 2014-12-31 11:17:56 -0500 (Wed, 31 Dec 2014) $ *)
 

@@ -150,7 +150,7 @@ Example test_rev2:
 Proof. reflexivity.  Qed.
 
 Module MumbleBaz.
-(** **** Exercise: 2 stars (mumble_grumble) *)
+(** **** Exercise: 2 stars (mumble_grumble)  *)
 (** Consider the following two inductively defined types. *)
 
 Inductive mumble : Type :=
@@ -171,10 +171,11 @@ Inductive grumble (X:Type) : Type :=
       - [e bool (b c 0)]
       - [c] 
 (* FILL IN HERE *)
-[] *)
+*)
+(** [] *)
 
 
-(** **** Exercise: 2 stars (baz_num_elts) *)
+(** **** Exercise: 2 stars (baz_num_elts)  *)
 (** Consider the following inductive definition: *)
 
 Inductive baz : Type :=
@@ -183,7 +184,8 @@ Inductive baz : Type :=
 
 (** How _many_ elements does the type [baz] have? 
 (* FILL IN HERE *)
-[] *)
+*)
+(** [] *)
 
 End MumbleBaz.
 
@@ -279,7 +281,7 @@ Definition list123' := cons _ 1 (cons _ 2 (cons _ 3 (nil _))).
 (* ###################################################### *)
 (** *** Implicit Arguments *)
 
-(** If fact, we can go further.  To avoid having to sprinkle [_]'s
+(** In fact, we can go further.  To avoid having to sprinkle [_]'s
     throughout our programs, we can tell Coq _always_ to infer the
     type argument(s) of a given function. The [Arguments] directive
     specifies the name of the function or constructor, and then lists
@@ -359,7 +361,6 @@ Notation "x ++ y" := (app x y)
 
 Definition list123''' := [1; 2; 3].
 
-Check ([3 + 4] ++ nil).
 
 
 
@@ -367,7 +368,7 @@ Check ([3 + 4] ++ nil).
 (* ###################################################### *)
 (** *** Exercises: Polymorphic Lists *)
 
-(** **** Exercise: 2 stars, optional (poly_exercises) *)
+(** **** Exercise: 2 stars, optional (poly_exercises)  *)
 (** Here are a few simple exercises, just like ones in the [Lists]
     chapter, for practice with polymorphism.  Fill in the definitions
     and complete the proofs below. *)
@@ -461,7 +462,7 @@ Fixpoint combine {X Y : Type} (lx : list X) (ly : list Y)
   | (x::tx, y::ty) => (x,y) :: (combine tx ty)
   end.
 
-(** **** Exercise: 1 star, optional (combine_checks) *)
+(** **** Exercise: 1 star, optional (combine_checks)  *)
 (** Try answering the following questions on paper and
     checking your answers in coq:
     - What is the type of [combine] (i.e., what does [Check
@@ -471,7 +472,7 @@ Fixpoint combine {X Y : Type} (lx : list X) (ly : list Y)
       print?   []
 *)
 
-(** **** Exercise: 2 stars (split) *)
+(** **** Exercise: 2 stars (split)  *)
 (** The function [split] is the right inverse of combine: it takes a
     list of pairs and returns a pair of lists.  In many functional
     programing languages, this function is called [unzip].
@@ -522,7 +523,7 @@ Proof. reflexivity.  Qed.
 Example test_index3 :    index  2 [true]  = None.
 Proof. reflexivity.  Qed.
 
-(** **** Exercise: 1 star, optional (hd_opt_poly) *)
+(** **** Exercise: 1 star, optional (hd_opt_poly)  *)
 (** Complete the definition of a polymorphic version of the
     [hd_opt] function from the last chapter. Be sure that it
     passes the unit tests below. *)
@@ -605,7 +606,7 @@ Proof. reflexivity.  Qed.
 (* ###################################################### *)
 (** ** Digression: Currying *)
 
-(** **** Exercise: 2 stars, advanced (currying) *)
+(** **** Exercise: 2 stars, advanced (currying)  *)
 (** In Coq, a function [f : A -> B -> C] really has the type [A
     -> (B -> C)].  That is, if you give [f] a value of type [A], it
     will give you function [f' : B -> C].  If you then give [f'] a
@@ -727,7 +728,7 @@ Example test_filter2':
   = [ [3]; [4]; [8] ].
 Proof. reflexivity.  Qed.
 
-(** **** Exercise: 2 stars (filter_even_gt7) *)
+(** **** Exercise: 2 stars (filter_even_gt7)  *)
 
 (** Use [filter] (instead of [Fixpoint]) to write a Coq function
     [filter_even_gt7] that takes a list of natural numbers as input
@@ -746,7 +747,7 @@ Example test_filter_even_gt7_2 :
  (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** **** Exercise: 3 stars (partition) *)
+(** **** Exercise: 3 stars (partition)  *)
 (** Use [filter] to write a Coq function [partition]:
   partition : forall X : Type,
               (X -> bool) -> list X -> list X * list X
@@ -809,7 +810,7 @@ Proof. reflexivity.  Qed.
 
 
 (** ** Map for options *)
-(** **** Exercise: 3 stars (map_rev) *)
+(** **** Exercise: 3 stars (map_rev)  *)
 (** Show that [map] and [rev] commute.  You may need to define an
     auxiliary lemma. *)
 
@@ -820,7 +821,7 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** **** Exercise: 2 stars (flat_map) *)
+(** **** Exercise: 2 stars (flat_map)  *)
 (** The function [map] maps a [list X] to a [list Y] using a function
     of type [X -> Y].  We can define a similar function, [flat_map],
     which maps a [list X] to a [list Y] using a function [f] of type
@@ -851,7 +852,7 @@ Definition option_map {X Y : Type} (f : X -> Y) (xo : option X)
     | Some x => Some (f x)
   end.
 
-(** **** Exercise: 2 stars, optional (implicit_args) *)
+(** **** Exercise: 2 stars, optional (implicit_args)  *)
 (** The definitions and uses of [filter] and [map] use implicit
     arguments in many places.  Replace the curly braces around the
     implicit arguments with parentheses, and then fill in explicit
@@ -901,7 +902,7 @@ Example fold_example3 : fold app  [[1];[];[2;3];[4]] [] = [1;2;3;4].
 Proof. reflexivity. Qed.
 
 
-(** **** Exercise: 1 star, advanced (fold_types_different) *)
+(** **** Exercise: 1 star, advanced (fold_types_different)  *)
 (** Observe that the type of [fold] is parameterized by _two_ type
     variables, [X] and [Y], and the parameter [f] is a binary operator
     that takes an [X] and a [Y] and returns a [Y].  Can you think of a
@@ -963,7 +964,7 @@ Proof. reflexivity. Qed.
 
 (** *** *)
 
-(** **** Exercise: 1 star (override_example) *)
+(** **** Exercise: 1 star (override_example)  *)
 (** Before starting to work on the following proof, make sure you
     understand exactly what the theorem is saying and can paraphrase
     it in your own words.  The proof itself is straightforward. *)
@@ -1032,7 +1033,7 @@ Proof.
 (** This proof was straightforward, but note that it requires
     [unfold] to expand the definition of [override]. *)
 
-(** **** Exercise: 2 stars (override_neq) *)
+(** **** Exercise: 2 stars (override_neq)  *)
 Theorem override_neq : forall (X:Type) x1 x2 k1 k2 (f : nat->X),
   f k1 = x1 ->
   beq_nat k2 k1 = false ->
@@ -1048,7 +1049,7 @@ Proof.
 (* ##################################################### *)
 (** * Additional Exercises *)
 
-(** **** Exercise: 2 stars (fold_length) *)
+(** **** Exercise: 2 stars (fold_length)  *)
 (** Many common functions on lists can be implemented in terms of
    [fold].  For example, here is an alternative definition of [length]: *)
 
@@ -1062,21 +1063,140 @@ Proof. reflexivity. Qed.
 
 Theorem fold_length_correct : forall X (l : list X),
   fold_length l = length l.
-(* FILL IN HERE *) Admitted. 
+(* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** **** Exercise: 3 stars (fold_map) *)
+(** **** Exercise: 3 stars (fold_map)  *)
 (** We can also define [map] in terms of [fold].  Finish [fold_map]
     below. *)
 
 Definition fold_map {X Y:Type} (f : X -> Y) (l : list X) : list Y :=
 (* FILL IN HERE *) admit.
 
-(** Write down a theorem in Coq stating that [fold_map] is correct,
-    and prove it. *)
+(** Write down a theorem [fold_map_correct] in Coq stating that
+   [fold_map] is correct, and prove it. *)
 
 (* FILL IN HERE *)
 (** [] *)
 
-(* $Date: 2013-09-26 14:40:26 -0400 (Thu, 26 Sep 2013) $ *)
+(** **** Exercise: 2 stars, advanced (index_informal)  *)
+(** Recall the definition of the [index] function:
+   Fixpoint index {X : Type} (n : nat) (l : list X) : option X :=
+     match l with
+     | [] => None 
+     | a :: l' => if beq_nat n O then Some a else index (pred n) l'
+     end.
+   Write an informal proof of the following theorem:
+   forall X n l, length l = n -> @index X n l = None.
+(* FILL IN HERE *)
+*)
+(** [] *)
+
+(** **** Exercise: 4 stars, advanced (church_numerals)  *)
+
+Module Church.
+
+(** In this exercise, we will explore an alternative way of defining
+    natural numbers, using the so-called _Church numerals_, named
+    after mathematician Alonzo Church. We can represent a natural
+    number [n] as a function that takes a function [f] as a parameter
+    and returns [f] iterated [n] times. More formally, *)
+
+Definition nat := forall X : Type, (X -> X) -> X -> X.
+
+(** Let's see how to write some numbers with this notation. Any
+    function [f] iterated once shouldn't change. Thus, *)
+
+Definition one : nat := 
+  fun (X : Type) (f : X -> X) (x : X) => f x.
+
+(** [two] should apply [f] twice to its argument: *)
+
+Definition two : nat :=
+  fun (X : Type) (f : X -> X) (x : X) => f (f x).
+
+(** [zero] is somewhat trickier: how can we apply a function zero
+    times? The answer is simple: just leave the argument untouched. *)
+
+Definition zero : nat :=
+  fun (X : Type) (f : X -> X) (x : X) => x.
+
+(** More generally, a number [n] will be written as [fun X f x => f (f
+    ... (f x) ...)], with [n] occurrences of [f]. Notice in particular
+    how the [doit3times] function we've defined previously is actually
+    just the representation of [3]. *)
+
+Definition three : nat := @doit3times.
+
+(** Complete the definitions of the following functions. Make sure
+    that the corresponding unit tests pass by proving them with
+    [reflexivity]. *)    
+
+(** Successor of a natural number *)
+
+Definition succ (n : nat) : nat :=
+  (* FILL IN HERE *) admit.
+
+Example succ_1 : succ zero = one.
+Proof. (* FILL IN HERE *) Admitted.
+
+Example succ_2 : succ one = two.
+Proof. (* FILL IN HERE *) Admitted.
+
+Example succ_3 : succ two = three.
+Proof. (* FILL IN HERE *) Admitted.
+
+(** Addition of two natural numbers *)
+
+Definition plus (n m : nat) : nat :=
+  (* FILL IN HERE *) admit.
+
+Example plus_1 : plus zero one = one.
+Proof. (* FILL IN HERE *) Admitted.
+
+Example plus_2 : plus two three = plus three two.
+Proof. (* FILL IN HERE *) Admitted.
+
+Example plus_3 :
+  plus (plus two two) three = plus one (plus three three).
+Proof. (* FILL IN HERE *) Admitted.
+
+(** Multiplication *)
+
+Definition mult (n m : nat) : nat := 
+  (* FILL IN HERE *) admit.
+
+Example mult_1 : mult one one = one.
+Proof. (* FILL IN HERE *) Admitted.
+
+Example mult_2 : mult zero (plus three three) = zero.
+Proof. (* FILL IN HERE *) Admitted.
+
+Example mult_3 : mult two three = plus three three.
+Proof. (* FILL IN HERE *) Admitted.
+
+(** Exponentiation *)
+
+(** Hint: Polymorphism plays a crucial role here. However, choosing
+    the right type to iterate over can be tricky. If you hit a
+    "Universe inconsistency" error, try iterating over a different
+    type: [nat] itself is usually problematic. *)
+
+Definition exp (n m : nat) : nat :=
+  (* FILL IN HERE *) admit.
+
+Example exp_1 : exp two two = plus two two.
+Proof. (* FILL IN HERE *) Admitted.
+
+Example exp_2 : exp three two = plus (mult two (mult two two)) one.
+Proof. (* FILL IN HERE *) Admitted.
+
+Example exp_3 : exp three zero = one.
+Proof. (* FILL IN HERE *) Admitted.
+
+End Church.
+
+(** [] *)
+
+(** $Date: 2014-12-31 11:17:56 -0500 (Wed, 31 Dec 2014) $ *)
 

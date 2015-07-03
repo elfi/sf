@@ -2,10 +2,8 @@
 
 Require Export Logic.
 
-
-
 (* ####################################################### *)
-(** * From Boolean Functions to Propositions *)
+(** * Inductively Defined Propositions *)
 
 (** In chapter [Basics] we defined a _function_ [evenb] that tests a
     number for evenness, yielding [true] if so.  We can use this
@@ -29,20 +27,26 @@ Definition even (n:nat) : Prop :=
     concept of evenness means by giving two different ways of
     presenting _evidence_ that a number is even. *)
 
-(** * Inductively Defined Propositions *)
-
 Inductive ev : nat -> Prop :=
   | ev_0 : ev O
   | ev_SS : forall n:nat, ev n -> ev (S (S n)).
 
-(** This definition says that there are two ways to give
-    evidence that a number [m] is even.  First, [0] is even, and
-    [ev_0] is evidence for this.  Second, if [m = S (S n)] for some
-    [n] and we can give evidence [e] that [n] is even, then [m] is
-    also even, and [ev_SS n e] is the evidence. *)
+
+(** The first line declares that [ev] is a proposition -- or,
+    more formally, a family of propositions "indexed by" natural
+    numbers.  (That is, for each number [n], the claim that "[n] is
+    even" is a proposition.)  Such a family of propositions is
+    often called a _property_ of numbers.  
+
+    The last two lines declare the two ways to give evidence that a
+    number [m] is even.  First, [0] is even, and [ev_0] is evidence
+    for this.  Second, if [m = S (S n)] for some [n] and we can give
+    evidence [e] that [n] is even, then [m] is also even, and [ev_SS n
+    e] is the evidence.
+*)
 
 
-(** **** Exercise: 1 star (double_even) *)
+(** **** Exercise: 1 star (double_even)  *)
 
 Theorem double_even : forall n,
   ev (double n).
@@ -51,95 +55,17 @@ Proof.
 (** [] *)
 
 
-(** *** Discussion: Computational vs. Inductive Definitions *)
-
-(** We have seen that the proposition "[n] is even" can be
-    phrased in two different ways -- indirectly, via a boolean testing
-    function [evenb], or directly, by inductively describing what
-    constitutes evidence for evenness.  These two ways of defining
-    evenness are about equally easy to state and work with.  Which we
-    choose is basically a question of taste.
-
-    However, for many other properties of interest, the direct
-    inductive definition is preferable, since writing a testing
-    function may be awkward or even impossible.  
-
-    One such property is [beautiful].  This is a perfectly sensible
-    definition of a set of numbers, but we cannot translate its
-    definition directly into a Coq Fixpoint (or into a recursive
-    function in any other common programming language).  We might be
-    able to find a clever way of testing this property using a
-    [Fixpoint] (indeed, it is not too hard to find one in this case),
-    but in general this could require arbitrarily deep thinking.  In
-    fact, if the property we are interested in is uncomputable, then
-    we cannot define it as a [Fixpoint] no matter how hard we try,
-    because Coq requires that all [Fixpoint]s correspond to
-    terminating computations.
-
-    On the other hand, writing an inductive definition of what it
-    means to give evidence for the property [beautiful] is
-    straightforward. *)
-
-
-
-(** **** Exercise: 1 star (ev__even) *)
-(** Here is a proof that the inductive definition of evenness implies
-    the computational one. *)
-
-Theorem ev__even : forall n,
-  ev n -> even n.
-Proof.
-  intros n E. induction E as [| n' E'].
-  Case "E = ev_0". 
-    unfold even. reflexivity.
-  Case "E = ev_SS n' E'".  
-    unfold even. apply IHE'.  
-Qed.
-
-(** Could this proof also be carried out by induction on [n] instead
-    of [E]?  If not, why not? *)
-
-(* FILL IN HERE *)
-(** [] *)
-
-(** The induction principle for inductively defined propositions does
-    not follow quite the same form as that of inductively defined
-    sets.  For now, you can take the intuitive view that induction on
-    evidence [ev n] is similar to induction on [n], but restricts our
-    attention to only those numbers for which evidence [ev n] could be
-    generated.  We'll look at the induction principle of [ev] in more
-    depth below, to explain what's really going on. *)
-
-(** **** Exercise: 1 star (l_fails) *)
-(** The following proof attempt will not succeed.
-     Theorem l : forall n,
-       ev n.
-     Proof.
-       intros n. induction n.
-         Case "O". simpl. apply ev_0.
-         Case "S".
-           ...
-   Intuitively, we expect the proof to fail because not every
-   number is even. However, what exactly causes the proof to fail?
-
-(* FILL IN HERE *)
-*)
-(** [] *)
-
-(** **** Exercise: 2 stars (ev_sum) *)
-(** Here's another exercise requiring induction. *)
-
-Theorem ev_sum : forall n m,
-   ev n -> ev m -> ev (n+m).
-Proof. 
-  (* FILL IN HERE *) Admitted.
-(** [] *)
-
 
 (* ##################################################### *)
-(** ** Example *)
 
-(**  As a running example, let's
+(** For [ev], we had already defined [even] as a function (returning a
+   boolean), and then defined an inductive relation that agreed with
+   it. However, we don't necessarily need to think about propositions
+   first as boolean functions, we can start off with the inductive
+   definition.
+*)
+
+(** As another example of an inductively defined proposition, let's
     define a simple property of natural numbers -- we'll call it
     "[beautiful]." *)
 
@@ -154,7 +80,7 @@ Proof.
        - Rule [b_5]: The number [5] is [beautiful]. 
        - Rule [b_sum]: If [n] and [m] are both [beautiful], then so is
          their sum. *)
-(** ** Inference Rules *)
+
 (** We will see many definitions like this one during the rest
     of the course, and for purposes of informal discussions, it is
     helpful to have a lightweight notation that makes them easy to
@@ -209,13 +135,15 @@ Proof.
                    beautiful 8   
 *)
 
-(** **** Exercise: 1 star (varieties_of_beauty) *)
+(** **** Exercise: 1 star (varieties_of_beauty)  *)
 (** How many different ways are there to show that [8] is [beautiful]? *)
 
 (* FILL IN HERE *)
 (** [] *)
 
-(** *** *)
+(* ####################################################### *)
+(** ** Constructing Evidence *)
+
 (** In Coq, we can express the definition of [beautiful] as
     follows: *)
 
@@ -225,14 +153,6 @@ Inductive beautiful : nat -> Prop :=
 | b_5   : beautiful 5
 | b_sum : forall n m, beautiful n -> beautiful m -> beautiful (n+m).
 
-
-(** The first line declares that [beautiful] is a proposition -- or,
-    more formally, a family of propositions "indexed by" natural
-    numbers.  (That is, for each number [n], the claim that "[n] is
-    [beautiful]" is a proposition.)  Such a family of propositions is
-    often called a _property_ of numbers.  Each of the remaining lines
-    embodies one of the rules for [beautiful] numbers.
-*)
 (** *** *)
 (** 
     The rules introduced this way have the same status as proven 
@@ -270,13 +190,13 @@ Proof.
   apply B.
 Qed.
 
-(** **** Exercise: 2 stars (b_times2) *)
+(** **** Exercise: 2 stars (b_times2)  *)
 Theorem b_times2: forall n, beautiful n -> beautiful (2*n).
 Proof.
     (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** **** Exercise: 3 stars (b_timesm) *)
+(** **** Exercise: 3 stars (b_timesm)  *)
 Theorem b_timesm: forall n m, beautiful n -> beautiful (m*n).
 Proof.
    (* FILL IN HERE *) Admitted.
@@ -284,7 +204,8 @@ Proof.
 
 
 (* ####################################################### *)
-(** ** Induction Over Evidence *)
+(** * Using Evidence in Proofs *)
+(** ** Induction over Evidence *)
 
 (** Besides _constructing_ evidence that numbers are beautiful, we can
     also _reason about_ such evidence. *)
@@ -319,7 +240,7 @@ Inductive gorgeous : nat -> Prop :=
 | g_plus3 : forall n, gorgeous n -> gorgeous (3+n)
 | g_plus5 : forall n, gorgeous n -> gorgeous (5+n).
 
-(** **** Exercise: 1 star (gorgeous_tree) *)
+(** **** Exercise: 1 star (gorgeous_tree)  *)
 (** Write out the definition of [gorgeous] numbers using inference rule
     notation.
  
@@ -328,7 +249,7 @@ Inductive gorgeous : nat -> Prop :=
 *)
 
 
-(** **** Exercise: 1 star (gorgeous_plus13) *)
+(** **** Exercise: 1 star (gorgeous_plus13)  *)
 Theorem gorgeous_plus13: forall n, 
   gorgeous n -> gorgeous (13+n).
 Proof.
@@ -341,24 +262,6 @@ Proof.
     actually the same property in the sense that they are true of the
     same numbers.  Indeed, we can prove this. *)
 
-Theorem gorgeous__beautiful : forall n, 
-  gorgeous n -> beautiful n.
-Proof.
-   intros n H.
-   induction H as [|n'|n'].
-   Case "g_0".
-       apply b_0.
-   Case "g_plus3". 
-       apply b_sum. apply b_3.
-       apply IHgorgeous.
-   Case "g_plus5".
-       apply b_sum. apply b_5. apply IHgorgeous. 
-Qed.
-
-(** Notice that the argument proceeds by induction on the _evidence_ [H]! *) 
-
-(** Let's see what happens if we try to prove this by induction on [n]
-   instead of induction on the evidence [H]. *)
 
 Theorem gorgeous__beautiful_FAILED : forall n, 
   gorgeous n -> beautiful n.
@@ -377,26 +280,49 @@ Abort.
     constructors for [gorgeous]. *)
 
 
+(** *** *)
+
+(** Let's see what happens if we try to prove this by induction on the evidence [H]
+   instead of on [n]. *)
+
+Theorem gorgeous__beautiful : forall n, 
+  gorgeous n -> beautiful n.
+Proof.
+   intros n H.
+   induction H as [|n'|n'].
+   Case "g_0".
+       apply b_0.
+   Case "g_plus3". 
+       apply b_sum. apply b_3.
+       apply IHgorgeous.
+   Case "g_plus5".
+       apply b_sum. apply b_5. apply IHgorgeous. 
+Qed.
 
 
-(** **** Exercise: 2 stars (gorgeous_sum) *)
+(* These exercises also require the use of induction on the evidence. *)
+
+(** **** Exercise: 2 stars (gorgeous_sum)  *)
 Theorem gorgeous_sum : forall n m,
   gorgeous n -> gorgeous m -> gorgeous (n + m).
 Proof.
  (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** **** Exercise: 3 stars, advanced (beautiful__gorgeous) *)
+(** **** Exercise: 3 stars, advanced (beautiful__gorgeous)  *)
 Theorem beautiful__gorgeous : forall n, beautiful n -> gorgeous n.
 Proof.
  (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** **** Exercise: 3 stars, optional (g_times2) *)
+
+
+
+(** **** Exercise: 3 stars, optional (g_times2)  *)
 (** Prove the [g_times2] theorem below without using [gorgeous__beautiful].
     You might find the following helper lemma useful. *)
 
-Lemma helper_g_times2 : forall x y z, x + (z + y)= z + x + y.
+Lemma helper_g_times2 : forall x y z, x + (z + y) = z + x + y.
 Proof.
    (* FILL IN HERE *) Admitted.
 
@@ -409,31 +335,84 @@ Proof.
 
 
 
+(** Here is a proof that the inductive definition of evenness implies
+the computational one. *)
+
+Theorem ev__even : forall n,
+  ev n -> even n.
+Proof.
+  intros n E. induction E as [| n' E'].
+  Case "E = ev_0". 
+    unfold even. reflexivity.
+  Case "E = ev_SS n' E'".  
+    unfold even. apply IHE'.  
+Qed.
+
+(** **** Exercise: 1 star (ev__even)  *) 
+(** Could this proof also be carried out by induction on [n] instead
+    of [E]?  If not, why not? *)
+
+(* FILL IN HERE *)
+(** [] *)
+
+(** Intuitively, the induction principle [ev n] evidence [ev n] is
+    similar to induction on [n], but restricts our attention to only
+    those numbers for which evidence [ev n] could be generated. *)
+
+(** **** Exercise: 1 star (l_fails)  *)
+(** The following proof attempt will not succeed.
+     Theorem l : forall n,
+       ev n.
+     Proof.
+       intros n. induction n.
+         Case "O". simpl. apply ev_0.
+         Case "S".
+           ...
+   Intuitively, we expect the proof to fail because not every
+   number is even. However, what exactly causes the proof to fail?
+
+(* FILL IN HERE *)
+*)
+(** [] *)
+
+(** Here's another exercise requiring induction on evidence. *)
+(** **** Exercise: 2 stars (ev_sum)  *)
+
+Theorem ev_sum : forall n m,
+   ev n -> ev m -> ev (n+m).
+Proof. 
+  (* FILL IN HERE *) Admitted.
+(** [] *)
+
+
 
 (* ####################################################### *)
-(** ** [Inversion] on Evidence *)
+(** ** Inversion on Evidence *)
 
-(** Another situation where we want to analyze evidence for evenness
-    is when proving that, if [n] is even, then [pred (pred n)] is
-    too.  In this case, we don't need to do an inductive proof.  The
-    right tactic turns out to be [inversion].  *)
 
-Theorem ev_minus2: forall n,
-  ev n -> ev (pred (pred n)). 
+(** Having evidence for a proposition is useful while proving, because we 
+   can _look_ at that evidence for more information. For example, consider 
+    proving that, if [n] is even, then [pred (pred n)] is
+    too.  In this case, we don't need to do an inductive proof.  Instead 
+    the [inversion] tactic provides all of the information that we need.
+
+ *)
+
+Theorem ev_minus2: forall n,  ev n -> ev (pred (pred n)). 
 Proof.
   intros n E.
   inversion E as [| n' E'].
   Case "E = ev_0". simpl. apply ev_0. 
   Case "E = ev_SS n' E'". simpl. apply E'.  Qed.
 
-(** **** Exercise: 1 star, optional (ev_minus2_n) *)
+(** **** Exercise: 1 star, optional (ev_minus2_n)  *)
 (** What happens if we try to use [destruct] on [n] instead of [inversion] on [E]? *)
 
 (* FILL IN HERE *)
 (** [] *)
 
 (** *** *)
-(** Another example, in which [inversion] helps narrow down to
+(** Here is another example, in which [inversion] helps narrow down to
 the relevant cases. *)
 
 Theorem SSev__even : forall n,
@@ -443,7 +422,7 @@ Proof.
   inversion E as [| n' E']. 
   apply E'. Qed.
 
-(** ** [inversion] revisited *)
+(** ** The Inversion Tactic Revisited *)
 
 (** These uses of [inversion] may seem a bit mysterious at first.
     Until now, we've only used [inversion] on equality
@@ -477,7 +456,7 @@ Proof.
     what follows. *)
 
 
-(** **** Exercise: 1 star (inversion_practice) *)
+(** **** Exercise: 1 star (inversion_practice)  *)
 Theorem SSSSev__even : forall n,
   ev (S (S (S (S n)))) -> ev n.
 Proof.
@@ -492,7 +471,7 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** **** Exercise: 3 stars, advanced (ev_ev__ev) *)
+(** **** Exercise: 3 stars, advanced (ev_ev__ev)  *)
 (** Finding the appropriate thing to do induction on is a
     bit tricky here: *)
 
@@ -502,7 +481,7 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** **** Exercise: 3 stars, optional (ev_plus_plus) *)
+(** **** Exercise: 3 stars, optional (ev_plus_plus)  *)
 (** Here's an exercise that just requires applying existing lemmas.  No
     induction or even case analysis is needed, but some of the rewriting
     may be tedious. *)
@@ -514,13 +493,81 @@ Proof.
 (** [] *)
 
 
+(* ####################################################### *)
+(** * Discussion and Variations *)
+(** ** Computational vs. Inductive Definitions *)
+
+(** We have seen that the proposition "[n] is even" can be
+    phrased in two different ways -- indirectly, via a boolean testing
+    function [evenb], or directly, by inductively describing what
+    constitutes evidence for evenness.  These two ways of defining
+    evenness are about equally easy to state and work with.  Which we
+    choose is basically a question of taste.
+
+    However, for many other properties of interest, the direct
+    inductive definition is preferable, since writing a testing
+    function may be awkward or even impossible.  
+
+    One such property is [beautiful].  This is a perfectly sensible
+    definition of a set of numbers, but we cannot translate its
+    definition directly into a Coq Fixpoint (or into a recursive
+    function in any other common programming language).  We might be
+    able to find a clever way of testing this property using a
+    [Fixpoint] (indeed, it is not too hard to find one in this case),
+    but in general this could require arbitrarily deep thinking.  In
+    fact, if the property we are interested in is uncomputable, then
+    we cannot define it as a [Fixpoint] no matter how hard we try,
+    because Coq requires that all [Fixpoint]s correspond to
+    terminating computations.
+
+    On the other hand, writing an inductive definition of what it
+    means to give evidence for the property [beautiful] is
+    straightforward. *)
+
 
 
 
 (* ####################################################### *)
-(** * Additional Exercises *)
+(** ** Parameterized Data Structures *)
 
-(** **** Exercise: 4 stars (palindromes) *)
+(** So far, we have only looked at propositions about natural numbers. However, 
+   we can define inductive predicates about any type of data. For example, 
+   suppose we would like to characterize lists of _even_ length. We can 
+   do that with the following definition.  *)
+
+Inductive ev_list {X:Type} : list X -> Prop :=
+  | el_nil : ev_list []
+  | el_cc  : forall x y l, ev_list l -> ev_list (x :: y :: l).
+
+(** Of course, this proposition is equivalent to just saying that the
+length of the list is even. *)
+
+Lemma ev_list__ev_length: forall X (l : list X), ev_list l -> ev (length l).
+Proof. 
+    intros X l H. induction H.
+    Case "el_nil". simpl. apply ev_0.
+    Case "el_cc".  simpl.  apply ev_SS. apply IHev_list.
+Qed.
+
+(** However, because evidence for [ev] contains less information than
+evidence for [ev_list], the converse direction must be stated very
+carefully. *)
+
+Lemma ev_length__ev_list: forall X n, ev n -> forall (l : list X), n = length l -> ev_list l.
+Proof.
+  intros X n H. 
+  induction H.
+  Case "ev_0". intros l H. destruct l.
+    SCase "[]". apply el_nil. 
+    SCase "x::l". inversion H.
+  Case "ev_SS". intros l H2. destruct l. 
+    SCase "[]". inversion H2. destruct l.
+    SCase "[x]". inversion H2.
+    SCase "x :: x0 :: l". apply el_cc. apply IHev. inversion H2. reflexivity.
+Qed.
+    
+
+(** **** Exercise: 4 stars (palindromes)  *)
 (** A palindrome is a sequence that reads the same backwards as
     forwards.
 
@@ -528,20 +575,22 @@ Proof.
       captures what it means to be a palindrome. (Hint: You'll need
       three cases.  Your definition should be based on the structure
       of the list; just having a single constructor
-    c : forall l, l = rev l -> pal l
+        c : forall l, l = rev l -> pal l
       may seem obvious, but will not work very well.)
  
-    - Prove that 
+    - Prove [pal_app_rev] that 
        forall l, pal (l ++ rev l).
-    - Prove that 
+    - Prove [pal_rev] that 
        forall l, pal l -> l = rev l.
 *)
-
 
 (* FILL IN HERE *)
 (** [] *)
 
-(** **** Exercise: 5 stars, optional (palindrome_converse) *)
+(* Again, the converse direction is much more difficult, due to the
+lack of evidence. *)
+
+(** **** Exercise: 5 stars, optional (palindrome_converse)  *)
 (** Using your definition of [pal] from the previous exercise, prove
     that
      forall l, l = rev l -> pal l.
@@ -550,60 +599,10 @@ Proof.
 (* FILL IN HERE *)
 (** [] *)
 
-(** **** Exercise: 4 stars, advanced (subsequence) *)
-(** A list is a _subsequence_ of another list if all of the elements
-    in the first list occur in the same order in the second list,
-    possibly with some extra elements in between. For example,
-    [1,2,3]
-    is a subsequence of each of the lists
-    [1,2,3]
-    [1,1,1,2,2,3]
-    [1,2,7,3]
-    [5,6,1,9,9,2,7,3,8]
-    but it is _not_ a subsequence of any of the lists
-    [1,2]
-    [1,3]
-    [5,6,2,1,7,3,8]
-
-    - Define an inductive proposition [subseq] on [list nat] that
-      captures what it means to be a subsequence. (Hint: You'll need
-      three cases.)
-
-    - Prove that subsequence is reflexive, that is, any list is a
-      subsequence of itself.  
-
-    - Prove that for any lists [l1], [l2], and [l3], if [l1] is a
-      subsequence of [l2], then [l1] is also a subsequence of [l2 ++
-      l3].
-
-    - (Optional, harder) Prove that subsequence is transitive -- that
-      is, if [l1] is a subsequence of [l2] and [l2] is a subsequence
-      of [l3], then [l1] is a subsequence of [l3].  Hint: choose your
-      induction carefully!
-*)
-
-(* FILL IN HERE *)
-(** [] *)
-
-(** **** Exercise: 2 stars, optional (R_provability) *)
-(** Suppose we give Coq the following definition:
-    Inductive R : nat -> list nat -> Prop :=
-      | c1 : R 0 []
-      | c2 : forall n l, R n l -> R (S n) (n :: l)
-      | c3 : forall n l, R (S n) l -> R n l.
-    Which of the following propositions are provable?
-
-    - [R 2 [1,0]]
-    - [R 1 [1,2,1,0]]
-    - [R 6 [3,2,1,0]]
-*)
-
-(** [] *)
-
 
 
 (* ####################################################### *)
-(** * Relations *)
+(** ** Relations *)
 
 (** A proposition parameterized by a number (such as [ev] or
     [beautiful]) can be thought of as a _property_ -- i.e., it defines
@@ -679,28 +678,28 @@ Notation "m < n" := (lt m n).
 Inductive square_of : nat -> nat -> Prop :=
   sq : forall n:nat, square_of n (n * n).
 
-Inductive next_nat (n:nat) : nat -> Prop :=
-  | nn : next_nat n (S n).
+Inductive next_nat : nat -> nat -> Prop :=
+  | nn : forall n:nat, next_nat n (S n).
 
-Inductive next_even (n:nat) : nat -> Prop :=
-  | ne_1 : ev (S n) -> next_even n (S n)
-  | ne_2 : ev (S (S n)) -> next_even n (S (S n)).
+Inductive next_even : nat -> nat -> Prop :=
+  | ne_1 : forall n, ev (S n) -> next_even n (S n)
+  | ne_2 : forall n, ev (S (S n)) -> next_even n (S (S n)).
 
-(** **** Exercise: 2 stars (total_relation) *)
+(** **** Exercise: 2 stars (total_relation)  *)
 (** Define an inductive binary relation [total_relation] that holds
     between every pair of natural numbers. *)
 
 (* FILL IN HERE *)
 (** [] *)
 
-(** **** Exercise: 2 stars (empty_relation) *)
+(** **** Exercise: 2 stars (empty_relation)  *)
 (** Define an inductive binary relation [empty_relation] (on numbers)
     that never holds. *)
 
 (* FILL IN HERE *)
 (** [] *)
 
-(** **** Exercise: 2 stars, optional (le_exercises) *)
+(** **** Exercise: 2 stars, optional (le_exercises)  *)
 (** Here are a number of facts about the [<=] and [<] relations that
     we are going to need later in the course.  The proofs make good
     practice exercises. *)
@@ -762,7 +761,7 @@ Proof.
   (* Hint: This theorem can be easily proved without using [induction]. *)
   (* FILL IN HERE *) Admitted.
 
-(** **** Exercise: 2 stars, optional (ble_nat_false) *)
+(** **** Exercise: 2 stars, optional (ble_nat_false)  *)
 Theorem ble_nat_false : forall n m,
   ble_nat n m = false -> ~(n <= m).
 Proof.
@@ -770,7 +769,7 @@ Proof.
 (** [] *)
 
 
-(** **** Exercise: 3 stars (R_provability2) *)
+(** **** Exercise: 3 stars (R_provability2)  *)
 Module R.
 (** We can define three-place relations, four-place relations,
     etc., in just the same way as binary relations.  For example,
@@ -799,7 +798,7 @@ Inductive R : nat -> nat -> nat -> Prop :=
 []
 *)
 
-(** **** Exercise: 3 stars, optional (R_fact) *)  
+(** **** Exercise: 3 stars, optional (R_fact)  *)  
 (** Relation [R] actually encodes a familiar function.  State and prove two
     theorems that formally connects the relation and the function. 
     That is, if [R m n o] is true, what can we say about [m],
@@ -811,9 +810,59 @@ Inductive R : nat -> nat -> nat -> Prop :=
 
 End R.
 
+(** **** Exercise: 4 stars, advanced (subsequence)  *)
+(** A list is a _subsequence_ of another list if all of the elements
+    in the first list occur in the same order in the second list,
+    possibly with some extra elements in between. For example,
+    [1,2,3]
+    is a subsequence of each of the lists
+    [1,2,3]
+    [1,1,1,2,2,3]
+    [1,2,7,3]
+    [5,6,1,9,9,2,7,3,8]
+    but it is _not_ a subsequence of any of the lists
+    [1,2]
+    [1,3]
+    [5,6,2,1,7,3,8]
+
+    - Define an inductive proposition [subseq] on [list nat] that
+      captures what it means to be a subsequence. (Hint: You'll need
+      three cases.)
+
+    - Prove [subseq_refl] that subsequence is reflexive, that is, 
+      any list is a subsequence of itself.  
+
+    - Prove [subseq_app] that for any lists [l1], [l2], and [l3], 
+      if [l1] is a subsequence of [l2], then [l1] is also a subsequence
+      of [l2 ++ l3].
+
+    - (Optional, harder) Prove [subseq_trans] that subsequence is 
+      transitive -- that is, if [l1] is a subsequence of [l2] and [l2] 
+      is a subsequence of [l3], then [l1] is a subsequence of [l3].  
+      Hint: choose your induction carefully!
+*)
+
+(* FILL IN HERE *)
+(** [] *)
+
+(** **** Exercise: 2 stars, optional (R_provability)  *)
+(** Suppose we give Coq the following definition:
+    Inductive R : nat -> list nat -> Prop :=
+      | c1 : R 0 []
+      | c2 : forall n l, R n l -> R (S n) (n :: l)
+      | c3 : forall n l, R (S n) l -> R n l.
+    Which of the following propositions are provable?
+
+    - [R 2 [1,0]]
+    - [R 1 [1,2,1,0]]
+    - [R 6 [3,2,1,0]]
+*)
+
+(** [] *)
+
 
 (* ##################################################### *)
-(** * Programming with Propositions Revisited *)
+(** * Programming with Propositions *)
 
 (** As we have seen, a _proposition_ is a statement expressing a factual claim,
     like "two plus two equals four."  In Coq, propositions are written
@@ -943,7 +992,7 @@ Definition natural_number_induction_valid : Prop :=
 
 
 
-(** **** Exercise: 3 stars (combine_odd_even) *)
+(** **** Exercise: 3 stars (combine_odd_even)  *)
 (** Complete the definition of the [combine_odd_even] function
     below. It takes as arguments two properties of numbers [Podd] and
     [Peven]. As its result, it should return a new property [P] such
@@ -990,7 +1039,7 @@ Proof.
     anything very familiar from everyday mathematics.  The following
     exercise gives a slightly contrived example. *)
 
-(** **** Exercise: 4 stars, optional (true_upto_n__true_everywhere) *)
+(** **** Exercise: 4 stars, optional (true_upto_n__true_everywhere)  *)
 (** Define a recursive function
     [true_upto_n__true_everywhere] that makes
     [true_upto_n_example] work. *)
@@ -1006,7 +1055,6 @@ Proof. reflexivity.  Qed.
 *)
 (** [] *)
 
-
-(* $Date: 2014-06-05 07:22:21 -0400 (Thu, 05 Jun 2014) $ *)
+(** $Date: 2014-12-31 11:17:56 -0500 (Wed, 31 Dec 2014) $ *)
 
 

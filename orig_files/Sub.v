@@ -1,7 +1,7 @@
 (** * Sub: Subtyping *)
 
 
-Require Export MoreStlc.
+Require Export Types.
 
 (* ###################################################### *)
 (** * Concepts *)
@@ -310,7 +310,7 @@ Require Export MoreStlc.
       inheritance" of interfaces (i.e., permutation is allowed for
       interfaces). *)
 
-(** **** Exercise: 2 stars (arrow_sub_wrong) *)
+(** **** Exercise: 2 stars (arrow_sub_wrong)  *)
 (** Suppose we had incorrectly defined subtyping as covariant on both
     the right and the left of arrow types:
                             S1 <: T1    S2 <: T2
@@ -322,8 +322,7 @@ Require Export MoreStlc.
     ... such that the application [g f] will get stuck during
     execution.
 
-[]
-*)
+[] *)
 
 (** *** Top *)
 
@@ -388,7 +387,7 @@ Require Export MoreStlc.
 (* ############################################### *)
 (** ** Exercises *)
 
-(** **** Exercise: 1 star, optional (subtype_instances_tf_1) *)
+(** **** Exercise: 1 star, optional (subtype_instances_tf_1)  *)
 (** Suppose we have types [S], [T], [U], and [V] with [S <: T]
     and [U <: V].  Which of the following subtyping assertions
     are then true?  Write _true_ or _false_ after each one.  
@@ -408,10 +407,9 @@ Require Export MoreStlc.
 
     - [S*V <: T*U]
 
-[]
-*)
+[] *)
 
-(** **** Exercise: 2 stars (subtype_order) *)
+(** **** Exercise: 2 stars (subtype_order)  *)
 (** The following types happen to form a linear order with respect to subtyping:
     - [Top]
     - [Top -> Student]
@@ -427,7 +425,7 @@ Where does the type [Top->Top->Student] fit into this order?
 
 *)
 
-(** **** Exercise: 1 star (subtype_instances_tf_2) *)
+(** **** Exercise: 1 star (subtype_instances_tf_2)  *)
 (** Which of the following statements are true?  Write _true_ or
     _false_ after each one.
       forall S T,
@@ -456,7 +454,7 @@ Where does the type [Top->Top->Student] fit into this order?
               S = S1*S2  /\  S1 <: T1  /\  S2 <: T2  
 [] *)
 
-(** **** Exercise: 1 star (subtype_concepts_tf) *)
+(** **** Exercise: 1 star (subtype_concepts_tf)  *)
 (** Which of the following statements are true, and which are false?
     - There exists a type that is a supertype of every other type.
 
@@ -484,10 +482,9 @@ Where does the type [Top->Top->Student] fit into this order?
       [S0], [S1], etc., such that all the [Si]'s are different and
       each [S(i+1)] is a supertype of [Si].
 
-[]
-*)
+[] *)
 
-(** **** Exercise: 2 stars (proper_subtypes) *)
+(** **** Exercise: 2 stars (proper_subtypes)  *)
 (** Is the following statement true or false?  Briefly explain your
     answer.
     forall T,
@@ -495,10 +492,9 @@ Where does the type [Top->Top->Student] fit into this order?
          exists S,
             S <: T  /\  S <> T
 ]] 
-[]
-*)
+[] *)
 
-(** **** Exercise: 2 stars (small_large_1) *)
+(** **** Exercise: 2 stars (small_large_1)  *)
 (** 
    - What is the _smallest_ type [T] ("smallest" in the subtype
      relation) that makes the following assertion true?  (Assume we
@@ -508,10 +504,9 @@ Where does the type [Top->Top->Student] fit into this order?
 
    - What is the _largest_ type [T] that makes the same assertion true?
 
-[]
-*)
+[] *)
 
-(** **** Exercise: 2 stars (small_large_2) *)
+(** **** Exercise: 2 stars (small_large_2)  *)
 (** 
    - What is the _smallest_ type [T] that makes the following
      assertion true?
@@ -519,10 +514,9 @@ Where does the type [Top->Top->Student] fit into this order?
 
    - What is the _largest_ type [T] that makes the same assertion true?
 
-[]
-*)
+[] *)
 
-(** **** Exercise: 2 stars, optional (small_large_3) *)
+(** **** Exercise: 2 stars, optional (small_large_3)  *)
 (** 
    - What is the _smallest_ type [T] that makes the following
      assertion true?
@@ -530,13 +524,12 @@ Where does the type [Top->Top->Student] fit into this order?
 
    - What is the _largest_ type [T] that makes the same assertion true?
 
-[]
-*)
+[] *)
 
 
 
 
-(** **** Exercise: 2 stars (small_large_4) *)
+(** **** Exercise: 2 stars (small_large_4)  *)
 (** 
    - What is the _smallest_ type [T] that makes the following
      assertion true?
@@ -546,27 +539,24 @@ Where does the type [Top->Top->Student] fit into this order?
    - What is the _largest_ type [T] that makes the same
      assertion true?
 
-[]
-*)
+[] *)
 
-(** **** Exercise: 2 stars (smallest_1) *)
+(** **** Exercise: 2 stars (smallest_1)  *)
 (** What is the _smallest_ type [T] that makes the following
     assertion true?
       exists S, exists t, 
         empty |- (\x:T. x x) t : S
 ]] 
-[]
-*)
+[] *)
 
-(** **** Exercise: 2 stars (smallest_2) *)
+(** **** Exercise: 2 stars (smallest_2)  *)
 (** What is the _smallest_ type [T] that makes the following
     assertion true?
       empty |- (\x:Top. x) ((\z:A.z) , (\z:B.z)) : T
 ]] 
-[]
-*)
+[] *)
 
-(** **** Exercise: 3 stars, optional (count_supertypes) *)
+(** **** Exercise: 3 stars, optional (count_supertypes)  *)
 (** How many supertypes does the record type [{x:A, y:C->C}] have?  That is,
     how many different types [T] are there such that [{x:A, y:C->C} <:
     T]?  (We consider two types to be different if they are written
@@ -574,10 +564,9 @@ Where does the type [Top->Top->Student] fit into this order?
     [{x:A,y:B}] and [{y:B,x:A}] are different.)
 
 
-[]
-*)
+[] *)
 
-(** **** Exercise: 2 stars (pair_permutation) *)
+(** **** Exercise: 2 stars (pair_permutation)  *)
 (** The subtyping rule for product types
                             S1 <: T1    S2 <: T2
                             --------------------                        (S_Prod)
@@ -588,8 +577,7 @@ intuitively corresponds to the "depth" subtyping rule for records. Extending the
 for products.
 Is this a good idea? Briefly explain why or why not.
 
-[]
-*)
+[] *)
 
 (* ###################################################### *)
 (** * Formal Definitions *)
@@ -778,7 +766,7 @@ Notation String := (TBase (Id 9)).
 Notation Float := (TBase (Id 10)).
 Notation Integer := (TBase (Id 11)).
 
-(** **** Exercise: 2 stars, optional (subtyping_judgements) *)
+(** **** Exercise: 2 stars, optional (subtyping_judgements)  *)
 
 (** (Do this exercise after you have added product types to the
     language, at least up to this point in the file).
@@ -790,6 +778,10 @@ Notation Integer := (TBase (Id 11)).
                   gpa  : Float }
     Employee := { name : String ;
                   ssn  : Integer }
+
+Recall that in chapter MoreStlc, the optional subsection "Encoding
+Records" describes how records can be encoded as pairs.
+
 *)
 
 Definition Person : ty := 
@@ -822,7 +814,7 @@ Qed.
     full benefit from the exercises, make sure you also
     understand how to prove them on paper! *)
 
-(** **** Exercise: 1 star, optional (subtyping_example_1) *)
+(** **** Exercise: 1 star, optional (subtyping_example_1)  *)
 Example subtyping_example_1 :
   (TArrow TTop Student) <: (TArrow (TArrow C C) Person).
   (* Top->Student <: (C->C)->Person *)
@@ -830,7 +822,7 @@ Proof with eauto.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** **** Exercise: 1 star, optional (subtyping_example_2) *)
+(** **** Exercise: 1 star, optional (subtyping_example_2)  *)
 Example subtyping_example_2 :
   (TArrow TTop Person) <: (TArrow Person TTop).
   (* Top->Person <: Person->Top *)
@@ -895,6 +887,13 @@ Tactic Notation "has_type_cases" tactic(first) ident(c) :=
   | Case_aux c "T_Unit"     
   | Case_aux c "T_Sub" ].
 
+(* To make your job simpler, the following hints help construct typing
+   derivations. *)
+Hint Extern 2 (has_type _ (tapp _ _) _) => 
+  eapply T_App; auto.
+Hint Extern 2 (_ = _) => compute; reflexivity.
+
+
 (* ############################################### *)
 (** ** Typing examples *)
 
@@ -905,19 +904,19 @@ Import Examples.
     the language.  For each informal typing judgement, write it as a
     formal statement in Coq and prove it. *)
 
-(** **** Exercise: 1 star, optional (typing_example_0) *)
+(** **** Exercise: 1 star, optional (typing_example_0)  *)
 (* empty |- ((\z:A.z), (\z:B.z)) 
           : (A->A * B->B) *)
 (* FILL IN HERE *)
 (** [] *)
 
-(** **** Exercise: 2 stars, optional (typing_example_1) *)
+(** **** Exercise: 2 stars, optional (typing_example_1)  *)
 (* empty |- (\x:(Top * B->B). x.snd) ((\z:A.z), (\z:B.z)) 
           : B->B *)
 (* FILL IN HERE *)
 (** [] *)
 
-(** **** Exercise: 2 stars, optional (typing_example_2) *)
+(** **** Exercise: 2 stars, optional (typing_example_2)  *)
 (* empty |- (\z:(C->C)->(Top * B->B). (z (\x:C.x)).snd)
               (\z:C->C. ((\z:A.z), (\z:B.z)))
           : B->B *)
@@ -952,7 +951,7 @@ End Examples2.
     tell us something further about the shapes of [S] and [T] and the
     existence of subtype relations between their parts. *)
 
-(** **** Exercise: 2 stars, optional (sub_inversion_Bool) *)
+(** **** Exercise: 2 stars, optional (sub_inversion_Bool)  *)
 Lemma sub_inversion_Bool : forall U,
      U <: TBool ->
        U = TBool.
@@ -961,7 +960,7 @@ Proof with auto.
   remember TBool as V.
   (* FILL IN HERE *) Admitted.
 
-(** **** Exercise: 3 stars, optional (sub_inversion_arrow) *)
+(** **** Exercise: 3 stars, optional (sub_inversion_arrow)  *)
 Lemma sub_inversion_arrow : forall U V1 V2,
      U <: (TArrow V1 V2) ->
      exists U1, exists U2, 
@@ -1001,7 +1000,7 @@ Proof with eauto.
     tells us the possible "canonical forms" (i.e. values) of function
     type. *)
 
-(** **** Exercise: 3 stars, optional (canonical_forms_of_arrow_types) *)
+(** **** Exercise: 3 stars, optional (canonical_forms_of_arrow_types)  *)
 Lemma canonical_forms_of_arrow_types : forall Gamma s T1 T2,
   Gamma |- s \in (TArrow T1 T2) ->
   value s ->
@@ -1309,9 +1308,6 @@ Proof with eauto.
   Case "T_Abs".
     apply T_Abs... apply IHhas_type. intros x0 Hafi.
     unfold extend. destruct (eq_id_dec x x0)...
-
-  Case "T_App".
-    apply T_App with T1...
   Case "T_If".
     apply T_If...
 
@@ -1506,7 +1502,7 @@ Qed.
 (* ###################################################### *)
 (** ** Exercises *)
 
-(** **** Exercise: 2 stars (variations) *)
+(** **** Exercise: 2 stars (variations)  *)
 (** Each part of this problem suggests a different way of
     changing the definition of the STLC with Unit and
     subtyping.  (These changes are not cumulative: each part
@@ -1547,13 +1543,12 @@ Qed.
                           -----------------------                    (S_Arrow')
                                S1->S2 <: T1->T2
 
-[]
-*) 
+[] *) 
 
 (* ###################################################################### *)
 (** * Exercise: Adding Products *)
 
-(** **** Exercise: 4 stars, optional (products) *)
+(** **** Exercise: 4 stars (products)  *)
 (** Adding pairs, projections, and product types to the system we have
     defined is a relatively straightforward matter.  Carry out this
     extension:
@@ -1562,23 +1557,26 @@ Qed.
       product types to the definitions of [ty] and [tm].  (Don't
       forget to add corresponding cases to [T_cases] and [t_cases].)
 
-    - Extend the well-formedness relation in the obvious way.
+    - Extend the substitution function and value relation as in 
+      MoreSTLC.
 
     - Extend the operational semantics with the same reduction rules
-      as in the last chapter.
+      as in MoreSTLC.
 
     - Extend the subtyping relation with this rule:
+
                         S1 <: T1     S2 <: T2
                         ---------------------                     (Sub_Prod)
                           S1 * S2 <: T1 * T2
+
     - Extend the typing relation with the same rules for pairs and
-      projections as in the last chapter.
+      projections as in MoreSTLC.
 
     - Extend the proofs of progress, preservation, and all their
       supporting lemmas to deal with the new constructs.  (You'll also
-      need to add some completely new lemmas.)  []
-*)
+      need to add some completely new lemmas.)  
+[] *)
 
 
-(* $Date: 2013-12-05 11:55:09 -0500 (Thu, 05 Dec 2013) $ *)
+(** $Date: 2014-12-31 11:17:56 -0500 (Wed, 31 Dec 2014) $ *)
 

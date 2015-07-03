@@ -52,7 +52,7 @@ Require Export Types.
 (** The [\] symbol (backslash, in ascii) in a function abstraction
     [\x:T1.t2] is generally written as a greek letter "lambda" (hence
     the name of the calculus).  The variable [x] is called the
-    _parameter_ to the function; the term [t1] is its _body_.  The
+    _parameter_ to the function; the term [t2] is its _body_.  The
     annotation [:T] specifies the type of arguments that the function
     can be applied to. *)
 
@@ -375,7 +375,7 @@ where "'[' x ':=' s ']' t" := (subst x s t).
     formalizing richer languages. *)
 
 (** *** *)
-(** **** Exercise: 3 stars (substi) *)  
+(** **** Exercise: 3 stars (substi)  *)  
 
 (** The definition that we gave above uses Coq's [Fixpoint] facility
     to define substitution as a _function_.  Suppose, instead, we
@@ -472,6 +472,12 @@ Notation multistep := (multi step).
 Notation "t1 '==>*' t2" := (multistep t1 t2) (at level 40).
 
 (* ##################################### *)
+
+
+
+
+
+(* ##################################### *)
 (** *** Examples *)
 
 (** Example:
@@ -525,7 +531,7 @@ Proof.
     apply ST_IfTrue. apply multi_refl.  Qed. 
 
 (** Example:
-((\x:Bool->Bool. x) ((\x:Bool. if x then false
+((\x:Bool -> Bool. x) ((\x:Bool. if x then false
                                else true) true))
       ==>* false
 i.e.
@@ -569,7 +575,7 @@ Lemma step_example4' :
   tapp idBB (tapp notB ttrue) ==>* tfalse.
 Proof. normalize.  Qed.  
 
-(** **** Exercise: 2 stars (step_example3) *)  
+(** **** Exercise: 2 stars (step_example3)  *)  
 (** Try to do this one both with and without [normalize]. *)
 
 Lemma step_example5 :
@@ -732,7 +738,7 @@ Proof with auto using extend_eq.
   apply T_Var...
 Qed.
 
-(** **** Exercise: 2 stars, optional (typing_example_2_full) *)
+(** **** Exercise: 2 stars, optional (typing_example_2_full)  *)
 (** Prove the same result without using [auto], [eauto], or
     [eapply]. *)
 
@@ -746,7 +752,7 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** **** Exercise: 2 stars (typing_example_3) *)
+(** **** Exercise: 2 stars (typing_example_3)  *)
 (** Formally prove the following typing derivation holds: *)
 (** 
    empty |- \x:Bool->B. \y:Bool->Bool. \z:Bool.
@@ -792,7 +798,7 @@ Proof.
   (* rewrite extend_neq in H1. rewrite extend_eq in H1. *)
   inversion H1.  Qed.
 
-(** **** Exercise: 3 stars, optional (typing_nonexample_3) *)
+(** **** Exercise: 3 stars, optional (typing_nonexample_3)  *)
 (** Another nonexample:
     ~ (exists S, exists T,
           empty |- \x:S. x x : T).
@@ -812,5 +818,5 @@ Proof.
 
 End STLC.
 
-(* $Date: 2013-11-20 13:03:49 -0500 (Wed, 20 Nov 2013) $ *)
+(** $Date: 2014-12-31 11:17:56 -0500 (Wed, 31 Dec 2014) $ *)
 

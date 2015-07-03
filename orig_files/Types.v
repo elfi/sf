@@ -26,13 +26,7 @@ Hint Constructors multi.
     but just two kinds (numbers and booleans) already gives us enough
     material to tell an interesting story.
 
-    The language definition is completely routine.  The only thing to
-    notice is that we are _not_ using the [asnum]/[aslist] trick that
-    we used in chapter [HoareList] to make all the operations total by
-    forcibly coercing the arguments to [+] (for example) into numbers.
-    Instead, we simply let terms get stuck if they try to use an
-    operator with the wrong kind of operands: the [step] relation
-    doesn't relate them to anything. *)
+    The language definition is completely routine.  *)
 
 (* ###################################################################### *)
 (** ** Syntax *)
@@ -187,7 +181,7 @@ Definition stuck (t:tm) : Prop :=
 
 Hint Unfold stuck.
 
-(** **** Exercise: 2 stars (some_term_is_stuck) *)
+(** **** Exercise: 2 stars (some_term_is_stuck)  *)
 Example some_term_is_stuck :
   exists t, stuck t.
 Proof.
@@ -199,7 +193,7 @@ Proof.
     important because it shows we did not accidentally define things
     so that some value could still take a step. *)
 
-(** **** Exercise: 3 stars, advanced (value_is_nf) *)
+(** **** Exercise: 3 stars, advanced (value_is_nf)  *)
 (** Hint: You will reach a point in this proof where you need to
     use an induction to reason about a term that is known to be a
     numeric value.  This induction can be performed either over the
@@ -215,7 +209,7 @@ Proof.
 (** [] *)
 
 
-(** **** Exercise: 3 stars, optional (step_deterministic) *)
+(** **** Exercise: 3 stars, optional (step_deterministic)  *)
 (** Using [value_is_nf], we can show that the [step] relation is
     also deterministic... *)
 
@@ -333,7 +327,7 @@ Example has_type_not :
 Proof.
   intros Contra. solve by inversion 2.  Qed.
 
-(** **** Exercise: 1 star, optional (succ_hastype_nat__hastype_nat) *)
+(** **** Exercise: 1 star, optional (succ_hastype_nat__hastype_nat)  *)
 Example succ_hastype_nat__hastype_nat : forall t,
   |- tsucc t \in TNat ->
   |- t \in TNat.  
@@ -377,7 +371,7 @@ Theorem progress : forall t T,
   |- t \in T ->
   value t \/ exists t', t ==> t'.
 
-(** **** Exercise: 3 stars (finish_progress) *)
+(** **** Exercise: 3 stars (finish_progress)  *)
 (** Complete the formal proof of the [progress] property.  (Make sure
     you understand the informal proof fragment in the following
     exercise before starting -- this will save you a lot of time.) *)
@@ -400,7 +394,7 @@ Proof with auto.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** **** Exercise: 3 stars, advanced (finish_progress_informal) *)
+(** **** Exercise: 3 stars, advanced (finish_progress_informal)  *)
 (** Complete the corresponding informal proof: *)
 
 (** _Theorem_: If [|- t \in T], then either [t] is a value or else 
@@ -425,15 +419,14 @@ Proof with auto.
               [t].
 
     (* FILL IN HERE *)
-[]
-*)
+[] *)
 
 (** This is more interesting than the strong progress theorem that we
     saw in the Smallstep chapter, where _all_ normal forms were
     values.  Here, a term can be stuck, but only if it is ill
     typed. *)
 
-(** **** Exercise: 1 star (step_review) *)
+(** **** Exercise: 1 star (step_review)  *)
 (** Quick review.  Answer _true_ or _false_.  In this language...
       - Every well-typed normal form is a value.
 
@@ -464,7 +457,7 @@ Theorem preservation : forall t t' T,
   t ==> t' ->
   |- t' \in T.
 
-(** **** Exercise: 2 stars (finish_preservation) *)
+(** **** Exercise: 2 stars (finish_preservation)  *)
 (** Complete the formal proof of the [preservation] property.  (Again,
     make sure you understand the informal proof fragment in the
     following exercise first.) *)
@@ -486,7 +479,7 @@ Proof with auto.
     (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** **** Exercise: 3 stars, advanced (finish_preservation_informal) *)
+(** **** Exercise: 3 stars, advanced (finish_preservation_informal)  *)
 (** Complete the following proof: *)
 
 (** _Theorem_: If [|- t \in T] and [t ==> t'], then [|- t' \in T]. *)
@@ -514,10 +507,9 @@ Proof with auto.
              [|- if t1' then t2 else t3 \in T], as required.
 
     (* FILL IN HERE *)
-[]
-*)
+[] *)
 
-(** **** Exercise: 3 stars (preservation_alternate_proof) *)
+(** **** Exercise: 3 stars (preservation_alternate_proof)  *)
 (** Now prove the same property again by induction on the
     _evaluation_ derivation instead of on the typing derivation.
     Begin by carefully reading and thinking about the first few
@@ -646,7 +638,7 @@ Proof.
 Qed.
 
 
-(** **** Exercise: 1 star (normalize_ex) *)
+(** **** Exercise: 1 star (normalize_ex)  *)
 Theorem normalize_ex : exists e',
   (AMult (ANum 3) (AMult (ANum 2) (ANum 1))) / empty_state 
   ==>a* e'.
@@ -655,7 +647,7 @@ Proof.
 
 (** [] *)
 
-(** **** Exercise: 1 star, optional (normalize_ex') *)
+(** **** Exercise: 1 star, optional (normalize_ex')  *)
 (** For comparison, prove it using [apply] instead of [eapply]. *)
 
 Theorem normalize_ex' : exists e',
@@ -669,7 +661,7 @@ Proof.
 (* ###################################################################### *)
 (** ** Additional Exercises *)
 
-(** **** Exercise: 2 stars (subject_expansion) *)
+(** **** Exercise: 2 stars (subject_expansion)  *)
 (** Having seen the subject reduction property, it is reasonable to
     wonder whether the opposity property -- subject _expansion_ --
     also holds.  That is, is it always the case that, if [t ==> t']
@@ -678,13 +670,12 @@ Proof.
     counter-example in Coq, but feel free to do so if you like.)
 
     (* FILL IN HERE *)
-[]
-*)
+[] *)
 
 
 
 
-(** **** Exercise: 2 stars (variation1) *)
+(** **** Exercise: 2 stars (variation1)  *)
 (** Suppose, that we add this new rule to the typing relation: 
       | T_SuccBool : forall t,
            |- t \in TBool ->
@@ -699,20 +690,18 @@ Proof.
 
       - Preservation
 
-[]
-*)
+[] *)
 
-(** **** Exercise: 2 stars (variation2) *)
+(** **** Exercise: 2 stars (variation2)  *)
 (** Suppose, instead, that we add this new rule to the [step] relation: 
       | ST_Funny1 : forall t2 t3,
            (tif ttrue t2 t3) ==> t3
    Which of the above properties become false in the presence of
    this rule?  For each one that does, give a counter-example.
 
-[]
-*)
+[] *)
 
-(** **** Exercise: 2 stars, optional (variation3) *)
+(** **** Exercise: 2 stars, optional (variation3)  *)
 (** Suppose instead that we add this rule:
       | ST_Funny2 : forall t1 t2 t2' t3,
            t2 ==> t2' ->
@@ -720,20 +709,18 @@ Proof.
    Which of the above properties become false in the presence of
    this rule?  For each one that does, give a counter-example.
 
-[]
-*)
+[] *)
 
-(** **** Exercise: 2 stars, optional (variation4) *)
+(** **** Exercise: 2 stars, optional (variation4)  *)
 (** Suppose instead that we add this rule:
       | ST_Funny3 : 
           (tpred tfalse) ==> (tpred (tpred tfalse))
    Which of the above properties become false in the presence of
    this rule?  For each one that does, give a counter-example.
 
-[]
-*)
+[] *)
 
-(** **** Exercise: 2 stars, optional (variation5) *)
+(** **** Exercise: 2 stars, optional (variation5)  *)
 (** Suppose instead that we add this rule:
    
       | T_Funny4 : 
@@ -742,10 +729,9 @@ Proof.
    Which of the above properties become false in the presence of
    this rule?  For each one that does, give a counter-example.
 
-[]
-*)
+[] *)
 
-(** **** Exercise: 2 stars, optional (variation6) *)
+(** **** Exercise: 2 stars, optional (variation6)  *)
 (** Suppose instead that we add this rule:
    
       | T_Funny5 : 
@@ -754,18 +740,16 @@ Proof.
    Which of the above properties become false in the presence of
    this rule?  For each one that does, give a counter-example.
 
-[]
-*)
+[] *)
 
-(** **** Exercise: 3 stars, optional (more_variations) *)
+(** **** Exercise: 3 stars, optional (more_variations)  *)
 (** Make up some exercises of your own along the same lines as
     the ones above.  Try to find ways of selectively breaking
     properties -- i.e., ways of changing the definitions that
     break just one of the properties and leave the others alone.
-    [] 
-*)
+[] *)
 
-(** **** Exercise: 1 star (remove_predzero) *)
+(** **** Exercise: 1 star (remove_predzero)  *)
 (** The evaluation rule [E_PredZero] is a bit counter-intuitive: we
     might feel that it makes more sense for the predecessor of zero to
     be undefined, rather than being defined to be zero.  Can we
@@ -775,13 +759,12 @@ Proof.
 (* FILL IN HERE *)
 [] *)
 
-(** **** Exercise: 4 stars, advanced (prog_pres_bigstep) *)
+(** **** Exercise: 4 stars, advanced (prog_pres_bigstep)  *)
 (** Suppose our evaluation relation is defined in the big-step style.
     What are the appropriate analogs of the progress and preservation
     properties?
 
 (* FILL IN HERE *)
-[]
-*)
+[] *)
 
-(* $Date: 2014-04-08 23:31:16 -0400 (Tue, 08 Apr 2014) $ *)
+(** $Date: 2014-12-31 11:17:56 -0500 (Wed, 31 Dec 2014) $ *)

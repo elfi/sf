@@ -1,7 +1,5 @@
 (** * ImpParser: Lexing and Parsing in Coq *)
 
-(* $Date: 2013-07-01 18:48:47 -0400 (Mon, 01 Jul 2013) $ *)
-
 (** The development of the [Imp] language in Imp.v completely ignores
     issues of concrete syntax -- how an ascii string that a programmer
     might write gets translated into the abstract syntax trees defined
@@ -442,3 +440,6 @@ Eval compute in parse "
           Id 1 ::= AId (Id 0), 
          []).
 *)
+
+(** $Date: 2014-12-31 11:17:56 -0500 (Wed, 31 Dec 2014) $ *)
+

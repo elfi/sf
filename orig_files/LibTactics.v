@@ -1,6 +1,5 @@
 (** * LibTactics: A Collection of Handy General-Purpose Tactics *)
 
-(* $Date: 2013-01-16 22:29:57 -0500 (Wed, 16 Jan 2013) $ *)
 (* Chapter maintained by Arthur Chargueraud *)
 
 (** This file contains a set of tactics that extends the set of builtin
@@ -3090,8 +3089,7 @@ Ltac auto_tilde := auto_tilde_default.
 (** [auto_star] is the tactic which will be called each time a symbol
     [*] is used after a tactic. *)
 
-Ltac auto_star_default := try solve [ auto | eauto | intuition eauto ].
-  (* TODO: should be jauto *)
+Ltac auto_star_default := try solve [ jauto ].
 Ltac auto_star := auto_star_default.
 
 (** [auto~] is a notation for tactic [auto_tilde]. It may be followed
@@ -4192,3 +4190,5 @@ Module LibTacticsCompatibility.
 End LibTacticsCompatibility.
 
 Open Scope nat_scope.  
+
+(** $Date: 2014-12-31 11:17:56 -0500 (Wed, 31 Dec 2014) $ *)

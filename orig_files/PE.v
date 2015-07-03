@@ -1,6 +1,5 @@
 (** * PE: Partial Evaluation *)
 
-(* $Date: 2013-07-17 16:19:11 -0400 (Wed, 17 Jul 2013) $ *)
 (* Chapter author/maintainer: Chung-chieh Shan *)
 
 (** Equiv.v introduced constant folding as an example of a program
@@ -1608,3 +1607,5 @@ Proof. intros.
       destruct k as [k|]; inversion Hlookup; subst.
       eapply E_Some; eauto. apply pe_block_correct. apply Hkeval.
 Qed.
+
+(** $Date: 2014-12-31 11:17:56 -0500 (Wed, 31 Dec 2014) $ *)

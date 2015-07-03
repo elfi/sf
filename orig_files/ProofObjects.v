@@ -180,7 +180,7 @@ Print eight_is_beautiful''.
 Print eight_is_beautiful'''.
 (* ===> eight_is_beautiful''' = b_sum 3 5 b_3 b_5 : beautiful 8 *)
 
-(** **** Exercise: 1 star (six_is_beautiful) *)
+(** **** Exercise: 1 star (six_is_beautiful)  *)
 (** Give a tactic proof and a proof object showing that [6] is [beautiful]. *)
 
 Theorem six_is_beautiful :
@@ -192,7 +192,7 @@ Definition six_is_beautiful' : beautiful 6 :=
   (* FILL IN HERE *) admit.
 (** [] *)
 
-(** **** Exercise: 1 star (nine_is_beautiful) *)
+(** **** Exercise: 1 star (nine_is_beautiful)  *)
 (** Give a tactic proof and a proof object showing that [9] is [beautiful]. *)
 
 Theorem nine_is_beautiful :
@@ -287,7 +287,7 @@ Definition beatiful_plus3'' : Prop :=
     "[forall (_:P), Q]". *)
 
 
-(** **** Exercise: 2 stars b_times2 *)
+(** **** Exercise: 2 stars b_times2  *)
 
 (** Give a proof object corresponding to the theorem [b_times2] from Prop.v *)
 
@@ -297,7 +297,7 @@ Definition b_times2': forall n, beautiful n -> beautiful (2*n) :=
 
 
 
-(** **** Exercise: 2 stars, optional (gorgeous_plus13_po) *) 
+(** **** Exercise: 2 stars, optional (gorgeous_plus13_po)  *) 
 (** Give a proof object corresponding to the theorem [gorgeous_plus13] from Prop.v *)
 
 Definition gorgeous_plus13_po: forall n, gorgeous n -> gorgeous (13+n):=
@@ -328,7 +328,7 @@ Print and_example.
          (...pf of beautiful 3...) (...pf of beautiful 3...)
     as you'd expect, given the type of [conj]. *)
 
-(** **** Exercise: 1 star, optional (case_proof_objects) *)
+(** **** Exercise: 1 star, optional (case_proof_objects)  *)
 (** The [Case] tactics were commented out in the proof of
     [and_example] to avoid cluttering the proof object.  What would
     you guess the proof object will look like if we uncomment them?
@@ -374,7 +374,7 @@ we get: *)
 
 
 
-(** **** Exercise: 2 stars, optional (conj_fact) *)
+(** **** Exercise: 2 stars, optional (conj_fact)  *)
 (** Construct a proof object demonstrating the following proposition. *)
 
 Definition conj_fact : forall P Q R, P /\ Q -> Q /\ R -> P /\ R :=
@@ -382,7 +382,7 @@ Definition conj_fact : forall P Q R, P /\ Q -> Q /\ R -> P /\ R :=
 (** [] *)
 
 
-(** **** Exercise: 2 stars, advanced, optional (beautiful_iff_gorgeous) *)
+(** **** Exercise: 2 stars, advanced, optional (beautiful_iff_gorgeous)  *)
 
 (** We have seen that the families of propositions [beautiful] and
     [gorgeous] actually characterize the same set of numbers.
@@ -397,7 +397,7 @@ Definition beautiful_iff_gorgeous :
 (** [] *)
 
 
-(** **** Exercise: 2 stars, optional (or_commut'') *)
+(** **** Exercise: 2 stars, optional (or_commut'')  *)
 (** Try to write down an explicit proof object for [or_commut] (without
     using [Print] to peek at the ones we already defined!). *)
 
@@ -422,7 +422,7 @@ Definition snie : some_nat_is_even :=
   ex_intro _ ev 4 (ev_SS 2 (ev_SS 0 ev_0)).
 
 
-(** **** Exercise: 2 stars, optional (ex_beautiful_Sn) *)
+(** **** Exercise: 2 stars, optional (ex_beautiful_Sn)  *)
 (** Complete the definition of the following proof object: *)
 
 Definition p : ex _ (fun n => beautiful (S n)) :=
@@ -486,7 +486,7 @@ Proof.
   reflexivity. Qed.
 
 
-(** **** Exercise: 2 stars (trans_eq_example_redux) *)
+(** **** Exercise: 2 stars (trans_eq_example_redux)  *)
 (** Redo the proof of the following theorem (from MoreCoq.v) using
 an [apply] of [trans_eq] but _not_ using a [with] clause. *)
 
@@ -501,11 +501,11 @@ Proof.
 
 
 (* ##################################################### *)
-(** * Programming with Tactics (Optional) *)
+(** * Programming with Tactics (Advanced) *)
 
-(** If we can build proofs with explicit terms rather than
-tactics, you may be wondering if we can build programs using
-tactics rather than explicit terms.  Sure! *)
+(** If we can build proofs with explicit terms rather than tactics,
+    you may be wondering if we can build programs using tactics rather
+    than explicit terms.  Sure! *)
 
 Definition add1 : nat -> nat. 
 intro n. 
@@ -533,5 +533,5 @@ This feature is mainly useful for writing functions with dependent types,
 which we won't explore much further in this book.
 But it does illustrate the uniformity and orthogonality of the basic ideas in Coq. *)
 
-(* $Date: 2014-06-05 07:22:21 -0400 (Thu, 05 Jun 2014) $ *)
+(** $Date: 2014-12-31 15:31:47 -0500 (Wed, 31 Dec 2014) $ *)
 

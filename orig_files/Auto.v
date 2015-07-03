@@ -270,7 +270,48 @@ Proof.
       assert (st' = st'0) as EQ1.
         SSCase "Proof of assertion". auto. 
       subst st'0.
-      auto. Qed.
+      auto. 
+Qed.
+
+(** When we are using a particular tactic many times in a proof,
+    we can use a variant of the [Proof] command to make that tactic
+    into a default within the proof. 
+    Saying [Proof with t] (where [t] is an arbitrary tactic) 
+    allows us to use [t1...] as a shorthand for [t1;t] within the proof.
+    As an illustration, here is an alternate version of the previous proof,
+    using [Proof with auto].
+*)
+
+Theorem ceval_deterministic'_alt: forall c st st1 st2,
+     c / st || st1  ->
+     c / st || st2 ->
+     st1 = st2.
+Proof with auto.
+  intros c st st1 st2 E1 E2;
+  generalize dependent st2;
+  ceval_cases (induction E1) Case;
+           intros st2 E2; inv E2...
+  Case "E_Seq".
+    assert (st' = st'0) as EQ1.
+      SCase "Proof of assertion"...
+    subst st'0...
+  Case "E_IfTrue".
+    SCase "b evaluates to false (contradiction)".
+      rewrite H in H5. inversion H5.
+  Case "E_IfFalse".
+    SCase "b evaluates to true (contradiction)".
+      rewrite H in H5. inversion H5.
+  Case "E_WhileEnd".
+    SCase "b evaluates to true (contradiction)".
+      rewrite H in H2. inversion H2.
+  Case "E_WhileLoop".
+    SCase "b evaluates to false (contradiction)".
+      rewrite H in H4. inversion H4.
+    SCase "b evaluates to true".
+      assert (st' = st'0) as EQ1.
+        SSCase "Proof of assertion"...
+      subst st'0...
+Qed.
 
 (** * Searching Hypotheses *)
 
@@ -557,4 +598,4 @@ End Repeat.
 
 *)
 
-(* $Date: 2013-07-30 12:24:33 -0400 (Tue, 30 Jul 2013) $ *)
+(** $Date: 2014-12-31 11:17:56 -0500 (Wed, 31 Dec 2014) $ *)

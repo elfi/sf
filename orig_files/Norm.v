@@ -1,6 +1,5 @@
 (** * Norm: Normalization of STLC *)
 
-(* $Date: 2014-04-23 07:36:43 -0400 (Wed, 23 Apr 2014) $ *)
 (* Chapter maintained by Andrew Tolmach *)
 
 (* (Based on TAPL Ch. 12.) *)
@@ -42,7 +41,7 @@ extension to the boolean operators and pairs to the reader.  Even for
 the base calculus, normalization is not entirely trivial to prove,
 since each reduction of a term can duplicate redexes in subterms. *)
 
-(** **** Exercise: 1 star *)
+(** **** Exercise: 1 star  *)
 (** Where do we fail if we attempt to prove normalization by a
 straightforward induction on the size of a well-typed term? *)
 
@@ -1095,3 +1094,4 @@ Proof.
   eapply V_nil.
 Qed.
 
+(** $Date: 2014-12-31 11:17:56 -0500 (Wed, 31 Dec 2014) $ *)

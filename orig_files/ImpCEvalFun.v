@@ -1,7 +1,5 @@
 (** * ImpCEvalFun: Evaluation Function for Imp *)
 
-(* $Date: 2013-07-01 18:48:47 -0400 (Mon, 01 Jul 2013) $ *)
-
 (* #################################### *)
 (** * Evaluation Function *)
 
@@ -176,7 +174,7 @@ Definition test_ceval (st:state) (c:com) :=
    ====>
       Some (2, 0, 4)   *)
 
-(** **** Exercise: 2 stars (pup_to_n) *)
+(** **** Exercise: 2 stars (pup_to_n)  *)
 (** Write an Imp program that sums the numbers from [1] to
    [X] (inclusive: [1 + 2 + ... + X]) in the variable [Y].  Make sure
    your solution satisfies the test that follows. *)
@@ -192,7 +190,7 @@ Proof. reflexivity. Qed.
 *)
 (** [] *)
 
-(** **** Exercise: 2 stars, optional (peven) *)
+(** **** Exercise: 2 stars, optional (peven)  *)
 (** Write a [While] program that sets [Z] to [0] if [X] is even and
     sets [Z] to [1] otherwise.  Use [ceval_test] to test your
     program. *)
@@ -263,7 +261,7 @@ Proof.
           apply E_WhileEnd. 
           rewrite <- Heqr. subst. reflexivity.  Qed.
 
-(** **** Exercise: 4 stars (ceval_step__ceval_inf) *)
+(** **** Exercise: 4 stars (ceval_step__ceval_inf)  *)
 (** Write an informal proof of [ceval_step__ceval], following the
     usual template.  (The template for case analysis on an inductively
     defined value should look the same as for induction, except that
@@ -318,7 +316,7 @@ induction i1 as [|i1']; intros i2 st st' c Hle Hceval.
       SSCase "i1'o = None".
         simpl in Hceval. inversion Hceval.  Qed.
 
-(** **** Exercise: 3 stars (ceval__ceval_step) *)
+(** **** Exercise: 3 stars (ceval__ceval_step)  *)
 (** Finish the following proof.  You'll need [ceval_step_more] in a
     few places, as well as some basic facts about [<=] and [plus]. *)
 
@@ -360,3 +358,6 @@ Proof.
   apply ceval_step_more with (i2 := i1 + i2) in E2.
   rewrite E1 in E2. inversion E2. reflexivity. 
   omega. omega.  Qed.
+
+(** $Date: 2014-12-31 11:17:56 -0500 (Wed, 31 Dec 2014) $ *)
+

@@ -1,6 +1,5 @@
 (** * References: Typing Mutable References *)
 
-(* $Date: 2013-07-17 16:19:11 -0400 (Wed, 17 Jul 2013) $ *)
 
 Require Export Smallstep.
 
@@ -391,7 +390,7 @@ Definition tseq t1 t2 :=
     r2  // yields 1, not 2!
 >>
 *)
-(** **** Exercise: 1 star (store_draw) *)
+(** **** Exercise: 1 star (store_draw)  *)
 (** Draw (on paper) the contents of the store at the point in
     execution where the first two [let]s have finished and the third
     one is about to begin. *)
@@ -444,7 +443,7 @@ Definition tseq t1 t2 :=
     useful, allowing us to define data structures such as mutable
     lists and trees. *)
 
-(** **** Exercise: 2 stars (compact_update) *)
+(** **** Exercise: 2 stars (compact_update)  *)
 (** If we defined [update] more compactly like this
 <<
     update = \a:NatArray. \m:Nat. \v:Nat. 
@@ -501,7 +500,7 @@ would it behave the same? *)
     names for the same storage cell -- one with type [Ref Nat] and the
     other with type [Ref Bool]. *)
 
-(** **** Exercise: 1 star (type_safety_violation) *)
+(** **** Exercise: 1 star (type_safety_violation)  *)
 (** Show how this can lead to a violation of type safety. *)
 
 (* FILL IN HERE *)
@@ -961,7 +960,7 @@ Definition context := partial_map ty.
    [\x:Nat. (!(loc 1)) x, \x:Nat. (!(loc 0)) x]
 >>
 *)
-(** **** Exercise: 2 stars (cyclic_store) *)
+(** **** Exercise: 2 stars (cyclic_store)  *)
 (** Can you find a term whose evaluation will create this particular
     cyclic store? *)
 
@@ -1177,7 +1176,7 @@ Definition store_well_typed (ST:store_ty) (st:store) :=
     typing to the typing relation!  This allows us to type circular
     stores.) *)
 
-(** **** Exercise: 2 stars (store_not_unique) *)
+(** **** Exercise: 2 stars (store_not_unique)  *)
 (** Can you find a store [st], and two
     different store typings [ST1] and [ST2] such that both
     [ST1 |- st] and [ST2 |- st]? *)
@@ -1641,7 +1640,7 @@ Proof with eauto using store_weakening, extends_refl.
       exists ST'...
 Qed.
 
-(** **** Exercise: 3 stars (preservation_informal) *)
+(** **** Exercise: 3 stars (preservation_informal)  *)
 (** Write a careful informal proof of the preservation theorem,
     concentrating on the [T_App], [T_Deref], [T_Assign], and [T_Ref]
     cases. 
@@ -1865,7 +1864,7 @@ Proof with eauto.
   eapply sc_one. compute. apply ST_AppAbs...
 Qed.
 
-(** **** Exercise: 4 stars (factorial_ref) *)
+(** **** Exercise: 4 stars (factorial_ref)  *)
 (** Use the above ideas to implement a factorial function in STLC with
     references.  (There is no need to prove formally that it really
     behaves like the factorial.  Just use the example below to make
@@ -1895,7 +1894,7 @@ Qed.
 (* ################################### *)
 (** * Additional Exercises *)
 
-(** **** Exercise: 5 stars, optional (garabage_collector) *)
+(** **** Exercise: 5 stars, optional (garabage_collector)  *)
 (** Challenge problem: modify our formalization to include an account
     of garbage collection, and prove that it satisfies whatever nice
     properties you can think to prove about it. *)
@@ -1904,3 +1903,5 @@ Qed.
 
 End RefsAndNontermination.
 End STLCRef.
+
+(** $Date: 2014-12-31 11:17:56 -0500 (Wed, 31 Dec 2014) $ *)

@@ -89,7 +89,7 @@ Require Export Imp.
 
 Definition Assertion := state -> Prop.
 
-(** **** Exercise: 1 star, optional (assertions) *)
+(** **** Exercise: 1 star, optional (assertions)  *)
 Module ExAssertions.
 
 (** Paraphrase the following assertions in English. *)
@@ -108,6 +108,9 @@ Definition as6 : Assertion := fun st => False.
 
 End ExAssertions.
 (** [] *)
+
+(* ####################################################### *)
+(** ** Notation for Assertions *)
 
 (** This way of writing assertions can be a little bit heavy,
     for two reasons: (1) every single assertion that we ever write is
@@ -182,7 +185,7 @@ Notation "{{ P }}  c  {{ Q }}" :=
     contexts.  The [Open Scope] tells Coq that this file is one such
     context.) *)
 
-(** **** Exercise: 1 star, optional (triples) *)
+(** **** Exercise: 1 star, optional (triples)  *)
 (** Paraphrase the following Hoare triples in English.
    1) {{True}} c {{X = 5}}
 
@@ -213,7 +216,7 @@ Notation "{{ P }}  c  {{ Q }}" :=
 
 
 
-(** **** Exercise: 1 star, optional (valid_triples) *)
+(** **** Exercise: 1 star, optional (valid_triples)  *)
 (** Which of the following Hoare triples are _valid_ -- i.e., the
     claimed relation between [P], [c], and [Q] is true?
    1) {{True}} X ::= 5 {{X = 5}}
@@ -410,7 +413,7 @@ Example assn_sub_example :
 Proof.
   apply hoare_asgn.  Qed.
 
-(** **** Exercise: 2 stars (hoare_asgn_examples) *)
+(** **** Exercise: 2 stars (hoare_asgn_examples)  *)
 (** Translate these informal Hoare triples...
     1) {{ (X <= 5) [X |-> X + 1] }}
        X ::= X + 1
@@ -419,12 +422,13 @@ Proof.
     2) {{ (0 <= X /\ X <= 5) [X |-> 3] }}
        X ::= 3
        {{ 0 <= X /\ X <= 5 }}
-   ...into formal statements and use [hoare_asgn] to prove them. *)
+   ...into formal statements [assn_sub_ex1, assn_sub_ex2] 
+   and use [hoare_asgn] to prove them. *)
 
 (* FILL IN HERE *)
 (** [] *)
 
-(** **** Exercise: 2 stars (hoare_asgn_wrong) *)
+(** **** Exercise: 2 stars (hoare_asgn_wrong)  *)
 (** The assignment rule looks backward to almost everyone the first
     time they see it.  If it still seems backward to you, it may help
     to think a little about alternative "forward" rules.  Here is a
@@ -439,7 +443,7 @@ Proof.
 (* FILL IN HERE *)
 (** [] *)
 
-(** **** Exercise: 3 stars, advanced (hoare_asgn_fwd) *)
+(** **** Exercise: 3 stars, advanced (hoare_asgn_fwd)  *)
 (** However, using an auxiliary variable [m] to remember the original
     value of [X] we can define a Hoare rule for assignment that does,
     intuitively, "work forwards" rather than backwards.
@@ -467,7 +471,7 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** **** Exercise: 2 stars, advanced (hoare_asgn_fwd_exists) *)
+(** **** Exercise: 2 stars, advanced (hoare_asgn_fwd_exists)  *)
 (** Another way to define a forward rule for assignment is to
     existentially quantify over the previous value of the assigned
     variable.
@@ -707,12 +711,12 @@ Qed.
 
     
 
-(** **** Exercise: 2 stars (hoare_asgn_examples_2) *)
+(** **** Exercise: 2 stars (hoare_asgn_examples_2)  *)
 (** Translate these informal Hoare triples...
        {{ X + 1 <= 5 }}  X ::= X + 1  {{ X <= 5 }}
        {{ 0 <= 3 /\ 3 <= 5 }}  X ::= 3  {{ 0 <= X /\ X <= 5 }}
-   ...into formal statements and use [hoare_asgn] and
-   [hoare_consequence_pre] to prove them. *)
+   ...into formal statements [assn_sub_ex1', assn_sub_ex2'] and 
+   use [hoare_asgn] and [hoare_consequence_pre] to prove them. *)
 
 (* FILL IN HERE *)
 (** [] *)
@@ -790,7 +794,7 @@ Proof.
     [hoare_consequence_pre] in conjunction with the [eapply] tactic,
     as done above. *)
 
-(** **** Exercise: 2 stars (hoare_asgn_example4) *)
+(** **** Exercise: 2 stars (hoare_asgn_example4)  *)
 (** Translate this "decorated program" into a formal proof:
                    {{ True }} ->>
                    {{ 1 = 1 }}
@@ -808,7 +812,7 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** **** Exercise: 3 stars (swap_exercise) *)
+(** **** Exercise: 3 stars (swap_exercise)  *)
 (** Write an Imp program [c] that swaps the values of [X] and [Y]
     and show (in Coq) that it satisfies the following
     specification:
@@ -826,7 +830,7 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** **** Exercise: 3 stars (hoarestate1) *)
+(** **** Exercise: 3 stars (hoarestate1)  *)
 (** Explain why the following proposition can't be proven:
       forall (a : aexp) (n : nat),
          {{fun st => aeval st a = n}}
@@ -998,7 +1002,7 @@ Proof.
     simpl; intros st _. omega.
 Qed.
 
-(** **** Exercise: 2 stars (if_minus_plus) *)
+(** **** Exercise: 2 stars (if_minus_plus)  *)
 (** Prove the following hoare triple using [hoare_if]: *)
 
 Theorem if_minus_plus :
@@ -1014,7 +1018,7 @@ Proof.
 (* ####################################################### *)
 (** *** Exercise: One-sided conditionals *)
 
-(** **** Exercise: 4 stars (if1_hoare) *)
+(** **** Exercise: 4 stars (if1_hoare)  *)
 
 (** In this exercise we consider extending Imp with "one-sided
     conditionals" of the form [IF1 b THEN c FI]. Here [b] is a
@@ -1115,8 +1119,8 @@ Notation "{{ P }}  c  {{ Q }}" := (hoare_triple P c Q)
 
 (* FILL IN HERE *)
 
-(** For full credit, prove formally that your rule is precise enough
-    to show the following valid Hoare triple:
+(** For full credit, prove formally [hoare_if1_good] that your rule is 
+    precise enough to show the following valid Hoare triple:
   {{ X + Y = Z }}
   IF1 Y <> 0 THEN
     X ::= X + Y
@@ -1303,7 +1307,7 @@ Proof.
 
 Module RepeatExercise.
 
-(** **** Exercise: 4 stars, advanced (hoare_repeat) *)
+(** **** Exercise: 4 stars, advanced (hoare_repeat)  *)
 (** In this exercise, we'll add a new command to our language of
     commands: [REPEAT] c [UNTIL] a [END]. You will write the
     evaluation rule for [repeat] and add a new Hoare rule to
@@ -1436,7 +1440,7 @@ End RepeatExercise.
 (* ####################################################### *)
 (** ** Exercise: [HAVOC] *)
 
-(** **** Exercise: 3 stars (himp_hoare) *)
+(** **** Exercise: 3 stars (himp_hoare)  *)
 
 (** In this exercise, we will derive proof rules for the [HAVOC] command
     which we studied in the last chapter. First, we enclose this work
@@ -1569,5 +1573,5 @@ End Himp.
     that programs satisfy specifications of their behavior.
 *)
 
-(* $Date: 2014-02-27 16:56:35 -0500 (Thu, 27 Feb 2014) $ *)
+(** $Date: 2014-12-31 11:17:56 -0500 (Wed, 31 Dec 2014) $ *)
 

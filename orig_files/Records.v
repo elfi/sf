@@ -1,8 +1,5 @@
 (** * Records: Adding Records to STLC *)
 
-(* $Date: 2013-07-17 16:19:11 -0400 (Wed, 17 Jul 2013) $ *)
-
-
 Require Export Stlc.
 
 (* ###################################################################### *)
@@ -382,7 +379,7 @@ Tactic Notation "has_type_cases" tactic(first) ident(c) :=
 (* ###################################################################### *)
 (** ** Examples *)
 
-(** **** Exercise: 2 stars (examples) *)
+(** **** Exercise: 2 stars (examples)  *)
 (** Finish the proofs. *)
 
 (** Feel free to use Coq's automation features in this proof.
@@ -813,4 +810,6 @@ Qed.
 (** [] *)
 
 End STLCExtendedRecords.
+
+(** $Date: 2014-12-31 11:17:56 -0500 (Wed, 31 Dec 2014) $ *)
 

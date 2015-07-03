@@ -11,6 +11,7 @@
     called Imp, embodying a tiny core fragment of conventional
     mainstream languages such as C and Java.  Here is a familiar
     mathematical function written in Imp.
+
      Z ::= X;;
      Y ::= 1;;
      WHILE not (Z = 0) DO
@@ -516,7 +517,7 @@ Proof.
     SCase "ANum". destruct n;
       simpl; rewrite IHa2; reflexivity.  Qed.
 
-(** **** Exercise: 3 stars (optimize_0plus_b) *)
+(** **** Exercise: 3 stars (optimize_0plus_b)  *)
 (** Since the [optimize_0plus] tranformation doesn't change the value
     of [aexp]s, we should be able to apply it to all the [aexp]s that
     appear in a [bexp] without changing the [bexp]'s value.  Write a
@@ -534,7 +535,7 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** **** Exercise: 4 stars, optional (optimizer) *)
+(** **** Exercise: 4 stars, optional (optimizer)  *)
 (** _Design exercise_: The optimization implemented by our
     [optimize_0plus] function is only one of many imaginable
     optimizations on arithmetic and boolean expressions.  Write a more
@@ -571,7 +572,7 @@ Proof.
   intros. omega.
 Qed.
 
-(** Liebniz wrote, "It is unworthy of excellent men to lose
+(** Leibniz wrote, "It is unworthy of excellent men to lose
     hours like slaves in the labor of calculation which could be
     relegated to anyone else if machines were used."  We recommend
     using the omega tactic whenever possible. *)
@@ -683,7 +684,7 @@ Tactic Notation "aevalR_cases" tactic(first) ident(c) :=
 (* ####################################################### *)
 (** ** Inference Rule Notation *)
 
-(** In informal discussions, it is convenient write the rules for
+(** In informal discussions, it is convenient to write the rules for
     [aevalR] and similar relations in the more readable graphical form
     of _inference rules_, where the premises above the line justify
     the conclusion below the line (we have already seen them in the
@@ -804,7 +805,7 @@ Proof.
        try apply IHa1; try apply IHa2; reflexivity.
 Qed.
 
-(** **** Exercise: 3 stars  (bevalR) *)
+(** **** Exercise: 3 stars  (bevalR)  *)
 (** Write a relation [bevalR] in the same style as
     [aevalR], and prove that it is equivalent to [beval].*)
 
@@ -866,8 +867,6 @@ End aevalR_division.
 Module aevalR_extended.
 
 
-(** *** Adding nondeterminism *)
-(* /TERSE *)
 (** Suppose, instead, that we want to extend the arithmetic operations
     by a nondeterministic number generator [any]:*)
 
@@ -950,7 +949,7 @@ Proof.
   Case "x <> x (impossible)". 
     apply ex_falso_quodlibet; apply n; reflexivity. Qed.
 
-(** **** Exercise: 1 star, optional (neq_id) *)
+(** **** Exercise: 1 star, optional (neq_id)  *)
 Lemma neq_id : forall (T:Type) x y (p q:T), x <> y -> 
                (if eq_id_dec x y then p else q) = q. 
 Proof.
@@ -986,14 +985,14 @@ Definition update (st : state) (x : id) (n : nat) : state :=
 (** For proofs involving states, we'll need several simple properties
     of [update]. *)
 
-(** **** Exercise: 1 star (update_eq) *)
+(** **** Exercise: 1 star (update_eq)  *)
 Theorem update_eq : forall n x st,
   (update st x n) x = n.
 Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** **** Exercise: 1 star (update_neq) *)
+(** **** Exercise: 1 star (update_neq)  *)
 Theorem update_neq : forall x2 x1 n st,
   x2 <> x1 ->                        
   (update st x2 n) x1 = (st x1).
@@ -1001,7 +1000,7 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** **** Exercise: 1 star (update_example) *)
+(** **** Exercise: 1 star (update_example)  *)
 (** Before starting to play with tactics, make sure you understand
     exactly what the theorem is saying! *)
 
@@ -1011,14 +1010,14 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** **** Exercise: 1 star (update_shadow) *)
+(** **** Exercise: 1 star (update_shadow)  *)
 Theorem update_shadow : forall n1 n2 x1 x2 (st : state),
    (update  (update st x2 n1) x2 n2) x1 = (update st x2 n2) x1.
 Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** **** Exercise: 2 stars (update_same) *)
+(** **** Exercise: 2 stars (update_same)  *)
 Theorem update_same : forall n1 x1 x2 (st : state),
   st x1 = n1 ->
   (update st x1 n1) x2 = st x2.
@@ -1026,7 +1025,7 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** **** Exercise: 3 stars (update_permute) *)
+(** **** Exercise: 3 stars (update_permute)  *)
 Theorem update_permute : forall n1 n2 x1 x2 x3 st,
   x2 <> x1 -> 
   (update (update st x2 n1) x1 n2) x3 = (update (update st x1 n2) x2 n1) x3.
@@ -1407,7 +1406,7 @@ Proof.
       reflexivity.
       apply E_Ass. reflexivity.  Qed.
 
-(** **** Exercise: 2 stars (ceval_example2) *)
+(** **** Exercise: 2 stars (ceval_example2)  *)
 Example ceval_example2:
     (X ::= ANum 0;; Y ::= ANum 1;; Z ::= ANum 2) / empty_state ||
     (update (update (update empty_state X 0) Y 1) Z 2).
@@ -1415,7 +1414,7 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** **** Exercise: 3 stars, advanced (pup_to_n) *)
+(** **** Exercise: 3 stars, advanced (pup_to_n)  *)
 (** Write an Imp program that sums the numbers from [1] to
    [X] (inclusive: [1 + 2 + ... + X]) in the variable [Y].
    Prove that this program executes as intended for X = 2
@@ -1489,6 +1488,7 @@ Proof.
       subst st'0.
       apply IHE1_2. assumption.  Qed.
 
+
 (* ####################################################### *)
 (** * Reasoning About Imp Programs *)
 
@@ -1511,13 +1511,13 @@ Proof.
   inversion Heval. subst. clear Heval. simpl.
   apply update_eq.  Qed.
 
-(** **** Exercise: 3 stars (XtimesYinZ_spec) *)
+(** **** Exercise: 3 stars (XtimesYinZ_spec)  *)
 (** State and prove a specification of [XtimesYinZ]. *)
 
 (* FILL IN HERE *)
 (** [] *)
 
-(** **** Exercise: 3 stars (loop_never_stops) *)
+(** **** Exercise: 3 stars (loop_never_stops)  *)
 Theorem loop_never_stops : forall st st',
   ~(loop / st || st').
 Proof.
@@ -1530,7 +1530,7 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** **** Exercise: 3 stars (no_whilesR) *)
+(** **** Exercise: 3 stars (no_whilesR)  *)
 (** Consider the definition of the [no_whiles] property below: *)
 
 Fixpoint no_whiles (c : com) : bool :=
@@ -1558,9 +1558,9 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** **** Exercise: 4 stars (no_whiles_terminating) *)
+(** **** Exercise: 4 stars (no_whiles_terminating)  *)
 (** Imp programs that don't involve while loops always terminate.
-    State and prove a theorem that says this. *)
+    State and prove a theorem [no_whiles_terminating] that says this. *)
 (** (Use either [no_whiles] or [no_whilesR], as you prefer.) *)
 
 (* FILL IN HERE *)
@@ -1569,7 +1569,7 @@ Proof.
 (* ####################################################### *)
 (** * Additional Exercises *)
 
-(** **** Exercise: 3 stars (stack_compiler) *)
+(** **** Exercise: 3 stars (stack_compiler)  *)
 (** HP Calculators, programming languages like Forth and Postscript,
     and abstract machines like the Java Virtual Machine all evaluate
     arithmetic expressions using a stack. For instance, the expression
@@ -1651,20 +1651,18 @@ Example s_execute2 :
 Fixpoint s_compile (e : aexp) : list sinstr :=
 (* FILL IN HERE *) admit.
 
-(** After you've defined [s_compile], uncomment the following to test
+(** After you've defined [s_compile], prove the following to test
     that it works. *)
 
-(* 
 Example s_compile1 :
     s_compile (AMinus (AId X) (AMult (ANum 2) (AId Y)))
   = [SLoad X; SPush 2; SLoad Y; SMult; SMinus].
-Proof. reflexivity. Qed.
-*)
+(* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** **** Exercise: 3 stars, advanced (stack_compiler_correct) *)
+(** **** Exercise: 3 stars, advanced (stack_compiler_correct)  *)
 (** The task of this exercise is to prove the correctness of the
-    calculator implemented in the previous exercise.  Remember that
+    compiler implemented in the previous exercise.  Remember that
     the specification left unspecified what to do when encountering an
     [SPlus], [SMinus], or [SMult] instruction if the stack contains
     less than two elements.  (In order to make your correctness proof
@@ -1683,7 +1681,7 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** **** Exercise: 5 stars, advanced (break_imp) *)
+(** **** Exercise: 5 stars, advanced (break_imp)  *)
 Module BreakImp.
 
 (** Imperative languages such as C or Java often have a [break] or
@@ -1712,7 +1710,7 @@ Notation "'BREAK'" :=
   CBreak.
 Notation "x '::=' a" :=
   (CAss x a) (at level 60).
-Notation "c1 ; c2" :=
+Notation "c1 ;; c2" :=
   (CSeq c1 c2) (at level 80, right associativity).
 Notation "'WHILE' b 'DO' c 'END'" :=
   (CWhile b c) (at level 80, right associativity).
@@ -1731,13 +1729,13 @@ Notation "'IFB' c1 'THEN' c2 'ELSE' c3 'FI'" :=
     enclosing a given [BREAK]. In those cases, [BREAK] should only
     terminate the _innermost_ loop where it occurs. Thus, after
     executing the following piece of code...
-   X ::= 0;
-   Y ::= 1;
+   X ::= 0;;
+   Y ::= 1;;
    WHILE 0 <> Y DO
      WHILE TRUE DO
        BREAK
-     END;
-     X ::= 1;
+     END;;
+     X ::= 1;;
      Y ::= Y - 1
    END
     ... the value of [X] should be [1], and not [0].
@@ -1816,7 +1814,7 @@ Tactic Notation "ceval_cases" tactic(first) ident(c) :=
 (** Now the following properties of your definition of [ceval]: *)
 
 Theorem break_ignore : forall c st st' s,
-     (BREAK; c) / st || s / st' ->
+     (BREAK;; c) / st || s / st' ->
      st = st'.
 Proof.
   (* FILL IN HERE *) Admitted.
@@ -1834,7 +1832,7 @@ Theorem while_stops_on_break : forall b c st st',
 Proof.
   (* FILL IN HERE *) Admitted.
 
-(** **** Exercise: 3 stars, advanced, optional (while_break_true) *)
+(** **** Exercise: 3 stars, advanced, optional (while_break_true)  *)
 Theorem while_break_true : forall b c st st',
   (WHILE b DO c END) / st || SContinue / st' ->
   beval st' b = true ->
@@ -1842,7 +1840,7 @@ Theorem while_break_true : forall b c st st',
 Proof.
 (* FILL IN HERE *) Admitted.
 
-(** **** Exercise: 4 stars, advanced, optional (ceval_deterministic) *)
+(** **** Exercise: 4 stars, advanced, optional (ceval_deterministic)  *)
 Theorem ceval_deterministic: forall (c:com) st st1 st2 s1 s2,
      c / st || s1 / st1  ->
      c / st || s2 / st2 ->
@@ -1853,7 +1851,7 @@ Proof.
 End BreakImp.
 (** [] *)
 
-(** **** Exercise: 3 stars, optional (short_circuit) *)
+(** **** Exercise: 3 stars, optional (short_circuit)  *)
 (** Most modern programming languages use a "short-circuit" evaluation
     rule for boolean [and]: to evaluate [BAnd b1 b2], first evaluate
     [b1].  If it evaluates to [false], then the entire [BAnd]
@@ -1868,7 +1866,7 @@ End BreakImp.
 (* FILL IN HERE *)
 (** [] *)
 
-(** **** Exercise: 4 stars, optional (add_for_loop) *)
+(** **** Exercise: 4 stars, optional (add_for_loop)  *)
 (** Add C-style [for] loops to the language of commands, update the
     [ceval] definition to define the semantics of [for] loops, and add
     cases for [for] loops as needed so that all the proofs in this file
@@ -1886,5 +1884,5 @@ End BreakImp.
 (** [] *)
 
 
-(* <$Date: 2014-02-22 09:43:41 -0500 (Sat, 22 Feb 2014) $ *)
+(* <$Date: 2014-12-26 15:20:26 -0500 (Fri, 26 Dec 2014) $ *)
 

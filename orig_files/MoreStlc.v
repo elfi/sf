@@ -602,7 +602,7 @@ if 3=0 then 1 else 3 * (fix F (pred 3))
 *)
 
 
-(** **** Exercise: 1 star (halve_fix) *)
+(** **** Exercise: 1 star, optional (halve_fix)  *)
 (** Translate this informal recursive definition into one using [fix]:
 <<
    halve = 
@@ -615,7 +615,7 @@ if 3=0 then 1 else 3 * (fix F (pred 3))
 []
 *)
 
-(** **** Exercise: 1 star (fact_steps) *)
+(** **** Exercise: 1 star, optional (fact_steps)  *)
 (** Write down the sequence of steps that the term [fact 1] goes
     through to reduce to a normal form (assuming the usual reduction
     rules for arithmetic operations).
@@ -699,7 +699,8 @@ if 3=0 then 1 else 3 * (fix F (pred 3))
    number of these," and we've omitted explicit mention of the usual
    side-condition that the labels of a record should not contain
    repetitions. *)
-(* It is possible to devise informal notations that are
+
+(** It is possible to devise informal notations that are
    more precise, but these tend to be quite heavy and to obscure the
    main points of the definitions.  So we'll leave these a bit loose
    here (they are informal anyway, after all) and do the work of
@@ -865,7 +866,7 @@ if 3=0 then 1 else 3 * (fix F (pred 3))
 (* ###################################################################### *)
 (** * Exercise: Formalizing the Extensions *)
 
-(** **** Exercise: 4 stars, advanced (STLC_extensions) *)
+(** **** Exercise: 4 stars, optional (STLC_extensions)  *)
 (** In this problem you will formalize a couple of the extensions
     described above.  We've provided the necessary additions to the
     syntax of terms and types, and we've included a few examples that
@@ -2229,6 +2230,6 @@ Qed.
 
 End STLCExtended.
 
-(* $Date: 2013-12-03 07:45:41 -0500 (Tue, 03 Dec 2013) $ *)
+(* $Date: 2014-12-01 15:15:02 -0500 (Mon, 01 Dec 2014) $ *)
 
 

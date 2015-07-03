@@ -1,6 +1,5 @@
 (** * UseTactics: Tactic Library for Coq: A Gentle Introduction *)
 
-(* $Date: 2013-07-17 16:19:11 -0400 (Wed, 17 Jul 2013) $ *)
 (* Chapter maintained by Arthur Chargueraud *)
 
 (** Coq comes with a set of builtin tactics, such as [reflexivity],
@@ -1064,3 +1063,5 @@ End ExamplesInstantiations.
     http://www.chargueraud.org/softs/tlc/ .
 
 *)
+
+(** $Date: 2014-12-31 11:17:56 -0500 (Wed, 31 Dec 2014) $ *)

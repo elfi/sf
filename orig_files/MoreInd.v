@@ -66,7 +66,7 @@ Proof.
     realize that, modulo this little bit of bookkeeping, applying
     [nat_ind] is what we are really doing. *)
 
-(** **** Exercise: 2 stars, optional (plus_one_r') *)
+(** **** Exercise: 2 stars, optional (plus_one_r')  *)
 (** Complete this proof as we did [mult_0_r'] above, without using
     the [induction] tactic. *)
 
@@ -108,7 +108,7 @@ Check yesno_ind.
                       P no  ->
                       forall y : yesno, P y *)
 
-(** **** Exercise: 1 star, optional (rgb) *)
+(** **** Exercise: 1 star, optional (rgb)  *)
 (** Write out the induction principle that Coq will generate for the
     following datatype.  Write down your answer on paper or type it
     into a comment, and then compare it with what Coq prints. *)
@@ -135,7 +135,7 @@ Check natlist_ind.
          (forall (n : nat) (l : natlist), P l -> P (ncons n l)) ->
          forall n : natlist, P n *)
 
-(** **** Exercise: 1 star, optional (natlist1) *)
+(** **** Exercise: 1 star, optional (natlist1)  *)
 (** Suppose we had written the above definition a little
    differently: *)
 
@@ -163,7 +163,7 @@ Inductive natlist1 : Type :=
 
 
 
-(** **** Exercise: 1 star, optional (byntree_ind) *)
+(** **** Exercise: 1 star, optional (byntree_ind)  *)
 (** Write out the induction principle that Coq will generate for the
     following datatype.  Write down your answer on paper or type it
     into a comment, and then compare it with what Coq prints. *)
@@ -175,7 +175,7 @@ Inductive byntree : Type :=
 (** [] *)
 
 
-(** **** Exercise: 1 star, optional (ex_set) *)
+(** **** Exercise: 1 star, optional (ex_set)  *)
 (** Here is an induction principle for an inductively defined
     set.
       ExSet_ind :
@@ -213,7 +213,7 @@ Inductive ExSet : Type :=
    applied to a type [X], gives us back an induction principle
    specialized to the type [list X]. *)
 
-(** **** Exercise: 1 star, optional (tree) *)
+(** **** Exercise: 1 star, optional (tree)  *)
 (** Write out the induction principle that Coq will generate for
    the following datatype.  Compare your answer with what Coq
    prints. *)
@@ -224,7 +224,7 @@ Inductive tree (X:Type) : Type :=
 Check tree_ind.
 (** [] *)
 
-(** **** Exercise: 1 star, optional (mytype) *)
+(** **** Exercise: 1 star, optional (mytype)  *)
 (** Find an inductive definition that gives rise to the
     following induction principle:
       mytype_ind :
@@ -237,7 +237,7 @@ Check tree_ind.
 *) 
 (** [] *)
 
-(** **** Exercise: 1 star, optional (foo) *)
+(** **** Exercise: 1 star, optional (foo)  *)
 (** Find an inductive definition that gives rise to the
     following induction principle:
       foo_ind :
@@ -250,7 +250,7 @@ Check tree_ind.
 *) 
 (** [] *)
 
-(** **** Exercise: 1 star, optional (foo') *)
+(** **** Exercise: 1 star, optional (foo')  *)
 (** Consider the following inductive definition: *)
 
 Inductive foo' (X:Type) : Type :=
@@ -400,7 +400,7 @@ Proof.
   Case "m = S m'". simpl. rewrite <- IHm'.
     rewrite <- plus_n_Sm. reflexivity.  Qed.
 
-(** **** Exercise: 1 star, optional (plus_explicit_prop) *)
+(** **** Exercise: 1 star, optional (plus_explicit_prop)  *)
 (** Rewrite both [plus_assoc'] and [plus_comm'] and their proofs in
     the same style as [mult_0_r''] above -- that is, for each theorem,
     give an explicit [Definition] of the proposition being proved by
@@ -637,19 +637,17 @@ Admitted.
 
 
 (* ##################################################### *)
-(** * Optional Material *)
+(** * Induction Principles in [Prop] (Advanced) *)
 
 (** The remainder of this chapter offers some additional details on
-    how induction works in Coq, the process of building proof
-    trees, and the "trusted computing base" that underlies
-    Coq proofs.  It can safely be skimmed on a first reading.  (We
-    recommend skimming rather than skipping over it outright: it
-    answers some questions that occur to many Coq users at some point,
-    so it is useful to have a rough idea of what's here.) *)
+    how induction works in Coq, the process of building proof trees,
+    and the "trusted computing base" that underlies Coq proofs.  It
+    can safely be skimmed on a first reading.  (As with the other
+    advanced sections, we recommend skimming rather than skipping over
+    it outright: it answers some questions that occur to many Coq
+    users at some point, so it is useful to have a rough idea of
+    what's here.) *)
 
-
-(* ##################################################### *)
-(** ** Induction Principles in [Prop] *)
 
 
 (** Earlier, we looked in detail at the induction principles that Coq
@@ -821,7 +819,7 @@ Check le_ind.
 (* ##################################################### *)
 (** * Additional Exercises *)
 
-(** **** Exercise: 2 stars, optional (foo_ind_principle) *)
+(** **** Exercise: 2 stars, optional (foo_ind_principle)  *)
 (** Suppose we make the following inductive definition:
    Inductive foo (X : Set) (Y : Set) : Set :=
      | foo1 : X -> foo X Y
@@ -839,7 +837,7 @@ Check le_ind.
 *)
 (** [] *)
 
-(** **** Exercise: 2 stars, optional (bar_ind_principle) *)
+(** **** Exercise: 2 stars, optional (bar_ind_principle)  *)
 (** Consider the following induction principle:
    bar_ind
         : forall P : bar -> Prop,
@@ -856,7 +854,7 @@ Check le_ind.
 *)
 (** [] *)
 
-(** **** Exercise: 2 stars, optional (no_longer_than_ind) *)
+(** **** Exercise: 2 stars, optional (no_longer_than_ind)  *)
 (** Given the following inductively defined proposition:
   Inductive no_longer_than (X : Set) : (list X) -> nat -> Prop :=
     | nlt_nil  : forall n, no_longer_than X [] n
@@ -899,7 +897,11 @@ Inductive eq' (X:Type) (x:X) : X -> Prop :=
     principle that Coq derives for it is precisely the familiar
     principle of _Leibniz equality_: what we mean when we say "[x] and
     [y] are equal" is that every property on [P] that is true of [x]
-    is also true of [y].  *)
+    is also true of [y].  (One philosophical quibble should be noted,
+    though: Here, the "Leibniz equality principle" is a _consequence_
+    of the way we've defined equality as an inductive type.  Leibniz
+    viewed things exactly the other way around: for him, this
+    principle itself _is the definition_ of equality.) *)
 
 Check eq'_ind.
 (* ===> 
@@ -918,13 +920,13 @@ Check eq'_ind.
     principles for [Inductive]ly defined propositions, which we
     discussed above.  You try first: *)
 
-(** **** Exercise: 1 star, optional (and_ind_principle) *)
+(** **** Exercise: 1 star, optional (and_ind_principle)  *)
 (** See if you can predict the induction principle for conjunction. *)
 
 (* Check and_ind. *)
 (** [] *)
 
-(** **** Exercise: 1 star, optional (or_ind_principle) *)
+(** **** Exercise: 1 star, optional (or_ind_principle)  *)
 (** See if you can predict the induction principle for disjunction. *)
 
 (* Check or_ind. *)
@@ -964,7 +966,7 @@ Check and_ind.
 ]] 
 *)
 
-(** **** Exercise: 1 star, optional (False_ind_principle) *)
+(** **** Exercise: 1 star, optional (False_ind_principle)  *)
 (** Can you predict the induction principle for falsehood? *)
 
 (* Check False_ind. *)
@@ -1153,6 +1155,6 @@ Qed.
     scratch.  Only lemmas whose proofs pass the type-checker can be
     used in further proof developments.  *)
 
-(* $Date: 2014-06-05 07:22:21 -0400 (Thu, 05 Jun 2014) $ *)
+(** $Date: 2014-12-31 15:31:47 -0500 (Wed, 31 Dec 2014) $ *)
 
 

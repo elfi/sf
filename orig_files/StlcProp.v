@@ -122,7 +122,7 @@ Proof with eauto.
       inversion H as [t1' Hstp]. exists (tif t1' t2 t3)...
 Qed.
 
-(** **** Exercise: 3 stars, optional (progress_from_term_ind) *)
+(** **** Exercise: 3 stars, optional (progress_from_term_ind)  *)
 (** Show that progress can also be proved by induction on terms
     instead of induction on typing derivations. *)
 
@@ -276,7 +276,7 @@ Qed.
 (** Next, we'll need the fact that any term [t] which is well typed in
     the empty context is closed -- that is, it has no free variables. *)
 
-(** **** Exercise: 2 stars, optional (typable_empty__closed) *)
+(** **** Exercise: 2 stars, optional (typable_empty__closed)  *)
 Corollary typable_empty__closed : forall t T, 
     empty |- t \in T  ->
     closed t.
@@ -543,7 +543,7 @@ Proof with eauto.
       inversion HT1...  
 Qed.
 
-(** **** Exercise: 2 stars (subject_expansion_stlc) *)
+(** **** Exercise: 2 stars (subject_expansion_stlc)  *)
 (** An exercise in the [Types] chapter asked about the subject
     expansion property for the simple language of arithmetic and
     boolean expressions.  Does this property hold for STLC?  That is,
@@ -559,7 +559,7 @@ Qed.
 (* ###################################################################### *)
 (** * Type Soundness *)
 
-(** **** Exercise: 2 stars, optional (type_soundness) *)
+(** **** Exercise: 2 stars, optional (type_soundness)  *)
 
 (** Put progress and preservation together and show that a well-typed
     term can _never_ reach a stuck state.  *)
@@ -580,7 +580,7 @@ Proof.
 (* ###################################################################### *)
 (** * Uniqueness of Types *)
 
-(** **** Exercise: 3 stars (types_unique) *)
+(** **** Exercise: 3 stars (types_unique)  *)
 (** Another pleasant property of the STLC is that types are
     unique: a given term (in a given context) has at most one
     type. *)
@@ -592,13 +592,13 @@ Proof.
 (* ###################################################################### *)
 (** * Additional Exercises *)
 
-(** **** Exercise: 1 star (progress_preservation_statement) *)
+(** **** Exercise: 1 star (progress_preservation_statement)  *)
 (** Without peeking, write down the progress and preservation
     theorems for the simply typed lambda-calculus. *)
 (** [] *)
 
 
-(** **** Exercise: 2 stars (stlc_variation1) *)
+(** **** Exercise: 2 stars (stlc_variation1)  *)
 (** Suppose we add a new term [zap] with the following reduction rule:
                          ---------                  (ST_Zap)
                          t ==> zap
@@ -619,7 +619,7 @@ and the following typing rule:
 []
 *)
 
-(** **** Exercise: 2 stars (stlc_variation2) *)
+(** **** Exercise: 2 stars (stlc_variation2)  *)
 (** Suppose instead that we add a new term [foo] with the following reduction rules:
                        -----------------                (ST_Foo1)
                        (\x:A. x) ==> foo 
@@ -640,7 +640,7 @@ and the following typing rule:
 []
 *)
 
-(** **** Exercise: 2 stars (stlc_variation3) *)
+(** **** Exercise: 2 stars (stlc_variation3)  *)
 (** Suppose instead that we remove the rule [ST_App1] from the [step]
     relation. Which of the following properties of the STLC remain
     true in the presence of this rule?  For each one, write either
@@ -656,7 +656,7 @@ and the following typing rule:
 []
 *)
 
-(** **** Exercise: 2 stars, optional (stlc_variation4) *)
+(** **** Exercise: 2 stars, optional (stlc_variation4)  *)
 (** Suppose instead that we add the following new rule to the reduction relation:
             ----------------------------------        (ST_FunnyIfTrue)
             (if true then t1 else t2) ==> true
@@ -673,7 +673,7 @@ and the following typing rule:
 
 *)
 
-(** **** Exercise: 2 stars, optional (stlc_variation5) *)
+(** **** Exercise: 2 stars, optional (stlc_variation5)  *)
 (** Suppose instead that we add the following new rule to the typing relation:
                  Gamma |- t1 \in Bool->Bool->Bool
                      Gamma |- t2 \in Bool
@@ -692,7 +692,7 @@ and the following typing rule:
 
 *)
 
-(** **** Exercise: 2 stars, optional (stlc_variation6) *)
+(** **** Exercise: 2 stars, optional (stlc_variation6)  *)
 (** Suppose instead that we add the following new rule to the typing relation:
                      Gamma |- t1 \in Bool
                      Gamma |- t2 \in Bool
@@ -711,7 +711,7 @@ and the following typing rule:
 
 *)
 
-(** **** Exercise: 2 stars, optional (stlc_variation7) *)
+(** **** Exercise: 2 stars, optional (stlc_variation7)  *)
 (** Suppose we add the following new rule to the typing
     relation of the STLC:
                          ------------------- (T_FunnyAbs)
@@ -770,7 +770,7 @@ Tactic Notation "t_cases" tactic(first) ident(c) :=
   | Case_aux c "tsucc" | Case_aux c "tpred"
   | Case_aux c "tmult" | Case_aux c "tif0" ].
 
-(** **** Exercise: 4 stars (stlc_arith) *)
+(** **** Exercise: 4 stars (stlc_arith)  *)
 (** Finish formalizing the definition and properties of the STLC extended
     with arithmetic.  Specifically:
 
@@ -790,5 +790,5 @@ Tactic Notation "t_cases" tactic(first) ident(c) :=
 
 End STLCArith.
 
-(* $Date: 2014-04-23 09:37:37 -0400 (Wed, 23 Apr 2014) $ *)
+(** $Date: 2014-12-31 11:17:56 -0500 (Wed, 31 Dec 2014) $ *)
 

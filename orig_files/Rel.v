@@ -1,21 +1,19 @@
 (** * Rel: Properties of Relations *)
 
-(* $Date: 2013-04-01 09:15:45 -0400 (Mon, 01 Apr 2013) $ *)
-
 Require Export SfLib.
 
-(** A (binary) _relation_ is just a parameterized proposition. As you know
-    from your undergraduate discrete math course, there are a lot of
-    ways of discussing and describing relations _in general_ -- ways
-    of classifying relations (are they reflexive, transitive, etc.),
-    theorems that can be proved generically about classes of
-    relations, constructions that build one relation from another,
-    etc.  Let us pause here to review a few that will be useful in
-    what follows. *)
+(** This short, optional chapter develops some basic definitions and a
+    few theorems about binary relations in Coq.  The key definitions
+    are repeated where they are actually used (in the [Smallstep]
+    chapter), so readers who are already comfortable with these ideas
+    can safely skim or skip this chapter.  However, relations are also
+    a good source of exercises for developing facility with Coq's
+    basic reasoning facilities, so it may be useful to look at it just
+    after the [Logic] chapter. *)
 
-(** A (binary) relation _on_ a set [X] is a proposition parameterized by two
-    [X]s -- i.e., it is a logical assertion involving two values from
-    the set [X].  *)
+(** A (binary) _relation_ on a set [X] is a family of propositions
+    parameterized by two elements of [X] -- i.e., a proposition about
+    pairs of elements of [X].  *)
 
 Definition relation (X: Type) := X->X->Prop.
 
@@ -33,16 +31,21 @@ Definition relation (X: Type) := X->X->Prop.
     relation which we usually write like this [n1 <= n2]. *)
 
 Print le.
-(* ====>
-Inductive le (n : nat) : nat -> Prop :=
-    le_n : n <= n
-  | le_S : forall m : nat, n <= m -> n <= S m
-*)
+(* ====> Inductive le (n : nat) : nat -> Prop :=
+             le_n : n <= n
+           | le_S : forall m : nat, n <= m -> n <= S m *)
 Check le : nat -> nat -> Prop.
 Check le : relation nat.
 
 (* ######################################################### *)
 (** * Basic Properties of Relations *)
+
+(** As anyone knows who has taken an undergraduate discrete math
+    course, there is a lot to be said about relations in general --
+    ways of classifying relations (are they reflexive, transitive,
+    etc.), theorems that can be proved generically about classes of
+    relations, constructions that build one relation from another,
+    etc.  For example... *)
 
 (** A relation [R] on a set [X] is a _partial function_ if, for every
     [x], there is at most one [y] such that [R x y] -- i.e., if [R x
@@ -51,14 +54,12 @@ Check le : relation nat.
 Definition partial_function {X: Type} (R: relation X) :=
   forall x y1 y2 : X, R x y1 -> R x y2 -> y1 = y2. 
 
-(** For example, the [next_nat] relation defined in Logic.v is a
-    partial function. *)
+(** For example, the [next_nat] relation defined earlier is a partial
+    function. *)
 
-(* Print next_nat.
-(* ====>
-Inductive next_nat (n : nat) : nat -> Prop := 
-  nn : next_nat n (S n)
-*)
+Print next_nat.
+(* ====> Inductive next_nat (n : nat) : nat -> Prop := 
+           nn : next_nat n (S n) *)
 Check next_nat : relation nat.
 
 Theorem next_nat_partial_function : 
@@ -67,14 +68,13 @@ Proof.
   unfold partial_function.
   intros x y1 y2 H1 H2.
   inversion H1. inversion H2.
-  reflexivity.  Qed. *)
+  reflexivity.  Qed. 
 
 (** However, the [<=] relation on numbers is not a partial function.
-
-    This can be shown by contradiction.  In short: Assume, for a
-    contradiction, that [<=] is a partial function.  But then, since
-    [0 <= 0] and [0 <= 1], it follows that [0 = 1].  This is nonsense,
-    so our assumption was contradictory. *)
+    In short: Assume, for a contradiction, that [<=] is a partial
+    function.  But then, since [0 <= 0] and [0 <= 1], it follows that
+    [0 = 1].  This is nonsense, so our assumption was
+    contradictory. *)
 
 Theorem le_not_a_partial_function :
   ~ (partial_function le).
@@ -87,15 +87,15 @@ Proof.
      apply le_S. apply le_n. 
   inversion Nonsense.   Qed.
 
-(** **** Exercise: 2 stars, optional *)
-(** Show that the [total_relation] defined in Logic.v is not a partial
+(** **** Exercise: 2 stars, optional  *)
+(** Show that the [total_relation] defined in earlier is not a partial
     function. *)
 
 (* FILL IN HERE *)
 (** [] *)
 
-(** **** Exercise: 2 stars, optional *)
-(** Show that the [empty_relation] defined in Logic.v is a partial
+(** **** Exercise: 2 stars, optional  *)
+(** Show that the [empty_relation] defined earlier is a partial
     function. *)
 
 (* FILL IN HERE *)
@@ -136,7 +136,7 @@ Proof.
   apply Hnm.
   apply Hmo. Qed.
 
-(** **** Exercise: 2 stars, optional *)
+(** **** Exercise: 2 stars, optional  *)
 (** We can also prove [lt_trans] more laboriously by induction,
     without using le_trans.  Do this.*)
 
@@ -150,7 +150,7 @@ Proof.
     (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** **** Exercise: 2 stars, optional *)
+(** **** Exercise: 2 stars, optional  *)
 (** Prove the same thing again by induction on [o]. *)
 
 Theorem lt_trans'' :
@@ -172,14 +172,14 @@ Proof.
     apply le_S. apply le_n.
     apply H.  Qed.
 
-(** **** Exercise: 1 star, optional *)
+(** **** Exercise: 1 star, optional  *)
 Theorem le_S_n : forall n m,
   (S n <= S m) -> (n <= m).
 Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** **** Exercise: 2 stars, optional (le_Sn_n_inf) *)
+(** **** Exercise: 2 stars, optional (le_Sn_n_inf)  *)
 (** Provide an informal proof of the following theorem:
  
     Theorem: For every [n], [~(S n <= n)]
@@ -192,7 +192,7 @@ Proof.
     []
  *)
 
-(** **** Exercise: 1 star, optional *)
+(** **** Exercise: 1 star, optional  *)
 Theorem le_Sn_n : forall n,
   ~ (S n <= n).
 Proof.
@@ -208,7 +208,7 @@ Proof.
 Definition symmetric {X: Type} (R: relation X) :=
   forall a b : X, (R a b) -> (R b a).
 
-(** **** Exercise: 2 stars, optional *)
+(** **** Exercise: 2 stars, optional  *)
 Theorem le_not_symmetric :
   ~ (symmetric le).
 Proof.
@@ -222,14 +222,14 @@ Proof.
 Definition antisymmetric {X: Type} (R: relation X) :=
   forall a b : X, (R a b) -> (R b a) -> a = b.
 
-(** **** Exercise: 2 stars, optional *)
+(** **** Exercise: 2 stars, optional  *)
 Theorem le_antisymmetric :
   antisymmetric le.
 Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** **** Exercise: 2 stars, optional *)
+(** **** Exercise: 2 stars, optional  *)
 Theorem le_step : forall n m p,
   n < m ->
   m <= S p ->
@@ -325,8 +325,8 @@ Inductive refl_step_closure {X:Type} (R: relation X) : relation X :=
     other chapters.) *)
 
 (** (The following [Tactic Notation] definitions are explained in
-    Imp.v.  You can ignore them if you haven't read that chapter
-    yet.) *)
+    another chapter.  You can ignore them if you haven't read the
+    explanation yet.) *)
 
 Tactic Notation "rt_cases" tactic(first) ident(c) :=
   first;
@@ -355,7 +355,7 @@ Proof.
   intros X R x y H.
   apply rsc_step with y. apply H. apply rsc_refl.   Qed.
 
-(** **** Exercise: 2 stars, optional (rsc_trans) *)
+(** **** Exercise: 2 stars, optional (rsc_trans)  *)
 Theorem rsc_trans :
   forall (X:Type) (R: relation X) (x y z : X),
       refl_step_closure R x y  ->
@@ -369,7 +369,7 @@ Proof.
     reflexive, transitive closure do indeed define the same
     relation. *)
 
-(** **** Exercise: 3 stars, optional (rtc_rsc_coincide) *)
+(** **** Exercise: 3 stars, optional (rtc_rsc_coincide)  *)
 Theorem rtc_rsc_coincide : 
          forall (X:Type) (R: relation X) (x y : X),
   clos_refl_trans R x y <-> refl_step_closure R x y.
@@ -377,3 +377,4 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
+(** $Date: 2014-12-31 15:31:47 -0500 (Wed, 31 Dec 2014) $ *)

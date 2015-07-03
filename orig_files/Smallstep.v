@@ -3,7 +3,6 @@
 Require Export Imp.
 
 
-
 (** The evaluators we have seen so far (e.g., the ones for
     [aexp]s, [bexp]s, and commands) have been formulated in a
     "big-step" style -- they specify how a given expression can be
@@ -191,7 +190,7 @@ Example test_step_1 :
 Proof.
   apply ST_Plus1. apply ST_PlusConstConst.  Qed.
 
-(** **** Exercise: 1 star (test_step_2) *)
+(** **** Exercise: 1 star (test_step_2)  *)
 (** Right-hand sides of sums can take a step only when the
     left-hand side is finished: if [t2] can take a step to [t2'],
     then [P (C n) t2] steps to [P (C n)
@@ -220,7 +219,10 @@ Proof.
 (** * Relations *)
 
 (** We will be using several different step relations, so it is
-    helpful to generalize a bit... *)
+    helpful to generalize a bit and state a few definitions and
+    theorems about relations in general.  (The optional chapter
+    [Rel.v] develops some of these ideas in a bit more detail; it may
+    be useful if the treatment here is too dense.) *)
 
 (** A (binary) _relation_ on a set [X] is a family of propositions
     parameterized by two elements of [X] -- i.e., a proposition about
@@ -291,7 +293,39 @@ Proof.
       SCase "ST_Plus1". inversion H2.
       SCase "ST_Plus2".
         rewrite <- (IHHy1 t2'0).
-        reflexivity. assumption.  Qed.
+        reflexivity. assumption.  
+Qed.
+
+(** There is some annoying repetition in this proof.
+    Each use of [inversion Hy2] results in three subcases, 
+    only one of which is relevant (the one which matches the 
+    current case in the induction on [Hy1]). The other two
+    subcases need to be dismissed by finding the contradiction
+    among the hypotheses and doing inversion on it.
+
+    There is a tactic called [solve by inversion] defined in [SfLib.v]
+    that can be of use in such cases. It will solve the goal if it
+    can be solved by inverting some hypothesis; otherwise, it fails.
+    (There are variants [solve by inversion 2] and [solve by inversion 3]
+    that work if two or three consecutive inversions will solve the goal.)
+
+    The example below shows how a proof of the previous theorem can be
+    simplified using this tactic.
+*)
+
+Theorem step_deterministic_alt: deterministic step.
+Proof.
+  intros x y1 y2 Hy1 Hy2.
+  generalize dependent y2.
+  step_cases (induction Hy1) Case; intros y2 Hy2; 
+    inversion Hy2; subst; try (solve by inversion).
+  Case "ST_PlusConstConst". reflexivity.
+  Case "ST_Plus1". 
+    apply IHHy1 in H2. rewrite H2. reflexivity.
+  Case "ST_Plus2".
+    apply IHHy1 in H2. rewrite H2. reflexivity.
+Qed.
+
 
 End SimpleArith1.
 
@@ -379,7 +413,7 @@ Tactic Notation "step_cases" tactic(first) ident(c) :=
   [ Case_aux c "ST_PlusConstConst"
   | Case_aux c "ST_Plus1" | Case_aux c "ST_Plus2" ].
 
-(** **** Exercise: 3 stars (redo_determinism) *)
+(** **** Exercise: 3 stars (redo_determinism)  *)
 (** As a sanity check on this change, let's re-verify determinism 
 
     Proof sketch: We must show that if [x] steps to both [y1] and [y2]
@@ -549,7 +583,7 @@ Inductive step : tm -> tm -> Prop :=
 
 
 
-(** **** Exercise: 3 stars, advanced (value_not_same_as_normal_form) *)
+(** **** Exercise: 3 stars, advanced (value_not_same_as_normal_form)  *)
 Lemma value_not_same_as_normal_form :
   exists v, value v /\ ~ normal_form step v.
 Proof.
@@ -584,7 +618,7 @@ Inductive step : tm -> tm -> Prop :=
   where " t '==>' t' " := (step t t').
 
 
-(** **** Exercise: 2 stars, advanced (value_not_same_as_normal_form) *)
+(** **** Exercise: 2 stars, advanced (value_not_same_as_normal_form)  *)
 Lemma value_not_same_as_normal_form :
   exists v, value v /\ ~ normal_form step v.
 Proof.
@@ -619,7 +653,7 @@ Inductive step : tm -> tm -> Prop :=
 
 (** (Note that [ST_Plus2] is missing.) *)
 
-(** **** Exercise: 3 stars, advanced (value_not_same_as_normal_form') *)
+(** **** Exercise: 3 stars, advanced (value_not_same_as_normal_form')  *)
 Lemma value_not_same_as_normal_form :
   exists t, ~ value t /\ normal_form step t.
 Proof.
@@ -659,7 +693,7 @@ Inductive step : tm -> tm -> Prop :=
 
   where " t '==>' t' " := (step t t').
 
-(** **** Exercise: 1 star (smallstep_bools) *) 
+(** **** Exercise: 1 star (smallstep_bools)  *) 
 (** Which of the following propositions are provable?  (This is just a
     thought exercise, but for an extra challenge feel free to prove
     your answers in Coq.) *)
@@ -693,7 +727,7 @@ Definition bool_step_prop3 :=
 (* FILL IN HERE *)
 (** [] *)
 
-(** **** Exercise: 3 stars, optional (progress_bool) *)
+(** **** Exercise: 3 stars, optional (progress_bool)  *)
 (** Just as we proved a progress theorem for plus expressions, we can
     do so for boolean expressions, as well. *)
 
@@ -703,7 +737,7 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** **** Exercise: 2 stars, optional (step_deterministic) *)
+(** **** Exercise: 2 stars, optional (step_deterministic)  *)
 Theorem step_deterministic :
   deterministic step.
 Proof.
@@ -712,7 +746,7 @@ Proof.
 
 Module Temp5. 
 
-(** **** Exercise: 2 stars (smallstep_bool_shortcut) *) 
+(** **** Exercise: 2 stars (smallstep_bool_shortcut)  *) 
 (** Suppose we want to add a "short circuit" to the step relation for
     boolean expressions, so that it can recognize when the [then] and
     [else] branches of a conditional are the same value (either
@@ -744,7 +778,6 @@ Inductive step : tm -> tm -> Prop :=
 (* FILL IN HERE *)
 
   where " t '==>' t' " := (step t t').
-(** [] *)
 
 Definition bool_step_prop4 :=
          tif
@@ -760,7 +793,7 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** **** Exercise: 3 stars, optional (properties_of_altered_step) *)
+(** **** Exercise: 3 stars, optional (properties_of_altered_step)  *)
 (** It can be shown that the determinism and strong progress theorems
     for the step relation in the lecture notes also hold for the
     definition of step given above.  After we add the clause
@@ -852,8 +885,7 @@ Tactic Notation "multi_cases" tactic(first) ident(c) :=
     relation that relates two terms [t] and [t'] if we can get from
     [t] to [t'] using the [step] relation zero or more times. *)
 
-Definition multistep := multi step.
-Notation " t '==>*' t' " := (multistep t t') (at level 40).
+Notation " t '==>*' t' " := (multi step t t') (at level 40).
 
 (** The relation [multi R] has several crucial properties.
 
@@ -930,14 +962,14 @@ Proof.
   eapply multi_step. apply ST_PlusConstConst.
   apply multi_refl.  Qed.
 
-(** **** Exercise: 1 star, optional (test_multistep_2) *)
+(** **** Exercise: 1 star, optional (test_multistep_2)  *)
 Lemma test_multistep_2:
   C 3 ==>* C 3.
 Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** **** Exercise: 1 star, optional (test_multistep_3) *)
+(** **** Exercise: 1 star, optional (test_multistep_3)  *)
 Lemma test_multistep_3:
       P (C 0) (C 3)
    ==>*
@@ -946,7 +978,7 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** **** Exercise: 2 stars (test_multistep_4) *)
+(** **** Exercise: 2 stars (test_multistep_4)  *)
 Lemma test_multistep_4:
       P
         (C 0)
@@ -979,7 +1011,7 @@ Definition normal_form_of (t t' : tm) :=
     can actually pronounce [normal_form t t'] as "[t'] is _the_
     normal form of [t]." *)
 
-(** **** Exercise: 3 stars, optional (normal_forms_unique) *)
+(** **** Exercise: 3 stars, optional (normal_forms_unique)  *)
 Theorem normal_forms_unique:
   deterministic normal_form_of.
 Proof.
@@ -1018,7 +1050,7 @@ Proof.
         apply ST_Plus1. apply H. 
         apply IHmulti.  Qed.
 
-(** **** Exercise: 2 stars (multistep_congr_2) *)
+(** **** Exercise: 2 stars (multistep_congr_2)  *)
 Lemma multistep_congr_2 : forall t1 t2 t2',
      value t1 ->
      t2 ==>* t2' ->
@@ -1091,7 +1123,7 @@ Proof.
     it takes a little work to show it.  (The details are left as an
     exercise). *)
 
-(** **** Exercise: 3 stars (eval__multistep) *)
+(** **** Exercise: 3 stars (eval__multistep)  *)
 Theorem eval__multistep : forall t n,
   t || n -> t ==>* C n.
 
@@ -1127,7 +1159,7 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** **** Exercise: 3 stars, advanced (eval__multistep_inf) *)
+(** **** Exercise: 3 stars, advanced (eval__multistep_inf)  *)
 (** Write a detailed informal version of the proof of [eval__multistep].
 
 (* FILL IN HERE *)
@@ -1136,7 +1168,7 @@ Proof.
 (** For the other direction, we need one lemma, which establishes a
     relation between single-step reduction and big-step evaluation. *)
 
-(** **** Exercise: 3 stars (step__eval) *)
+(** **** Exercise: 3 stars (step__eval)  *)
 Lemma step__eval : forall t t' n,
      t ==> t' ->
      t' || n ->
@@ -1154,7 +1186,7 @@ Proof.
 (** Make sure you understand the statement before you start to
     work on the proof.  *)
 
-(** **** Exercise: 3 stars (multistep__eval) *)
+(** **** Exercise: 3 stars (multistep__eval)  *)
 Theorem multistep__eval : forall t t',
   normal_form_of t t' -> exists n, t' = C n /\ t || n.
 Proof.
@@ -1164,7 +1196,7 @@ Proof.
 (* ########################################################### *)
 (** ** Additional Exercises *)
 
-(** **** Exercise: 3 stars, optional (interp_tm) *)
+(** **** Exercise: 3 stars, optional (interp_tm)  *)
 (** Remember that we also defined big-step evaluation of [tm]s as a
     function [evalF].  Prove that it is equivalent to the existing
     semantics.
@@ -1179,7 +1211,7 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** **** Exercise: 4 stars (combined_properties) *)
+(** **** Exercise: 4 stars (combined_properties)  *)
 (** We've considered the arithmetic and conditional expressions
     separately.  This exercise explores how the two interact. *)
 
@@ -1561,7 +1593,7 @@ Proof.
 
 (** More generally... *)
 
-(** **** Exercise: 3 stars, optional *)
+(** **** Exercise: 3 stars, optional  *)
 Lemma par_body_n__Sn : forall n st,
   st X = n /\ st Y = 0 ->
   par_loop / st ==>* par_loop / (update st X (S n)).
@@ -1569,7 +1601,7 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** **** Exercise: 3 stars, optional *)
+(** **** Exercise: 3 stars, optional  *)
 Lemma par_body_n : forall n st,
   st X = 0 /\ st Y = 0 ->
   exists st',
@@ -1639,7 +1671,7 @@ Qed.
 
 Definition stack_multistep st := multi (stack_step st).
 
-(** **** Exercise: 3 stars, advanced (compiler_is_correct) *)
+(** **** Exercise: 3 stars, advanced (compiler_is_correct)  *)
 (** Remember the definition of [compile] for [aexp] given in the 
     [Imp] chapter. We want now to prove [compile] correct with respect
     to the stack machine.
@@ -1656,6 +1688,6 @@ Proof.
 (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(* $Date: 2014-04-02 10:55:30 -0400 (Wed, 02 Apr 2014) $ *)
+(** $Date: 2014-12-31 15:16:58 -0500 (Wed, 31 Dec 2014) $ *)
 
 

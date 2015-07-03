@@ -1,10 +1,19 @@
-(** * MoreCoq: More About Coq *)
+(** * MoreCoq: More About Coq's Tactics *)
 
 Require Export Poly.
 
-(** This chapter introduces several more Coq tactics that,
-    together, allow us to prove many more theorems about the
-    functional programs we are writing. *)
+(** This chapter introduces several more proof strategies and
+    tactics that, together, allow us to prove theorems about the
+    functional programs we have been writing. In particular, we'll
+    reason about functions that work with natural numbers and lists.
+
+    In particular, we will see:
+    - how to use auxiliary lemmas, in both forwards and backwards reasoning;
+    - how to reason about data constructors, which are injective and disjoint;
+    - how to create a strong induction hypotheses (and when
+      strengthening is required); and
+    - how to reason by case analysis.
+ *)
 
 (* ###################################################### *)
 (** * The [apply] Tactic *)
@@ -60,7 +69,7 @@ Proof.
   intros n m eq1 eq2.
   apply eq2. apply eq1.  Qed.
 
-(** **** Exercise: 2 stars, optional (silly_ex) *)
+(** **** Exercise: 2 stars, optional (silly_ex)  *)
 (** Complete the following proof without using [simpl]. *)
 
 Theorem silly_ex : 
@@ -98,7 +107,7 @@ Proof.
             [apply] will perform simplification first. *)
   apply H.  Qed.         
 
-(** **** Exercise: 3 stars (apply_exercise1) *)
+(** **** Exercise: 3 stars (apply_exercise1)  *)
 (** Hint: you can use [apply] with previously defined lemmas, not
     just hypotheses in the context.  Remember that [SearchAbout] is
     your friend. *)
@@ -110,7 +119,7 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** **** Exercise: 1 star, optional (apply_rewrite) *)
+(** **** Exercise: 1 star, optional (apply_rewrite)  *)
 (** Briefly explain the difference between the tactics [apply] and
     [rewrite].  Are there situations where both can usefully be
     applied?
@@ -168,7 +177,7 @@ Proof.
     figure out which instantiation we're giving. We could
     instead write: [apply trans_eq with [c,d]]. *)
 
-(** **** Exercise: 3 stars, optional (apply_with_exercise) *)
+(** **** Exercise: 3 stars, optional (apply_with_exercise)  *)
 Example trans_eq_exercise : forall (n m o p : nat),
      m = (minustwo o) ->
      (n + p) = m ->
@@ -254,7 +263,7 @@ Theorem silly5 : forall (n m o : nat),
 Proof.
   intros n m o eq. inversion eq. reflexivity. Qed.
 
-(** **** Exercise: 1 star (sillyex1) *) 
+(** **** Exercise: 1 star (sillyex1)  *) 
 Example sillyex1 : forall (X : Type) (x y z : X) (l j : list X),
      x :: y :: l = z :: j ->
      y :: l = x :: j ->
@@ -275,7 +284,7 @@ Theorem silly7 : forall (n m : nat),
 Proof.
   intros n m contra. inversion contra.  Qed.
 
-(** **** Exercise: 1 star (sillyex2) *)
+(** **** Exercise: 1 star (sillyex2)  *)
 Example sillyex2 : forall (X : Type) (x y z : X) (l j : list X),
      x :: y :: l = [] ->
      y :: l = z :: j ->
@@ -296,7 +305,7 @@ Proof. intros A B f x y eq. rewrite eq.  reflexivity.  Qed.
 
 
 
-(** **** Exercise: 2 stars, optional (practice) *)
+(** **** Exercise: 2 stars, optional (practice)  *)
 (** A couple more nontrivial but not-too-complicated proofs to work
     together in class, or for you to work as exercises. *)
  
@@ -365,7 +374,7 @@ Proof.
     situations the forward style can be easier to use or to think
     about.  *)
 
-(** **** Exercise: 3 stars (plus_n_n_injective) *)
+(** **** Exercise: 3 stars (plus_n_n_injective)  *)
 (** Practice using "in" variants in this exercise. *)
 
 Theorem plus_n_n_injective : forall n m,
@@ -516,14 +525,14 @@ Proof.
 
 (** The proof of this theorem (left as an exercise) has to be treated similarly: *)
 
-(** **** Exercise: 2 stars (beq_nat_true) *)
+(** **** Exercise: 2 stars (beq_nat_true)  *)
 Theorem beq_nat_true : forall n m,
     beq_nat n m = true -> n = m.
 Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** **** Exercise: 2 stars, advanced (beq_nat_true_informal) *)
+(** **** Exercise: 2 stars, advanced (beq_nat_true_informal)  *)
 (** Give a careful informal proof of [beq_nat_true], being as explicit
     as possible about quantifiers. *)
 
@@ -686,8 +695,7 @@ Proof.
     In general, a good rule of thumb is to make the induction hypothesis
     as general as possible. *)
 
-(** **** Exercise: 3 stars (gen_dep_practice) *)
-
+(** **** Exercise: 3 stars (gen_dep_practice)  *)
 (** Prove this by induction on [l]. *)
 
 Theorem index_after_last: forall (n : nat) (X : Type) (l : list X),
@@ -697,7 +705,7 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** **** Exercise: 3 stars, advanced, optional (index_after_last_informal) *)
+(** **** Exercise: 3 stars, advanced, optional (index_after_last_informal)  *)
 (** Write an informal proof corresponding to your Coq proof
     of [index_after_last]:
  
@@ -709,7 +717,7 @@ Proof.
 []
 *)
 
-(** **** Exercise: 3 stars, optional (gen_dep_practice_more) *)
+(** **** Exercise: 3 stars, optional (gen_dep_practice_more)  *)
 (** Prove this by induction on [l]. *)
 
 Theorem length_snoc''' : forall (n : nat) (X : Type) 
@@ -720,8 +728,9 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** **** Exercise: 3 stars, optional (app_length_cons) *)
-(** Prove this by induction on [l1], without using [app_length]. *)
+(** **** Exercise: 3 stars, optional (app_length_cons)  *)
+(** Prove this by induction on [l1], without using [app_length]
+    from [Lists]. *)
 
 Theorem app_length_cons : forall (X : Type) (l1 l2 : list X) 
                                   (x : X) (n : nat),
@@ -731,7 +740,7 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** **** Exercise: 4 stars, optional (app_length_twice) *)
+(** **** Exercise: 4 stars, optional (app_length_twice)  *)
 (** Prove this by induction on [l], without using app_length. *)
 
 Theorem app_length_twice : forall (X:Type) (n:nat) (l:list X),
@@ -742,7 +751,7 @@ Proof.
 (** [] *)
 
 
-(** **** Exercise: 3 stars, optional (double_induction) *)
+(** **** Exercise: 3 stars, optional (double_induction)  *)
 (** Prove the following principle of induction over two naturals. *)
 
 Theorem double_induction: forall (P : nat -> nat -> Prop), 
@@ -795,14 +804,14 @@ Proof.
 
 *)
 
-(** **** Exercise: 1 star (override_shadow) *)
+(** **** Exercise: 1 star (override_shadow)  *)
 Theorem override_shadow : forall (X:Type) x1 x2 k1 k2 (f : nat->X),
   (override (override f k1 x2) k1 x1) k2 = (override f k1 x1) k2.
 Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** **** Exercise: 3 stars, optional (combine_split) *)
+(** **** Exercise: 3 stars, optional (combine_split)  *)
 (** Complete the proof below *)
 
 Theorem combine_split : forall X Y (l : list (X * Y)) l1 l2,
@@ -873,7 +882,7 @@ Proof.
         SCase "e5 = false". inversion eq.  Qed.
 
 
-(** **** Exercise: 2 stars (destruct_eqn_practice) *)
+(** **** Exercise: 2 stars (destruct_eqn_practice)  *)
 Theorem bool_fn_applied_thrice : 
   forall (f : bool -> bool) (b : bool), 
   f (f (f b)) = f b.
@@ -881,7 +890,7 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** **** Exercise: 2 stars (override_same) *)
+(** **** Exercise: 2 stars (override_same)  *)
 Theorem override_same : forall (X:Type) x1 k1 k2 (f : nat->X),
   f k1 = x1 -> 
   (override f k1 x1) k2 = f k2.
@@ -967,14 +976,14 @@ Proof.
 (* ###################################################### *)
 (** * Additional Exercises *)
 
-(** **** Exercise: 3 stars (beq_nat_sym) *)
+(** **** Exercise: 3 stars (beq_nat_sym)  *)
 Theorem beq_nat_sym : forall (n m : nat),
   beq_nat n m = beq_nat m n.
 Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** **** Exercise: 3 stars, advanced, optional (beq_nat_sym_informal) *)
+(** **** Exercise: 3 stars, advanced, optional (beq_nat_sym_informal)  *)
 (** Give an informal proof of this lemma that corresponds to your
     formal proof above:
 
@@ -985,7 +994,7 @@ Proof.
 []
  *)
 
-(** **** Exercise: 3 stars, optional (beq_nat_trans) *)
+(** **** Exercise: 3 stars, optional (beq_nat_trans)  *)
 Theorem beq_nat_trans : forall n m p,
   beq_nat n m = true ->
   beq_nat m p = true ->
@@ -994,10 +1003,10 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** **** Exercise: 3 stars, advanced (split_combine) *)
+(** **** Exercise: 3 stars, advanced (split_combine)  *)
 (** We have just proven that for all lists of pairs, [combine] is the
     inverse of [split].  How would you formalize the statement that
-    [split] is the inverse of [combine]?
+    [split] is the inverse of [combine]? When is this property true?
 
     Complete the definition of [split_combine_statement] below with a
     property that states that [split] is the inverse of
@@ -1014,9 +1023,10 @@ Proof.
 (* FILL IN HERE *) Admitted.
 
 
+
 (** [] *)
 
-(** **** Exercise: 3 stars (override_permute) *)
+(** **** Exercise: 3 stars (override_permute)  *)
 Theorem override_permute : forall (X:Type) x1 x2 k1 k2 k3 (f : nat->X),
   beq_nat k2 k1 = false ->
   (override (override f k2 x2) k1 x1) k3 = (override (override f k1 x1) k2 x2) k3.
@@ -1024,7 +1034,7 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** **** Exercise: 3 stars, advanced (filter_exercise) *)
+(** **** Exercise: 3 stars, advanced (filter_exercise)  *)
 (** This one is a bit challenging.  Pay attention to the form of your IH. *)
 
 Theorem filter_exercise : forall (X : Type) (test : X -> bool)
@@ -1035,7 +1045,7 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** **** Exercise: 4 stars, advanced (forall_exists_challenge) *)
+(** **** Exercise: 4 stars, advanced (forall_exists_challenge)  *)
 (** Define two recursive [Fixpoints], [forallb] and [existsb].  The
     first checks whether every element in a list satisfies a given
     predicate:
@@ -1058,13 +1068,14 @@ Proof.
     Next, define a _nonrecursive_ version of [existsb] -- call it
     [existsb'] -- using [forallb] and [negb].
  
-    Prove that [existsb'] and [existsb] have the same behavior.
+    Prove theorem [existsb_existsb'] that [existsb'] and [existsb] have
+    the same behavior.
 *)
 
 (* FILL IN HERE *)
 (** [] *)
 
-(* $Date: 2014-02-04 07:15:43 -0500 (Tue, 04 Feb 2014) $ *)
+(** $Date: 2014-12-31 16:01:37 -0500 (Wed, 31 Dec 2014) $ *)
 
 
 
